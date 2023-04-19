@@ -1,0 +1,52 @@
+@import 'variables/responsive';
+
+@mixin mobile {
+    @media (max-width: $sizeMobileUploadBlog) {
+        @content;
+    }
+}
+
+.btn-guide{
+    display: flex;
+    position: fixed;
+    bottom: 20px;
+    right: 40px;
+    height: 60px;
+    width: 60px;
+    background-color: #fff;
+    border-radius: 500px;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    box-shadow: 0 3px 7px -1px rgba(0, 0, 0, 0.4);
+    border: 2px solid #3face4;
+    background-color: #3face4;
+    outline: none;
+    transition: 0.2s ease-in-out;
+    z-index: 1;
+    &:hover{
+        background-color: #288ec1;
+        border: 2px solid #288ec1;
+
+        i{
+            color: #f1f1f1;
+        }
+    }
+
+    @include mobile(){
+        height: 45px;
+        width: 45px;
+        right: 10px;
+        bottom: 10px;
+    }
+
+    i{
+        font-size: 35px;
+        color: #f1f1f1;
+        transition: 0.2s ease-in-out;
+
+        @include mobile(){
+            font-size: 25px;
+        }
+    }
+}

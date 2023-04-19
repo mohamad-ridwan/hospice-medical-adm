@@ -1,0 +1,48 @@
+// @import 'variables/variable';
+
+.wrapp-guide{
+    display: flex;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0,0,0,0.6);
+    justify-content: center;
+    align-items: center;
+    padding: 20px 10px;
+    z-index: 9999999;
+
+    .container-guide{
+        display: flex;
+        height: auto;
+        width: auto;
+        max-width: 700px;
+        border-radius: 7px;
+        flex-direction: column;
+        background-color: #fff;
+        box-shadow: 0 2px 6px -1px #ffffff54;
+        padding: 10px;
+
+        h1{
+            display: flex;
+            font-size: 18px;
+            margin-bottom: 7px;
+        }
+
+        .list-panduan{
+            display: flex;
+            flex-direction: column;
+            margin-left: 10px;
+
+            .name-panduan{
+                // display: flex;
+                font-size: 14px;
+                border-bottom: 1px solid #eee;
+                margin-bottom: 7px;
+                margin-left: 5px;
+                text-align: start;
+            }
+        }
+    }
+}

@@ -1,0 +1,38 @@
+@import 'variables/responsive';
+
+@mixin tablet {
+    @media (max-width: $sizeTabletUploadBlog) {
+        @content;
+    }
+}
+
+@mixin mobile {
+    @media (max-width: $sizeMobileUploadBlog) {
+        @content;
+    }
+}
+
+.container-input-upload{
+    display: flex;
+    justify-content: center;
+    width: auto;
+    padding: 0 10px;
+    // border: 1px solid blue;
+
+    .center-input-upload{
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        width: 1300px;
+        // max-width: 1200px;
+        @include tablet(){
+            flex-direction: column;
+            width: 500px;
+            justify-content: center;
+        }
+
+        @include mobile(){
+            width: 100%;
+        }
+    }
+}

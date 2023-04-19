@@ -1,0 +1,29 @@
+.btn-card{
+    display: flex;
+    width: auto;
+    max-width: 200px;
+    padding: 7px 12px;
+    align-items: center;
+    font-weight: bold;
+    font-size: 14px;
+    color: #fff;
+    background-color: #555;
+    justify-content: center;
+    margin-left: 10px;
+    margin-right: 10px;
+    cursor: pointer;
+    border-radius: 6px;
+    border: none;
+    outline: none;
+    transition: 0.3s ease-in-out;
+    &:hover{
+        background-color: #333;
+    }
+}
+
+.cancel-img-detail-content{
+    background-color: #df2c14;
+    &:hover{
+        background-color: #c61a09;
+    }
+}

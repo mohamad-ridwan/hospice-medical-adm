@@ -1,0 +1,20 @@
+// @import 'variables/font';
+// @import 'variables/color';
+// @import 'variables/responsive';
+
+.container-category {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    width: auto;
+    margin: 15px 10px;
+
+    .category-blog-id{
+        display: flex;
+        font-size: 14px;
+    }
+
+    .select-category {
+        margin: 20px;
+    }
+}
