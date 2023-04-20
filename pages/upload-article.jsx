@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import Error from 'next/error'
 import Image from 'next/image'
 import Head from 'next/head'
 import { ref, uploadBytes } from 'firebase/storage'
@@ -18,14 +19,23 @@ import { firebaseAPI } from 'lib/firebase/firebaseAPI'
 import { storage } from 'lib/firebase/firebase'
 import useSwr from 'lib/useFetch/useSwr'
 import API from 'lib/api'
+import { backendUrl } from 'lib/api/backendUrl'
 
-function UploadArticle() {
+function UploadArticle({
+  errorCode,
+  propsBlogData,
+  propsDataBlogCategory,
+  categoryInputBlog,
+  propsCtgForRecentBlogs,
+  propsChooseCtgForRecentBlogs,
+  propsChooseCtg
+}) {
   const [onLoading, setOnLoading] = useState(false)
-  const [dataBlogCategory, setDataBlogCategory] = useState([])
-  const [categoryForRecentBlogs, setCategoryForRecentBlogs] = useState([])
+  const [dataBlogCategory, setDataBlogCategory] = useState(propsDataBlogCategory)
+  const [categoryForRecentBlogs, setCategoryForRecentBlogs] = useState(propsCtgForRecentBlogs)
   const [onGuide, setOnGuide] = useState(false)
-  const [chooseCategory, setChooseCategory] = useState({})
-  const [chooseCategoryForRecentBlogs, setChooseCategoryForRecentBlogs] = useState('')
+  const [chooseCategory, setChooseCategory] = useState(propsChooseCtg)
+  const [chooseCategoryForRecentBlogs, setChooseCategoryForRecentBlogs] = useState(propsChooseCtgForRecentBlogs)
   // paragraph highlight akan 'null' jika ga di isi
   const [inputBlog, setInputBlog] = useState({
     id: '',
@@ -34,7 +44,7 @@ function UploadArticle() {
     paragraphBeforeHighlight: '',
     paragraphHighlight: '',
     paragraphDua: '',
-    category: '',
+    category: categoryInputBlog,
   })
   // img konten utama
   const [firstImgForFirebase, setFirstImgForFirebase] = useState(null)
@@ -43,41 +53,45 @@ function UploadArticle() {
   const [imageDetailContent, setImageDetailContent] = useState('')
   const [newImageDetailContent, setNewImageDetailContent] = useState(null)
 
-  const { data, error, isLoading } = useSwr(endpoint.getBlog(), 'GET')
+  // const { data, error, isLoading } = useSwr(endpoint.getBlog(), 'GET')
 
-  const getIdBlogData = () => {
-    setOnLoading(true)
+  // const getIdBlogData = () => {
+  //   setOnLoading(true)
 
-    if (error) {
-      alert('oops telah terjadi kesalahan server!')
-      setOnLoading(false)
-      console.log(error)
-    }
+  //   if (error) {
+  //     alert('oops telah terjadi kesalahan server!')
+  //     setOnLoading(false)
+  //     console.log(error)
+  //   }
 
-    if (data?.data) {
-      const result = data.data
-      const getId = result.map(blog => ({ id: blog.id, title: blog.id === 'popular-posts' ? 'Popular Posts' : blog.title }))
-      setDataBlogCategory(getId)
-      const categoryForRecentBlogs = result.filter(blog => blog.id !== 'our-recent-blogs' && blog.id !== 'popular-posts')
-      const newCategoryForRB = categoryForRecentBlogs.map(blog => ({ id: blog.id, title: blog.title }))
-      const get_IdCategoryForRB = categoryForRecentBlogs.map(blog => ({ _id: blog._id }))
-      setInputBlog({
-        ...inputBlog,
-        category: newCategoryForRB[0].title
-      })
-      setCategoryForRecentBlogs(newCategoryForRB)
-      setChooseCategoryForRecentBlogs(get_IdCategoryForRB[0]._id)
-      setChooseCategory(result[0])
+  //   if (data?.data) {
+  //     const result = data.data
+  //     const getId = result.map(blog => ({ id: blog.id, title: blog.id === 'popular-posts' ? 'Popular Posts' : blog.title }))
+  //     setDataBlogCategory(getId)
+  //     const categoryForRecentBlogs = result.filter(blog => blog.id !== 'our-recent-blogs' && blog.id !== 'popular-posts')
+  //     const newCategoryForRB = categoryForRecentBlogs.map(blog => ({ id: blog.id, title: blog.title }))
+  //     const get_IdCategoryForRB = categoryForRecentBlogs.map(blog => ({ _id: blog._id }))
+  //     setInputBlog({
+  //       ...inputBlog,
+  //       category: newCategoryForRB[0].title
+  //     })
+  //     setCategoryForRecentBlogs(newCategoryForRB)
+  //     setChooseCategoryForRecentBlogs(get_IdCategoryForRB[0]._id)
+  //     setChooseCategory(result[0])
 
-      setTimeout(() => {
-        setOnLoading(false)
-      }, 500);
-    }
+  //     setTimeout(() => {
+  //       setOnLoading(false)
+  //     }, 500);
+  //   }
+  // }
+
+  // useEffect(() => {
+  //   getIdBlogData()
+  // }, [data])
+
+  if(errorCode !== false){
+    return <Error statusCode={errorCode}/>
   }
-
-  useEffect(() => {
-    getIdBlogData()
-  }, [data])
 
   const stopLoadingAfterSubmit = () => {
     setTimeout(() => {
@@ -90,14 +104,14 @@ function UploadArticle() {
     const selectEl = document.getElementById('selectCategory')
     const id = selectEl.options[selectEl.selectedIndex].value
 
-    if (error) {
-      alert('oops telah terjadi kesalahan server!')
-      console.log(error)
-      stopLoadingAfterSubmit()
-    }
+    // if (error) {
+    //   alert('oops telah terjadi kesalahan server!')
+    //   console.log(error)
+    //   stopLoadingAfterSubmit()
+    // }
 
-    if (data?.data) {
-      const result = data.data
+    if (propsBlogData?.data) {
+      const result = propsBlogData.data
       const findBlog = result.find(blog => blog.id === id)
       const categoryForRB = result.filter(blog => blog.id !== 'our-recent-blogs')
       setChooseCategoryForRecentBlogs(findBlog.id === 'our-recent-blogs' ? categoryForRB[0]._id : findBlog.id === 'popular-posts' ? '' : findBlog._id)
@@ -109,7 +123,7 @@ function UploadArticle() {
       stopLoadingAfterSubmit()
     } else {
       alert('oops telah terjadi kesalahan server!')
-      console.log(data)
+      console.log(propsBlogData)
       stopLoadingAfterSubmit()
     }
   }
@@ -119,14 +133,14 @@ function UploadArticle() {
     const selectEl = document.getElementById('selectCtgForRecentBlogs')
     const id = selectEl.options[selectEl.selectedIndex].value
 
-    if (error) {
-      alert('oops telah terjadi kesalahan server!')
-      console.log(error)
-      stopLoadingAfterSubmit()
-    }
+    // if (error) {
+    //   alert('oops telah terjadi kesalahan server!')
+    //   console.log(error)
+    //   stopLoadingAfterSubmit()
+    // }
 
-    if (data?.data) {
-      const result = data.data
+    if (propsBlogData?.data) {
+      const result = propsBlogData.data
       const findBlog = result.find(blog => blog.id === id)
       setChooseCategoryForRecentBlogs(findBlog._id)
       setInputBlog({
@@ -136,7 +150,7 @@ function UploadArticle() {
       stopLoadingAfterSubmit()
     } else {
       alert('oops telah terjadi kesalahan server!')
-      console.log(data)
+      console.log(propsBlogData)
       stopLoadingAfterSubmit()
     }
   }
@@ -326,14 +340,14 @@ function UploadArticle() {
   const pushToBlogCategory = async (_id, dataPost) => {
     return await new Promise((resolve, reject) => {
       API.APIPostBlog(_id, dataPost)
-      .then(res=>{
-        if(res?.data){
-          resolve(res)
-        }else{
-          reject(res)
-        }
-      })
-      .catch(err=>reject(err))
+        .then(res => {
+          if (res?.data) {
+            resolve(res)
+          } else {
+            reject(res)
+          }
+        })
+        .catch(err => reject(err))
     })
   }
 
@@ -528,14 +542,14 @@ function UploadArticle() {
   const postImgDetailContent = async (_id, id, dataPost) => {
     return await new Promise((resolve, reject) => {
       API.APIPostImgDetailContent(_id, id, dataPost)
-      .then(res=>{
-        if(res?.data){
-          resolve(res)
-        }else{
-          reject(res)
-        }
-      })
-      .catch(err=>reject(err))
+        .then(res => {
+          if (res?.data) {
+            resolve(res)
+          } else {
+            reject(res)
+          }
+        })
+        .catch(err => reject(err))
     })
   }
 
@@ -814,3 +828,29 @@ function UploadArticle() {
 }
 
 export default UploadArticle
+
+export async function getStaticProps() {
+  const fetchBlog = await fetch(`${backendUrl}/${endpoint.getBlog()}`)
+
+  const result = await fetchBlog?.json()
+  const errorCode = await result?.data ? false : 500
+  const data = await result?.data
+  const getId = await data?.map(blog => ({ id: blog.id, title: blog.id === 'popular-posts' ? 'Popular Posts' : blog.title }))
+
+  const categoryForRecentBlogs = await data?.filter(blog => blog.id !== 'our-recent-blogs' && blog.id !== 'popular-posts')
+  const newCategoryForRB = await categoryForRecentBlogs?.map(blog => ({ id: blog.id, title: blog.title }))
+  const get_IdCategoryForRB = await categoryForRecentBlogs?.map(blog => ({ _id: blog._id }))
+
+  return {
+    props: {
+      errorCode,
+      propsBlogData: result,
+      propsDataBlogCategory: getId,
+      categoryInputBlog: newCategoryForRB[0]?.title,
+      propsCtgForRecentBlogs: newCategoryForRB,
+      propsChooseCtgForRecentBlogs: get_IdCategoryForRB[0]?._id,
+      propsChooseCtg: data[0]
+    },
+    revalidate: 10
+  }
+}
