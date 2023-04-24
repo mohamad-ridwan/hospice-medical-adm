@@ -1,0 +1,79 @@
+@import 'variables/color';
+@import 'variables/font';
+@import 'variables/responsive';
+
+@mixin sizeMobile {
+    @media (max-width: $sizeMobileUploadBlog) {
+        @content;
+    }
+}
+
+.wrapp{
+    display: flex;
+    padding: 0 10%;
+    height: auto;
+    min-height: 100vh;
+    // align-items: center;
+    justify-content: center;
+    background-color: $backgroundPage;
+
+    @include sizeMobile(){
+        padding: 50px 5%;
+    }
+
+    .container-white{
+        display: flex;
+        flex-direction: column;
+        height: fit-content;
+        width: 400px;
+        padding: 35px;
+        margin-top: 120px;
+        margin-bottom: 80px;
+        background-color: #fff;
+
+        .title-login {
+            display: flex;
+            font-weight: bold;
+            font-size: 20px;
+            text-align: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .forgot-password {
+            display: flex;
+            flex-direction: row-reverse;
+            margin: 10px 0 0 0;
+
+            .btn-forgot-password {
+                background: transparent;
+                outline: none;
+                border: none;
+                font-family: 'Mulish', sans-serif;
+                font-size: 13px;
+                color: $fontColor2;
+                cursor: pointer;
+            }
+        }
+
+        .column-already-account {
+            display: flex;
+            align-items: center;
+            margin-top: 40px;
+            justify-content: center;
+
+            @include sizeMobile() {
+                flex-direction: column;
+            }
+
+            .or-login-with {
+                display: flex;
+                font-size: 13px;
+                color: $fontColor2;
+                text-align: center;
+                justify-content: center;
+                margin: 20px 0;
+            }
+        }
+    }
+}

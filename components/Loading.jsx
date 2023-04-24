@@ -1,11 +1,13 @@
 import styles from 'styles/Loading.module.scss'
 
 function Loading({
-    style
+    style,
+    classWrapp,
+    styleCircle
 }) {
   return (
-    <div className={styles['wrapp-loading']} style={style}>
-        <div className={styles['loading-circle']}>
+    <div className={`${styles['wrapp-loading']} ${styles[classWrapp]}`} style={style}>
+        <div className={styles['loading-circle']} style={styleCircle}>
 
         </div>
     </div>

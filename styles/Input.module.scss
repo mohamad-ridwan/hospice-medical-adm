@@ -1,0 +1,41 @@
+@import 'variables/color';
+@import 'variables/font';
+@import 'variables/responsive';
+
+.input-card{
+    display: flex;
+    font-size: 13px;
+    border: 1px solid #eee;
+    padding: 10px 12px;
+    color: $fontColor2;
+    outline: none;
+    margin-bottom: 5px;
+    font-family: 'Mulish', sans-serif;
+    letter-spacing: 0.5px;
+
+    .input-file{
+        display: none;
+    }
+}
+.input-card::placeholder{
+    font-size: 13px;
+}
+.input-card:focus{
+    border: 1px solid $colorDefault;
+    transition: 0.3s ease-in-out;
+}
+
+.btn-input-file{
+    display: none;
+    color: $fontColor2;
+    font-family: 'Mulish', sans-serif;
+}
+
+.error-message{
+    display: none;
+    font-size: 10px;
+    color: red;
+    text-align: start;
+    overflow: hidden;
+    transition: 0.2s ease-in-out;
+}

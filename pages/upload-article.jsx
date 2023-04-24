@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useContext } from 'react'
 import Error from 'next/error'
 import Image from 'next/image'
 import Head from 'next/head'
@@ -20,6 +20,7 @@ import { storage } from 'lib/firebase/firebase'
 import useSwr from 'lib/useFetch/useSwr'
 import API from 'lib/api'
 import { backendUrl } from 'lib/api/backendUrl'
+import { AuthContext } from 'lib/context/auth'
 
 function UploadArticle({
   errorCode,
@@ -52,6 +53,9 @@ function UploadArticle({
   const [newFirstImg, setNewFirstImg] = useState(null)
   const [imageDetailContent, setImageDetailContent] = useState('')
   const [newImageDetailContent, setNewImageDetailContent] = useState(null)
+
+  // context
+  const { user, loadingAuth} = useContext(AuthContext)
 
   // const { data, error, isLoading } = useSwr(endpoint.getBlog(), 'GET')
 
@@ -89,8 +93,8 @@ function UploadArticle({
   //   getIdBlogData()
   // }, [data])
 
-  if(errorCode !== false){
-    return <Error statusCode={errorCode}/>
+  if (errorCode !== false) {
+    return <Error statusCode={errorCode} />
   }
 
   const stopLoadingAfterSubmit = () => {
@@ -606,11 +610,23 @@ function UploadArticle({
     document.getElementById('inputFileImageDetailContent').value = null
   }
 
+  const propsLoadingAuth = {
+    classWrapp: 'loading-auth',
+    style: {
+      margin: '20px 0',
+      zIndex: '1'
+    },
+    styleCircle: {
+      border: '4px solid #3face4',
+      borderTopColor: 'transparent'
+    },
+  }
+
   return (
     <>
       <Head>
         <title>Upload Article | Admin Hospice Medical</title>
-        <meta name="description" content="tampilan beranda admin hospice medical" />
+        <meta name="description" content="mengunggah artikel pada blog Hospice Medical untuk admin" />
       </Head>
 
       <Loading
@@ -653,175 +669,191 @@ function UploadArticle({
           )}
         </ContainerInputUpload>
 
-        <ContainerInputUpload>
-          <div className={styleUpload['wrapp-cont-first-image']}>
-            <div className={styleUpload['container-first-image']}>
-              {newFirstImg ? (
-                <Image
-                  src={newFirstImg}
-                  className={styleUpload['first-image']}
-                  width={300}
-                  height={300}
+        {user === null ? (
+          <>
+            <ContainerInputUpload>
+              <Loading {...propsLoadingAuth} />
+
+              <Loading {...propsLoadingAuth} />
+            </ContainerInputUpload>
+
+            <ContainerInputUpload>
+              <Loading {...propsLoadingAuth} />
+
+              <Loading {...propsLoadingAuth} />
+            </ContainerInputUpload>
+          </>
+        ) : (
+          <>
+            <ContainerInputUpload>
+              <div className={styleUpload['wrapp-cont-first-image']}>
+                <div className={styleUpload['container-first-image']}>
+                  {newFirstImg ? (
+                    <Image
+                      src={newFirstImg}
+                      className={styleUpload['first-image']}
+                      width={300}
+                      height={300}
+                    />
+                  ) : (
+                    <p>No image</p>
+                  )}
+                </div>
+                <InputUpload
+                  label='image'
+                  title='image'
+                  idInput="inputFirstImg"
+                  handleChangeImg={(e) => handleFixImage(e, 'image')}
+                  styleTextArea={{
+                    display: 'none',
+                  }}
+                  styleWrapp={{
+                    maxWidth: 'auto',
+                    borderBottom: 'none'
+                  }}
+                  styleParagraph={{
+                    backgroundColor: 'transparent'
+                  }}
                 />
-              ) : (
-                <p>No image</p>
-              )}
-            </div>
-            <InputUpload
-              label='image'
-              title='image'
-              idInput="inputFirstImg"
-              handleChangeImg={(e) => handleFixImage(e, 'image')}
-              styleTextArea={{
-                display: 'none',
-              }}
-              styleWrapp={{
-                maxWidth: 'auto',
-                borderBottom: 'none'
-              }}
-              styleParagraph={{
-                backgroundColor: 'transparent'
-              }}
-            />
-          </div>
+              </div>
 
-          <InputUpload
-            label='title'
-            title='Title'
-            value={inputBlog.title}
-            rows={5}
-            cols={8}
-            handleChange={handleChangeInput}
-            handleEnterSpace={(e) => handleEnterSpace(e, 'title')}
-            styleInputImg={{
-              display: 'none'
-            }}
-            styleParagraph={{
-              backgroundColor: !inputBlog.title.trim() ? 'transparent' : '#f1f1f1'
-            }}
-          />
-        </ContainerInputUpload>
+              <InputUpload
+                label='title'
+                title='Title'
+                value={inputBlog.title}
+                rows={5}
+                cols={8}
+                handleChange={handleChangeInput}
+                handleEnterSpace={(e) => handleEnterSpace(e, 'title')}
+                styleInputImg={{
+                  display: 'none'
+                }}
+                styleParagraph={{
+                  backgroundColor: !inputBlog.title.trim() ? 'transparent' : '#f1f1f1'
+                }}
+              />
+            </ContainerInputUpload>
 
-        <ContainerInputUpload>
-          <InputUpload
-            label='paragraphSatu'
-            title='paragraph satu'
-            value={inputBlog.paragraphSatu}
-            rows={9}
-            cols={8}
-            handleChange={handleChangeInput}
-            nameInputImg='paragraphSatu'
-            handleEnterSpace={(e) => handleEnterSpace(e, 'paragraphSatu')}
-            styleInputImg={{
-              display: 'none'
-            }}
-            styleParagraph={{
-              backgroundColor: !inputBlog.paragraphSatu.trim() ? 'transparent' : '#f1f1f1'
-            }}
-          />
-          <InputUpload
-            label='paragraphBeforeHighlight'
-            title='paragraph before highlight'
-            value={inputBlog.paragraphBeforeHighlight}
-            rows={9}
-            cols={8}
-            handleChangeImg={(e) => handleChangeImg(e, 'paragraphBeforeHighlight')}
-            handleChange={handleChangeInput}
-            handleEnterSpace={(e) => handleEnterSpace(e, 'paragraphBeforeHighlight')}
-            styleParagraph={{
-              backgroundColor: !inputBlog.paragraphBeforeHighlight.trim() ? 'transparent' : '#f1f1f1'
-            }}
-          />
-        </ContainerInputUpload>
+            <ContainerInputUpload>
+              <InputUpload
+                label='paragraphSatu'
+                title='paragraph satu'
+                value={inputBlog.paragraphSatu}
+                rows={9}
+                cols={8}
+                handleChange={handleChangeInput}
+                nameInputImg='paragraphSatu'
+                handleEnterSpace={(e) => handleEnterSpace(e, 'paragraphSatu')}
+                styleInputImg={{
+                  display: 'none'
+                }}
+                styleParagraph={{
+                  backgroundColor: !inputBlog.paragraphSatu.trim() ? 'transparent' : '#f1f1f1'
+                }}
+              />
+              <InputUpload
+                label='paragraphBeforeHighlight'
+                title='paragraph before highlight'
+                value={inputBlog.paragraphBeforeHighlight}
+                rows={9}
+                cols={8}
+                handleChangeImg={(e) => handleChangeImg(e, 'paragraphBeforeHighlight')}
+                handleChange={handleChangeInput}
+                handleEnterSpace={(e) => handleEnterSpace(e, 'paragraphBeforeHighlight')}
+                styleParagraph={{
+                  backgroundColor: !inputBlog.paragraphBeforeHighlight.trim() ? 'transparent' : '#f1f1f1'
+                }}
+              />
+            </ContainerInputUpload>
 
-        <ContainerInputUpload>
-          <InputUpload
-            label='paragraphHighlight'
-            title='paragraph highlight (Opsional)'
-            value={inputBlog.paragraphHighlight}
-            rows={9}
-            cols={8}
-            handleChangeImg={(e) => handleChangeImg(e, 'paragraphHighlight')}
-            handleChange={handleChangeInput}
-            handleEnterSpace={(e) => handleEnterSpace(e, 'paragraphHighlight')}
-            styleParagraph={{
-              backgroundColor: !inputBlog.paragraphHighlight.trim() ? 'transparent' : '#f1f1f1'
-            }}
-          />
-          <div className={styleUpload['wrapp-input-img-detail-content']}>
-            <div className={`${styleUpload['container-first-image']} ${styleUpload['container-img-detail']}`}>
-              {newImageDetailContent ? (
-                <Image
-                  src={newImageDetailContent}
-                  className={styleUpload['first-image']}
-                  width={300}
-                  height={300}
+            <ContainerInputUpload>
+              <InputUpload
+                label='paragraphHighlight'
+                title='paragraph highlight (Opsional)'
+                value={inputBlog.paragraphHighlight}
+                rows={9}
+                cols={8}
+                handleChangeImg={(e) => handleChangeImg(e, 'paragraphHighlight')}
+                handleChange={handleChangeInput}
+                handleEnterSpace={(e) => handleEnterSpace(e, 'paragraphHighlight')}
+                styleParagraph={{
+                  backgroundColor: !inputBlog.paragraphHighlight.trim() ? 'transparent' : '#f1f1f1'
+                }}
+              />
+              <div className={styleUpload['wrapp-input-img-detail-content']}>
+                <div className={`${styleUpload['container-first-image']} ${styleUpload['container-img-detail']}`}>
+                  {newImageDetailContent ? (
+                    <Image
+                      src={newImageDetailContent}
+                      className={styleUpload['first-image']}
+                      width={300}
+                      height={300}
+                    />
+                  ) : (
+                    <p>No image</p>
+                  )}
+                </div>
+                <Button
+                  name="Cancel"
+                  classBtn="cancel-img-detail-content"
+                  click={handleCancelImgDetailContent}
+                  style={{
+                    display: newImageDetailContent !== null ? 'flex' : 'none',
+                    marginTop: '0px',
+                    width: '60px',
+                    padding: '7px 0px',
+                    fontSize: '12px'
+                  }}
                 />
-              ) : (
-                <p>No image</p>
-              )}
-            </div>
-            <Button
-              name="Cancel"
-              classBtn="cancel-img-detail-content"
-              click={handleCancelImgDetailContent}
-              style={{
-                display: newImageDetailContent !== null ? 'flex' : 'none',
-                marginTop: '0px',
-                width: '60px',
-                padding: '7px 0px',
-                fontSize: '12px'
-              }}
-            />
 
-            <InputUpload
-              label='imageDetailContent'
-              title='image detail content (Opsional)'
-              handleChangeImg={(e) => handleFixImage(e, 'imageDetailContent')}
-              idInput='inputFileImageDetailContent'
-              styleTextArea={{
-                display: 'none'
-              }}
-              styleWrapp={{
-                width: 'auto',
-                maxWidth: 'auto',
-                borderBottom: 'none'
-              }}
-              styleParagraph={{
-                backgroundColor: 'transparent'
-              }}
-            />
-          </div>
-        </ContainerInputUpload>
+                <InputUpload
+                  label='imageDetailContent'
+                  title='image detail content (Opsional)'
+                  handleChangeImg={(e) => handleFixImage(e, 'imageDetailContent')}
+                  idInput='inputFileImageDetailContent'
+                  styleTextArea={{
+                    display: 'none'
+                  }}
+                  styleWrapp={{
+                    width: 'auto',
+                    maxWidth: 'auto',
+                    borderBottom: 'none'
+                  }}
+                  styleParagraph={{
+                    backgroundColor: 'transparent'
+                  }}
+                />
+              </div>
+            </ContainerInputUpload>
 
-        <ContainerInputUpload>
-          <InputUpload
-            label='paragraphDua'
-            title='paragraph Dua (Opsional)'
-            value={inputBlog.paragraphDua}
-            rows={9}
-            cols={8}
-            handleChangeImg={(e) => handleChangeImg(e, 'paragraphDua')}
-            handleChange={handleChangeInput}
-            handleEnterSpace={(e) => handleEnterSpace(e, 'paragraphDua')}
-            styleParagraph={{
-              backgroundColor: !inputBlog.paragraphDua.trim() ? 'transparent' : '#f1f1f1'
-            }}
-          />
-        </ContainerInputUpload>
+            <ContainerInputUpload>
+              <InputUpload
+                label='paragraphDua'
+                title='paragraph Dua (Opsional)'
+                value={inputBlog.paragraphDua}
+                rows={9}
+                cols={8}
+                handleChangeImg={(e) => handleChangeImg(e, 'paragraphDua')}
+                handleChange={handleChangeInput}
+                handleEnterSpace={(e) => handleEnterSpace(e, 'paragraphDua')}
+                styleParagraph={{
+                  backgroundColor: !inputBlog.paragraphDua.trim() ? 'transparent' : '#f1f1f1'
+                }}
+              />
+            </ContainerInputUpload>
 
-        <ContainerInputUpload>
-          <Button
-            name="Submit"
-            click={handleSubmit}
-            style={{
-              marginTop: '40px',
-              width: '200px',
-              padding: '12px 0px',
-              margin: '60px auto'
-            }}
-          />
-        </ContainerInputUpload>
+            <ContainerInputUpload>
+              <Button
+                name="SUBMIT"
+                click={handleSubmit}
+                style={{
+                  marginTop: '40px',
+                  width: '200px',
+                  margin: '60px auto'
+                }}
+              />
+            </ContainerInputUpload></>
+        )}
       </div>
     </>
   )

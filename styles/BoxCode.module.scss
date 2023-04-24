@@ -1,0 +1,26 @@
+@import 'variables/font';
+@import 'variables/color';
+@import 'variables/responsive';
+
+.box-code{
+    display: flex;
+    height: 60px;
+    width: 60px;
+    border: 1px solid $colorBorder;
+    border-radius: 5px;
+    margin: 0 5px;
+    justify-content: center;
+    align-items: center;
+    cursor: text;
+
+    .input{
+        outline: none;
+        border: none;
+        border-bottom: 1px solid $colorBorder;
+        width: 30px;
+        text-align: center;
+        font-size: 30px;
+        font-weight: 600;
+        font-family: 'Mulish', sans-serif;
+    }
+}

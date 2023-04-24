@@ -1,23 +1,57 @@
+@import 'variables/font';
+@import 'variables/color';
+@import 'variables/responsive';
+
 .btn-card{
     display: flex;
-    width: auto;
-    max-width: 200px;
-    padding: 7px 12px;
-    align-items: center;
+    position: relative;
+    padding: 15px 40px;
+    font-size: 12px;
     font-weight: bold;
-    font-size: 14px;
+    font-family: 'Mulish', sans-serif;
     color: #fff;
-    background-color: #555;
+    text-align: center;
+    align-items: center;
     justify-content: center;
-    margin-left: 10px;
-    margin-right: 10px;
-    cursor: pointer;
-    border-radius: 6px;
-    border: none;
+    background-color: $colorDefault;
+    border: 1px solid $colorDefault;
     outline: none;
     transition: 0.3s ease-in-out;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    overflow: hidden;
     &:hover{
-        background-color: #333;
+        background-color: transparent;
+        color: $colorDefault;
+    }
+
+    i{
+        display: none;
+        margin: 1px 0 0 10px;
+    }
+
+    .loading-btn{
+        display: none;
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        top: 0;
+        background-color: $colorDefault;
+        cursor: not-allowed;
+        justify-content: center;
+        align-items: center;
+
+        .loading-circle{
+            display: flex;
+            height: 27px;
+            width: 27px;
+            border-radius: 500px;
+            border: 2px solid #fff;
+            border-top-color: $colorDefault;
+            transform: rotate(0);
+            animation: load 0.6s ease infinite;
+        }
     }
 }
 
@@ -25,5 +59,11 @@
     background-color: #df2c14;
     &:hover{
         background-color: #c61a09;
+    }
+}
+
+@keyframes load {
+    to{
+        transform: rotate(360deg);
     }
 }
