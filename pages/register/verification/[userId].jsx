@@ -42,20 +42,22 @@ function Verification({
     const router = useRouter()
     const { userId } = router.query
 
-    const findAdmin = ()=>{
-        if (userData) {
-            setLoading(false)
-        }else{
-            alert('Invalid User or token is expired')
-            setTimeout(() => {
-                router.push('/register')
-            }, 0);
+    const findAdmin = () => {
+        if (router.isFallback === false) {
+            if (userData) {
+                setLoading(false)
+            } else {
+                alert('Invalid User or token is expired')
+                setTimeout(() => {
+                    router.push('/register')
+                }, 0)
+            }
         }
     }
 
     useEffect(() => {
         findAdmin()
-    }, [userData])
+    }, [router.isFallback, userData])
 
     const changeCodeValue = (e) => {
         setCodeValue({
@@ -169,14 +171,10 @@ function Verification({
             .catch(err => { return err })
     }, [codeValue])
 
-    if (errorCode !== false) {
-        return <Error statusCode={errorCode} />
-    }
-
     return (
         <>
             <Head>
-                <title>{userData?.name ? `${userData?.name} | Verification` : 'Verification'} | Admin Hospice Medical</title>
+                <title>{userData ? `${userData?.name} | Verification` : 'Verification'} | Admin Hospice Medical</title>
                 <meta name="description" content="verifikasi akun admin hospice medical" />
             </Head>
 
@@ -273,6 +271,12 @@ export async function getStaticProps(ctx) {
     const errorCode = await data?.data ? false : 500
     const findAdmin = data?.data?.length > 0 ? data?.data?.find(admin => admin.id === userId && admin.isVerification === false) : null
     const admin = findAdmin ? findAdmin : null
+
+    if (!data?.data) {
+        return {
+            notFound: true
+        }
+    }
 
     return {
         props: {
