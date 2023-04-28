@@ -1,0 +1,30 @@
+@import 'variables/color';
+@import 'variables/font';
+@import 'variables/responsive';
+
+.wrapp{
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin: 20px 0;
+
+    .date{
+        display: flex;
+        justify-content: flex-end;
+        width: 100%;
+    }
+
+    .appointment{
+        width: 130px;
+        margin-top: 15px;
+    }
+
+    .body{
+        width: 100px;
+        margin: 20px 0 8px 0;
+    }
+
+    .body-two{
+        width: 200px;
+    }
+}

@@ -1,0 +1,116 @@
+@import 'variables/color';
+@import 'variables/font';
+@import 'variables/responsive';
+
+@mixin mobile {
+    @media (min-width: $sizeMobileOnNav) {
+        @content;
+    }
+}
+
+.wrapp {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0;
+    left: 0;
+    // min-height: 100vh;
+    bottom: 0;
+    width: 250px;
+    background-color: #fff;
+    transition: 0.2s ease-in-out;
+    z-index: 99999;
+    transform: translateX(-255px);
+    overflow: hidden;
+
+    @include mobile(){
+        display: none;
+    }
+
+    .logo-web{
+        display: flex;
+        align-items: center;
+        height: 81px;
+        padding: 20px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+
+        .title{
+            font-size: 32px;
+            margin-left: 10px;
+        }
+    }
+
+    .container-scroll {
+        height: fit-content;
+        max-height: 60vh;
+        width: 100%;
+        padding-top: 40px;
+        overflow-y: auto;
+        overflow-x: hidden;
+
+        .scroll {
+            display: flex;
+            flex-direction: column;
+            list-style: none;
+        }
+    }
+
+    .container-scroll::-webkit-scrollbar {
+        width: 7px;
+    }
+
+    .container-scroll::-webkit-scrollbar-track {
+        box-shadow: inset 0 0 5px $backgroundPage;
+        border-radius: 10px;
+    }
+
+    .container-scroll::-webkit-scrollbar-thumb {
+        background: $colorDefault;
+        border-radius: 10px;
+    }
+
+    .container-scroll::-webkit-scrollbar-thumb:hover {
+        background: #187bcd;
+    }
+
+    .copy-right {
+        display: flex;
+        flex-direction: column;
+        width: 97%;
+        padding: 20px;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+
+        .title {
+            display: flex;
+            font-size: 18px;
+            color: $fontColor3;
+        }
+
+        .name-created {
+            font-size: 12px;
+            font-weight: bold;
+            color: $fontColor2;
+            margin-top: 10px;
+        }
+    }
+}
+.overlay{
+    display: none;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: 0;
+    z-index: 99999;
+    background: rgba(0,0,0,0.4);
+
+    @include mobile(){
+        display: none;
+    }
+}
+.overlay-active{
+    display: flex;
+    @include mobile(){
+        display: none;
+    }
+}

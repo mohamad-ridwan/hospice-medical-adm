@@ -81,9 +81,8 @@ function ForgotPassword() {
     checkEmailUser()
       .then(res => {
         if (res === null) {
-          alert('Oops telah terjadi kesalahan!\nMohon coba beberapa saat lagi')
+          alert('Unregistered account!')
           setLoadingSubmit(false)
-          console.log(res)
         } else if (res?.length > 0) {
           const { id, email } = res[0]
           createJwtToken(id)
@@ -199,3 +198,11 @@ function ForgotPassword() {
 }
 
 export default ForgotPassword
+
+ForgotPassword.getLayout = function getLayout(page) {
+  return (
+      <>
+          {page}
+      </>
+  )
+}

@@ -1,9 +1,47 @@
+@import 'variables/color';
+@import 'variables/responsive';
 @import 'variables/font';
 
-.wrapp-home{
-  background-color: #fff;
+@mixin mobileWrappActive {
+  @media (max-width: $sizeMobileOnNav) {
+    @content;
+  }
+}
 
-  .title{
-    color: $fontColor1;
+.wrapp {
+  display: flex;
+  flex-direction: column;
+  padding: 120px 20px 40px 270px;
+  // color: $fontColor1;
+  min-height: 100vh;
+  // width: 100vw;
+  background-color: $backgroundPage2;
+  transition: 0.2s ease-in-out;
+
+  @include mobileWrappActive() {
+    padding: 120px 10px 40px 10px;
+  }
+
+  .container{
+    display: flex;
+    justify-content: center;
+
+    .content{
+      display: flex;
+      flex-direction: column;
+      width: 1300px;
+  
+      .title {
+        color: $fontColor1;
+      }
+    }
+  }
+}
+
+.wrapp-active {
+  padding: 120px 20px 40px 90px;
+
+  @include mobileWrappActive() {
+    padding: 120px 10px 40px 10px;
   }
 }

@@ -1,0 +1,57 @@
+@import 'variables/color';
+@import 'variables/font';
+@import 'variables/responsive';
+
+@mixin mobileNameNav {
+    @media (min-width: 569px) {
+        @content;
+    }
+}
+
+.icons{
+    display: flex;
+    height: 45px;
+    width: 45px;
+    justify-content: center;
+    align-items: center;
+    border-radius: 500px;
+    background-color: #eee;
+    margin: 0 5px;
+    cursor: pointer;
+    position: relative;
+
+    .name-admin{
+        font-size: 14px;
+        font-weight: bold;
+        color: $fontColor3;
+    }
+
+    .number-notif{
+        display: none;
+        position: absolute;
+        height: 16px;
+        width: 16px;
+        top: 0;
+        right: 0;
+        margin-top: -5px;
+        justify-content: center;
+        align-items: center;
+        border-radius: 500px;
+        background-color: red;
+        color: #fff;
+        font-size: 12px;
+    }
+
+    i{
+        font-size: 14px;
+        color: $fontColor3;
+    }
+}
+
+.icon-profile-mobile{
+    display: flex;
+
+    @include mobileNameNav(){
+        display: none;
+    }
+}

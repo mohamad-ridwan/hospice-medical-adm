@@ -140,3 +140,11 @@ function SuccessPasswordReset() {
 }
 
 export default SuccessPasswordReset
+
+SuccessPasswordReset.getLayout = function getLayout(page) {
+  return (
+      <>
+          {page}
+      </>
+  )
+}

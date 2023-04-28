@@ -5,7 +5,7 @@ import Head from 'next/head'
 import { ref, uploadBytes } from 'firebase/storage'
 import { v4 } from 'uuid'
 import Loading from 'components/Loading'
-import styles from 'styles/Home.module.scss'
+import styleHome from 'styles/Home.module.scss'
 import styleUpload from 'styles/UploadArticle.module.scss'
 import Guide from 'components/Guide/Guide'
 import ButtonGuide from 'components/Guide/ButtonGuide'
@@ -21,6 +21,7 @@ import useSwr from 'lib/useFetch/useSwr'
 import API from 'lib/api'
 import { backendUrl } from 'lib/api/backendUrl'
 import { AuthContext } from 'lib/context/auth'
+import { NotFoundRedirectCtx } from 'lib/context/notFoundRedirect'
 
 function UploadArticle({
   errorCode,
@@ -56,6 +57,7 @@ function UploadArticle({
 
   // context
   const { user, loadingAuth} = useContext(AuthContext)
+  const {onNavLeft} = useContext(NotFoundRedirectCtx)
 
   // const { data, error, isLoading } = useSwr(endpoint.getBlog(), 'GET')
 
@@ -646,7 +648,8 @@ function UploadArticle({
         click={() => clickGuide(true)}
       />
 
-      <div className={styleUpload['wrapp-upload-blog']}>
+      <div className={onNavLeft ? `${styleUpload['wrapp-upload-blog']} ${styleUpload['wrapp-active']}` : styleUpload['wrapp-upload-blog']}
+      >
         <ContainerInputUpload style={{
           flexDirection: 'column'
         }}>

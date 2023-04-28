@@ -14,13 +14,25 @@
     }
 }
 
+@mixin mobileWrappActive {
+    @media (max-width: $sizeMobileOnNav) {
+        @content;
+    }
+}
+
 .wrapp-upload-blog {
     display: flex;
     flex-direction: column;
-    padding: 40px 0;
+    padding: 120px 20px 40px 270px;
     color: $fontColor1;
     min-height: 100vh;
-    background-color: $backgroundPage;
+    // width: 100vw;
+    background-color: $backgroundPage2;
+    transition: 0.2s ease-in-out;
+
+    @include mobileWrappActive(){
+        padding: 120px 10px 40px 10px;
+    }
 
     .title {
         display: flex;
@@ -89,5 +101,13 @@
 
     .container-img-detail {
         margin: 10px;
+    }
+}
+
+.wrapp-active{
+    padding: 120px 20px 40px 90px;
+
+    @include mobileWrappActive(){
+        padding: 120px 10px 40px 10px;
     }
 }

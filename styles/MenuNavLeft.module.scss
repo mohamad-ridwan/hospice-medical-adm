@@ -1,0 +1,43 @@
+@import 'variables/color';
+@import 'variables/font';
+@import 'variables/responsive';
+
+.wrapp {
+    display: flex;
+    position: relative;
+    padding: 15px 20px;
+    align-items: center;
+    transition: 0.3s ease-in-out;
+    border-left: 5px solid transparent;
+    color: $fontColor2;
+    cursor: pointer;
+
+    &:hover {
+        border-left: 5px solid $colorDefault;
+        color: $colorDefault;
+    }
+
+    i {
+        font-size: 14px;
+        margin-right: 14px;
+    }
+
+    .icon-drop {
+        position: absolute;
+        margin-top: 5px;
+        font-size: 12px;
+        right: 15px;
+    }
+
+    .name {
+        display: flex;
+        font-size: 14px;
+        font-weight: 500;
+        text-align: start;
+    }
+}
+
+.active {
+    border-left: 5px solid $colorDefault;
+    color: $colorDefault;
+}

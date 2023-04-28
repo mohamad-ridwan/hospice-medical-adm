@@ -1,0 +1,22 @@
+@import 'variables/responsive';
+
+@mixin sizeMobile {
+    @media (max-width: $sizeMobileUploadBlog) {
+        @content;
+    }
+}
+
+.title{
+    text-align: center;
+    flex-wrap: wrap;
+
+    @include sizeMobile(){
+        display: flex;
+        flex-direction: column;
+    }
+}
+
+.desc{
+    margin-top: 40px;
+    text-align: center;
+}

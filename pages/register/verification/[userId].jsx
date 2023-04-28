@@ -286,3 +286,11 @@ export async function getStaticProps(ctx) {
         revalidate: 10
     }
 }
+
+Verification.getLayout = function getLayout(page) {
+    return (
+        <>
+            {page}
+        </>
+    )
+}

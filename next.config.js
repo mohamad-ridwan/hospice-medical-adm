@@ -7,8 +7,8 @@ const nextConfig = {
   // redirects: async ()=>{
   //   return [
   //     {
-  //       source: '/upload-article',
-  //       destination: '/',
+  //       source: '/404',
+  //       destination: '/not-found',
   //       permanent: false
   //     },
   //   ]

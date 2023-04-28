@@ -467,3 +467,11 @@ function Register() {
 }
 
 export default Register
+
+Register.getLayout = function getLayout(page) {
+  return (
+      <>
+          {page}
+      </>
+  )
+}

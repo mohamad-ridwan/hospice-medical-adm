@@ -154,3 +154,11 @@ function SuccessSendEmail() {
 }
 
 export default SuccessSendEmail
+
+SuccessSendEmail.getLayout = function getLayout(page) {
+    return (
+        <>
+            {page}
+        </>
+    )
+}

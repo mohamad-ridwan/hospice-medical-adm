@@ -1,0 +1,83 @@
+@import 'variables/color';
+@import 'variables/font';
+@import 'variables/responsive';
+
+.wrapp{
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    cursor: pointer;
+    background-color: #fff;
+    transition: 0.3s ease-in-out;
+    // border-radius: 5px;
+    &:hover{
+        background-color: #f1f1f1;
+    }
+
+    .container-date{
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        position: relative;
+
+        .date{
+            display: flex;
+            font-size: 13px;
+            color: $fontColor3;
+            font-weight: bold;
+            text-align: start;
+            align-items: center;
+        }
+
+        .appointment{
+            display: flex;
+            flex-direction: column;
+            margin-top: 20px;
+
+            .title{
+                font-size: 13px;
+
+                i{
+                    margin-right: 5px;
+                }
+            }
+        }
+
+        .clock{
+            position: absolute;
+            right: 0;
+
+            i{
+                margin-left: 5px;
+            }
+        }
+
+        i{
+            font-size: 13px;
+        }
+    }
+
+    .jenis-penyakit{
+        display: flex;
+        font-size: 16px;
+        color: $fontColor2;
+        font-weight: bold;
+        text-align: start;
+        margin-bottom: 8px;
+    }
+
+    .email{
+        display: flex;
+        font-size: 14px;
+        color: $fontColor2;
+        text-align: start;
+        margin-bottom: 3px;
+    }
+
+    .message{
+        font-size: 12.5px;
+        color: $fontColor2;
+        text-align: start;
+        margin-top: 5px;
+    }
+}

@@ -270,3 +270,11 @@ function CreateNewPassword() {
 }
 
 export default CreateNewPassword
+
+CreateNewPassword.getLayout = function getLayout(page) {
+    return (
+        <>
+            {page}
+        </>
+    )
+}

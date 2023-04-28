@@ -1,5 +1,5 @@
 import { useContext, useState } from 'react'
-import {useRouter} from 'next/router'
+import { useRouter } from 'next/router'
 import Cookies from 'js-cookie'
 import Link from 'next/link'
 import Head from 'next/head'
@@ -67,7 +67,7 @@ function Login() {
                 setErrMessage({ password: 'Unregistered account!' })
                 setLoadingSubmit(false)
             }
-        } else if(isLoading === false && !data?.data) {
+        } else if (isLoading === false && !data?.data) {
             alert('Telah terjadi kesalahan server\nMohon coba beberapa saat lagi')
             console.log(data)
             setLoadingSubmit(false)
@@ -95,7 +95,7 @@ function Login() {
             if (Object.keys(err).length === 0) {
                 setLoadingSubmit(true)
                 login(data)
-            }else{
+            } else {
                 setErrMessage(err)
             }
         }
@@ -172,3 +172,11 @@ function Login() {
 }
 
 export default Login
+
+Login.getLayout = function getLayout(page) {
+    return (
+        <>
+            {page}
+        </>
+    )
+}
