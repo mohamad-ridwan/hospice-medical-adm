@@ -12,6 +12,7 @@ function WrappMenu({
 }) {
   return (
     <>
+    
       <div className={`${dropMenu['wrapp']} ${dropMenu[classWrapp]}`} style={style}
       onClick={clickWrapp}
       >

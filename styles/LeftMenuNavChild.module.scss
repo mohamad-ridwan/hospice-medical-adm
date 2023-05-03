@@ -1,0 +1,39 @@
+@import 'variables/color';
+@import 'variables/font';
+@import 'variables/responsive';
+
+.wrapp {
+    display: flex;
+    flex-direction: column;
+    list-style: none;
+    width: 100%;
+    margin-top: 10px;
+
+    .menu {
+        display: flex;
+        align-items: center;
+        padding: 8px 10px;
+        border-left: 3px solid transparent;
+        color: $fontColor2;
+        transition: 0.2s ease-in-out;
+
+        &:hover {
+            border-left: 3px solid $colorDefault;
+            color: $colorDefault;
+        }
+
+        i {
+            font-size: 13px;
+        }
+
+        .name {
+            white-space: nowrap;
+            font-size: 13px;
+        }
+    }
+
+    .active {
+        border-left: 3px solid $colorDefault;
+        color: $colorDefault;
+    }
+}

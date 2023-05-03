@@ -2,6 +2,8 @@ import styleInput from 'styles/Input.module.scss'
 
 function Input({
   type,
+  styleTitle,
+  title,
   placeholder,
   nameInput,
   valueInput,
@@ -16,11 +18,18 @@ function Input({
   acceptFile,
   idInputFile,
   valueInputFile,
-  changeFile
+  changeFile,
+  readOnly
 }) {
   return (
     <>
-      <input type={type} className={styleInput['input-card']} placeholder={placeholder} name={nameInput} value={valueInput} onChange={changeInput} style={styleInputText}/>
+      {/* title */}
+      <span className={styleInput['title']} style={styleTitle}>
+        {title}
+      </span>
+
+      {/* input */}
+      <input type={type} readOnly={readOnly} className={styleInput['input-card']} placeholder={placeholder} name={nameInput} value={valueInput} onChange={changeInput} style={styleInputText} />
 
       <button className={`${styleInput['input-card']} ${styleInput['btn-input-file']}`} style={styleBtnInput}
         onClick={clickInputFile}

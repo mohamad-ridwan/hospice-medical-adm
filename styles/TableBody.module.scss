@@ -1,0 +1,10 @@
+@import 'variables/color';
+@import 'variables/responsive';
+@import 'variables/font';
+
+.body {
+    display: flex;
+    flex-direction: column;
+    border-collapse: collapse;
+    width: 1400px;
+}

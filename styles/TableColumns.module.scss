@@ -1,0 +1,76 @@
+@import 'variables/color';
+@import 'variables/font';
+@import 'variables/responsive';
+
+.table-columns{
+    display: flex;
+    width: 100%;
+    position: relative;
+    align-items: center;
+    transition: 0.2s ease-in-out;
+    &:hover{
+        background-color: #d9f9f9;
+    }
+
+    .btn{
+        display: flex;
+        align-items: center;
+        position: absolute;
+        right: 8px;
+
+        .edit{
+            display: flex;
+            height: 28px;
+            width: 35px;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            margin-left: 5px;
+            border: none;
+            outline: none;
+            background-color: $colorDefault;
+            border-radius: 3px;
+            color: #fff;
+            transition: 0.2s ease-in-out;
+            &:hover{
+                background-color: $colorDefaultOld;
+            }
+
+            i{
+                font-size: 13px;
+            }
+        }
+
+        .delete{
+            background-color: #f85084;
+            &:hover{
+                background-color: $pinkOld;
+            }
+
+            .loading-circle{
+                display: none;
+                height: 20px;
+                width: 20px;
+                border-radius: 500px;
+                border: 2px solid #fff;
+                border-top-color: transparent;
+                animation: loadSubmit 0.6s ease infinite;
+            }
+        }
+    }
+}
+
+.table-columns:nth-child(even){
+    background-color: #f0ffff;
+    display: flex;
+    width: 100%;
+    &:hover{
+        background-color: #d9f9f9;
+    }
+}
+
+@keyframes loadSubmit {
+    to{
+        transform: rotate(360deg);
+    }
+}

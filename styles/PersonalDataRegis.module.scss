@@ -1,0 +1,144 @@
+@import 'variables/color';
+@import 'variables/font';
+@import 'variables/responsive';
+
+@mixin mobileWrappActive {
+  @media (max-width: $sizeMobileOnNav) {
+    @content;
+  }
+}
+
+.patient-name{
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 15px;
+  text-align: start;
+
+  .name{
+      display: flex;
+      margin-left: 5px;
+      color: $pink;
+      text-align: start;
+  }
+}
+
+.wrapp {
+  display: flex;
+  flex-direction: column;
+  padding: 120px 20px 40px 270px;
+  // color: $fontColor1;
+  min-height: 100vh;
+  // width: 100vw;
+  background-color: $backgroundPage2;
+  transition: 0.2s ease-in-out;
+
+  @include mobileWrappActive() {
+    padding: 120px 10px 40px 10px;
+  }
+
+  .container {
+    display: flex;
+    justify-content: center;
+
+    .content {
+      display: flex;
+      flex-direction: column;
+      width: 1300px;
+
+      .title {
+        display: flex;
+        flex-wrap: wrap;
+        text-align: start;
+        color: $fontColor1;
+
+        .patient-of{
+          margin-right: 10px;
+          color: $fontColor3;
+        }
+
+        .name{
+          color: $pink;
+        }
+      }
+
+      .white-content{
+        display: flex;
+        flex-direction: column;
+        background-color: #fff;
+        width: 100%;
+        padding: 40px 30px;
+        margin-top: 50px;
+        border-radius: 5px;
+        box-shadow: 0 2px 3px -1px rgba(0,0,0,0.2);
+
+        .btn-action{
+          display: flex;
+          justify-content: flex-end;
+          align-items: center;
+  
+          .edit{
+              display: flex;
+              height: 28px;
+              width: 35px;
+              justify-content: center;
+              align-items: center;
+              cursor: pointer;
+              margin-left: 5px;
+              border: none;
+              outline: none;
+              background-color: $colorDefault;
+              border-radius: 3px;
+              color: #fff;
+              transition: 0.2s ease-in-out;
+              &:hover{
+                  background-color: $colorDefaultOld;
+              }
+  
+              i{
+                  font-size: 13px;
+              }
+          }
+  
+          .delete{
+              background-color: #f85084;
+              &:hover{
+                  background-color: $pinkOld;
+              }
+  
+              .loading-circle{
+                  display: none;
+                  height: 20px;
+                  width: 20px;
+                  border-radius: 500px;
+                  border: 2px solid #fff;
+                  border-top-color: transparent;
+                  animation: loadSubmit 0.6s ease infinite;
+              }
+          }
+      }
+
+        .data{
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: space-between;
+        }
+      }
+    }
+  }
+}
+
+.wrapp-active {
+  padding: 120px 20px 40px 90px;
+
+  @include mobileWrappActive() {
+    padding: 120px 10px 40px 10px;
+  }
+}
+
+@keyframes loadSubmit {
+  to{
+      transform: rotate(360deg);
+  }
+}

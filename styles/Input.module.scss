@@ -2,6 +2,15 @@
 @import 'variables/font';
 @import 'variables/responsive';
 
+.title{
+    display: none;
+    font-size: 13px;
+    font-weight: bold;
+    margin-bottom: 8px;
+    text-align: start;
+    color: $fontColor2;
+}
+
 .input-card{
     display: flex;
     font-size: 13px;

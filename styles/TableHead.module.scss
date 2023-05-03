@@ -1,0 +1,19 @@
+@import 'variables/color';
+@import 'variables/responsive';
+@import 'variables/font';
+
+.head {
+    display: flex;
+    background-color: #fff;
+    width: 100%;
+    border-bottom: 2px solid $colorDefault;
+
+    .head-name {
+        display: flex;
+        text-align: left;
+        padding: 15px 20px;
+        width: calc(100%/7);
+        font-size: 14px;
+        text-align: start;
+    }
+}

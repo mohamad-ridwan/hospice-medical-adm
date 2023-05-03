@@ -21,7 +21,7 @@ function Navbar() {
     const { data: dataService, error: errDataService, isLoading: loadDataService } = useSwr(endpoint.getServicingHours())
     const findBookAnAppointment = dataService?.data ? dataService.data.find(data => data.id === 'book-an-appointment') : []
     const userAppointmentData = findBookAnAppointment ? findBookAnAppointment.userAppointmentData : []
-    const checkConfirm = userAppointmentData?.length > 0 ? userAppointmentData.filter(data => !data.isConfirm?.id) : []
+    const checkConfirm = userAppointmentData?.length > 0 ? userAppointmentData.filter(data => !data.isConfirm?.id && data.isNotif === false) : []
     const queueData = checkConfirm
 
     useEffect(() => {
@@ -34,9 +34,23 @@ function Navbar() {
     const { onNavLeft, handleOnNavLeft, onNotif, setOnNotif } = useContext(NotFoundRedirectCtx)
     const { user } = useContext(AuthContext)
 
+    const monthNames = [
+        'Jan',
+        'Feb',
+        'Mar',
+        'Apr',
+        'May',
+        'Jun',
+        'Jul',
+        'Aug',
+        'Sep',
+        'Oct',
+        'Nov',
+        'Dec'
+    ]
     const month = new Date().getMonth() + 1
-    const newMonth = month.toString().length === 1 ? `0${month}` : month
-    const date = new Date().getDate()
+    const newMonth = month.toString().length === 1 ? `0${month}` : `${month}`
+    const date = new Date().getDate().toString().length === 1 ? `0${new Date().getDate()}` : `${new Date().getDate()}`
     const years = new Date().getFullYear()
 
     useEffect(() => {
@@ -143,72 +157,43 @@ function Navbar() {
                             {user?.id && !loadDataService && dataService ? (
                                 <>
                                     {queueData?.length > 0 ? queueData.map((user, index) => {
-                                        // appointmentDate
-                                        const checkAppointmentDate = user.appointmentDate.split('/')
-                                        const monthOfAppointment = checkAppointmentDate[0] === newMonth
-                                        const nextMonthOfAppointment = checkAppointmentDate[0] > newMonth
-                                        // submissionDate
-                                        const checkDate = user.submissionDate.split('/')
-                                        const removeZero = checkDate[1].substr(0, 1).includes('0') ? checkDate[1].substr(0, 1) : checkDate[1]
-                                        const getMonth = checkDate[0] === newMonth
-                                        const isNowDate = Number(checkDate[1]) === date
-                                        const isNowYears = Number(checkDate[2]) === years
+                                        const removeSlash = user.submissionDate.split('/')
+                                        const findDate = removeSlash[1]
+                                        const findMonth = removeSlash[0]
+                                        const findYear = removeSlash[2]
+                                        const differenceYears = `${findDate} ${findMonth.length === 1 ? monthNames[Number(findMonth.substr(1)) - 1] : monthNames[Number(findMonth) - 1]} ${findYear}`
+                                        const differenceMonth = `${findDate} ${findMonth.length === 1 ? monthNames[Number(findMonth.substr(1)) - 1] : monthNames[Number(findMonth) - 1]}`
+                                        const theSameDate = user.clock
 
-                                        // appointmentDate
-                                        const getTreatmentDate = () => {
-                                            let count = []
-                                            if (monthOfAppointment) {
-                                                for (let i = date; i < Number(checkAppointmentDate[1]); i++) {
-                                                    count.push('next')
-                                                }
-                                            }
-                                            // else if(nextMonthOfAppointment){
+                                        const submissionDate = findYear === `${years}` ? findMonth === newMonth ? findDate === date ? theSameDate : differenceMonth : differenceMonth : differenceYears
 
-                                            // }
-                                            return count
-                                        }
-                                        const patientTreatmentDate = getTreatmentDate()
-                                        const isWeek = patientTreatmentDate.length > 0 && patientTreatmentDate.length < 8 ? `for the next ${patientTreatmentDate.length} day` : patientTreatmentDate.length > 7 && patientTreatmentDate.length < 15 ? `for the next 1 week ${patientTreatmentDate.slice(7).length} day` : patientTreatmentDate.length > 14 && patientTreatmentDate.length < 22 ? `for the next 2 week ${patientTreatmentDate.slice(14).length} day` : patientTreatmentDate.length > 21 && patientTreatmentDate.length < 29 ? `for the next 3 week ${patientTreatmentDate.slice(21).length} day` : monthOfAppointment && Number(checkAppointmentDate[1]) === date ? 'for today' : user.appointmentDate
+                                        const jenisPenyakit = user.jenisPenyakit.replace('-', '')
+                                        const newJenisPenyakit = jenisPenyakit.replace(/ /gi, '-').toLowerCase()
+                                        const emailPatient = user.emailAddress
 
-                                        const colorAppointmentDate = patientTreatmentDate.length > 0 && patientTreatmentDate.length < 8 ? '#187bcd' : patientTreatmentDate.length > 7 && patientTreatmentDate.length < 15 ? '#003d80' : patientTreatmentDate.length > 14 && patientTreatmentDate.length < 22 ? '#fb3b1e' : patientTreatmentDate.length > 21 && patientTreatmentDate.length < 29 ? '#c61a09' : monthOfAppointment && Number(checkAppointmentDate[1]) === date ? '#187bcd' : '#444444'
-
-                                        // submissionDate
-                                        const getDate = () => {
-                                            let count = []
-                                            if (getMonth) {
-                                                for (let i = date; i > Number(removeZero); i--) {
-                                                    count.push('end')
-                                                }
-                                            }
-                                            return count
-                                        }
-
-                                        const lastDay = getDate()
-                                        const timeText = lastDay.length > 0 && lastDay.length < 8 ? `${lastDay.length} day ago` : lastDay.length > 7 ? '' : isNowYears && getMonth && isNowDate ? 'today' : ''
-                                        const forDate = lastDay.length > 0 && lastDay.length < 8 ? user.clock : lastDay.length > 7 ? user.submissionDate : isNowYears && getMonth && isNowDate ? user.clock : user.submissionDate
-                                        const colorTime = lastDay.length > 0 && lastDay.length < 8 ? '#c61a09' : lastDay.length > 7 ? '#c61a09' : isNowYears && getMonth && isNowDate ? '#3face4' : '#c61a09'
+                                        const pathUrlToDataDetail = `/patient/patient-registration/personal-data/not-yet-confirmed/${newJenisPenyakit}/${emailPatient}/${user.id}`
 
                                         return (
-                                            <MenuNotif
-                                                key={index}
-                                                appointmentDate={isWeek}
-                                                timeText={timeText}
-                                                date={forDate}
-                                                pasien={user.patientName?.length > 35 ? `${user.patientName.substr(0, 35)}...` : user.patientName}
-                                                email={user.emailAddress}
-                                                jenisPenyakit={user.jenisPenyakit}
-                                                message={user.message?.length > 110 ? `${user.message.substr(0, 110)}...` : user.message}
-                                                styleTimeText={{
-                                                    margin: '0 5px 0 0',
-                                                    color: colorTime
-                                                }}
-                                                styleAppointmentDate={{
-                                                    color: colorAppointmentDate
-                                                }}
-                                                styleCalendar={{
-                                                    color: colorAppointmentDate
-                                                }}
-                                            />
+                                            <Link key={index} href={pathUrlToDataDetail} onClick={clickNotif}>
+                                                <MenuNotif
+                                                    // appointmentDate={isWeek}
+                                                    // timeText={timeText}
+                                                    date={submissionDate}
+                                                    pasien={user.patientName?.length > 35 ? `${user.patientName.substr(0, 35)}...` : user.patientName}
+                                                    email={user.emailAddress}
+                                                    jenisPenyakit={user.jenisPenyakit}
+                                                    message={user.message?.length > 110 ? `${user.message.substr(0, 110)}...` : user.message}
+                                                    styleTimeText={{
+                                                        display: 'none'
+                                                    }}
+                                                    // styleAppointmentDate={{
+                                                    //     color: '#ff296d'
+                                                    // }}
+                                                    styleCalendar={{
+                                                        display: 'none',
+                                                    }}
+                                                />
+                                            </Link>
                                         )
                                     }) : (
                                         <>
@@ -273,7 +258,7 @@ function Navbar() {
                                         />
                                     </Link>
                                     <Menu
-                                        name="SIGN OUT"
+                                        name="LOG OUT"
                                     />
                                 </WrappMenu>
                             </Icons>

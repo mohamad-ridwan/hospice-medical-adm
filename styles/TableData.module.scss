@@ -1,0 +1,13 @@
+@import 'variables/color';
+@import 'variables/font';
+@import 'variables/responsive';
+
+.table-data{
+    display: flex;
+    width: calc(100%/7);
+    font-size: 14px;
+    padding: 20px 8px;
+    text-align: start;
+    // overflow: hidden;
+    overflow-x: auto;
+}

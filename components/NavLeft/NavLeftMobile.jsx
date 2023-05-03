@@ -21,19 +21,39 @@ function NavLeftMobile() {
             icon: 'fa-solid fa-sitemap'
         },
         {
+            name: 'Patient',
+            path: null,
+            icon: 'fa-solid fa-bed-pulse',
+            children: [
+                {
+                    name: 'Patient Registration',
+                    path: '/patient/patient-registration',
+                    icon: 'fa-solid fa-hospital-user',
+                },
+                {
+                    name: 'Finished Treatment',
+                    path: '/patient/finished-treatment',
+                    icon: 'fa-solid fa-chart-line',
+                }
+            ]
+        },
+        {
             name: 'Blog',
             path: null,
             icon: 'fa-solid fa-newspaper',
             children: [
                 {
                     name: 'Edit Blog',
-                    path: '/edit-article'
+                    path: '/edit-article',
+                    icon: 'fa-solid fa-file-pen'
                 }
             ]
         }
     ])
     const [onListMenu, setOnListMenu] = useState([])
     const [totalLoadListMenu] = useState([1, 2, 3, 4, 5, 6])
+    const [onMenuChild, setOnMenuChild] = useState(null)
+    const [heightMenuChild, setHeightMenuChild] = useState('42px')
 
     const { user, loadingAuth } = useContext(AuthContext)
     const { onNavLeft, handleOnNavLeft, onNotif, setOnNotif } = useContext(NotFoundRedirectCtx)
@@ -56,6 +76,22 @@ function NavLeftMobile() {
     const propsStyleOnNav = {
         transform: onNavLeft ? 'translateX(-255px)' : 'translateX(0)',
         zIndex: onNotif ? '1' : '99999'
+    }
+
+    const handleOnMenuChild = (index)=>{
+        const wrappMenuChild = document.getElementById(`menuNavChildMobile${index}`)
+        if(wrappMenuChild && index === onMenuChild){
+            if(onMenuChild){
+                setOnMenuChild(null)
+                setHeightMenuChild('43px')
+            }else{
+                setOnMenuChild(index)
+                setHeightMenuChild(`${wrappMenuChild.getBoundingClientRect().height + 53}px`)
+            }
+        }else{
+            setOnMenuChild(index)
+            setHeightMenuChild(`${wrappMenuChild.getBoundingClientRect().height + 53}px`)
+        }
     }
 
     return (
@@ -96,8 +132,15 @@ function NavLeftMobile() {
                                 <MenuNavLeft
                                     key={index}
                                     data={item}
+                                    index={index}
+                                    idMenuChild='menuNavChildMobile'
                                     name={item.name}
+                                    iconDropChild={onMenuChild === index ? 'fa-solid fa-angle-up' : 'fa-solid fa-angle-down'}
                                     icon={item.icon}
+                                    styleMenuChild={{
+                                        maxHeight: onMenuChild === index ? heightMenuChild : '43px'
+                                    }}
+                                    handleOnMenuChild={()=>handleOnMenuChild(index)}
                                 />
                             )
                         }) : (
