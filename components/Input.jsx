@@ -19,7 +19,12 @@ function Input({
   idInputFile,
   valueInputFile,
   changeFile,
-  readOnly
+  readOnly,
+  nameTxtArea,
+  placeholderTxtArea,
+  valueTxtArea,
+  changeTxtArea,
+  styleTxtArea
 }) {
   return (
     <>
@@ -37,6 +42,10 @@ function Input({
         {nameBtnInputFile}
         <input name={nameInputFile} accept={acceptFile} type="file" className={styleInput['input-file']} id={idInputFile} value={valueInputFile} onChange={changeFile} />
       </button>
+
+      <textarea name={nameTxtArea} id="" className={styleInput['txt-area']} placeholder={placeholderTxtArea} value={valueTxtArea} onChange={changeTxtArea} style={styleTxtArea}>
+
+      </textarea>
 
       <p className={styleInput['error-message']} style={styleInputErrMsg}>
         {errorMessage}

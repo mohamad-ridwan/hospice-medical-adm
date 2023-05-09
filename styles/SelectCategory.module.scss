@@ -1,6 +1,6 @@
-// @import 'variables/font';
-// @import 'variables/color';
-// @import 'variables/responsive';
+@import 'variables/font';
+@import 'variables/color';
+@import 'variables/responsive';
 
 .container-category {
     display: flex;
@@ -8,6 +8,7 @@
     flex-wrap: wrap;
     width: auto;
     margin: 15px 10px;
+    color: $fontColor3;
 
     .category-blog-id{
         display: flex;

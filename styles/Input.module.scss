@@ -40,6 +40,28 @@
     font-family: 'Mulish', sans-serif;
 }
 
+// txt area
+.txt-area{
+    display: none;
+    max-height: 150px;
+    font-family: 'Mulish', sans-serif;
+    font-size: 13px;
+    resize: vertical;
+    width: 100%;
+    border: 1px solid #eee;
+    padding: 10px 12px;
+    color: $fontColor2;
+    outline: none;
+    margin-bottom: 5px;
+    letter-spacing: 0.5px;
+}
+.txt-area::placeholder{
+    font-size: 13px;
+}
+.txt-area:focus{
+    border: 1px solid $colorDefault;
+}
+
 .error-message{
     display: none;
     font-size: 10px;

@@ -31,6 +31,11 @@ function NavLeftMobile() {
                     icon: 'fa-solid fa-hospital-user',
                 },
                 {
+                    name: 'Confirmation Patient',
+                    path: '/patient/confirmation-patient',
+                    icon: 'fa-solid fa-clipboard-check',
+                },
+                {
                     name: 'Finished Treatment',
                     path: '/patient/finished-treatment',
                     icon: 'fa-solid fa-chart-line',

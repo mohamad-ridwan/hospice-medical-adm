@@ -5,10 +5,11 @@ function CardPatientRegisData({
     icon,
     styleIcon,
     styleDesc,
-    desc
+    desc,
+    styleWrapp
 }) {
     return (
-        <div className={style['patient-data']}>
+        <div className={style['patient-data']} style={styleWrapp}>
             <h1 className={style['title']}>
                 {title}
             </h1>

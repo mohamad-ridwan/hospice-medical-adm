@@ -1,0 +1,89 @@
+@import 'variables/color';
+@import 'variables/responsive';
+@import 'variables/font';
+
+@mixin mobileWrappActive {
+    @media (max-width: $sizeMobileOnNav) {
+        @content;
+    }
+}
+
+.patient-name{
+    display: flex;
+    flex-wrap: wrap;
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 15px;
+    text-align: start;
+
+    .name{
+        display: flex;
+        margin-left: 5px;
+        color: $pink;
+        text-align: start;
+    }
+}
+
+.wrapp{
+    display: flex;
+    flex-direction: column;
+    padding: 120px 20px 40px 270px;
+    // color: $fontColor1;
+    min-height: 100vh;
+    width: 100vw;
+    background-color: $backgroundPage2;
+    transition: 0.2s ease-in-out;
+
+    @include mobileWrappActive() {
+        padding: 120px 10px 40px 10px;
+    }
+
+    .container{
+        display: flex;
+        justify-content: center;
+        width: 100%;
+
+        .content{
+            display: flex;
+            flex-direction: column;
+            width: 1300px;
+            overflow-x: auto;
+
+            .title{
+                color: $fontColor1;
+                font-size: 28px;
+            }
+
+            .no-data{
+                display: flex;
+                padding: 40px 0;
+                width: 100%;
+                justify-content: center;
+                align-items: center;
+                text-align: center;
+            }
+
+            .columns-data{
+                border: none;
+                outline: none;
+                font-family: 'Mulish', sans-serif;
+                background: #fff;
+            }
+
+            .columns-data:nth-child(even){
+                background-color: #f0ffff;
+                &:hover{
+                    background-color: #d9f9f9;
+                }
+            }
+        }
+    }
+}
+
+.wrapp-active {
+    padding: 120px 20px 40px 90px;
+
+    @include mobileWrappActive() {
+        padding: 120px 10px 40px 10px;
+    }
+}

@@ -8,6 +8,12 @@
   }
 }
 
+@mixin mobileFormConfirm {
+  @media (max-width: $sizeMobileUploadBlog) {
+      @content;
+  }
+}
+
 .patient-name{
   display: flex;
   flex-wrap: wrap;
@@ -73,6 +79,23 @@
         border-radius: 5px;
         box-shadow: 0 2px 3px -1px rgba(0,0,0,0.2);
 
+        // confirm info
+        .confirm-info{
+          display: flex;
+          margin-bottom: 20px;
+        }
+
+        .title-info{
+          display: flex;
+          text-align: start;
+          margin: 0px 10px 20px 10px;
+          padding-top: 30px;
+          font-size: 20px;
+          color: $fontColor1;
+          border-top: 1px solid rgba(0,0,0,0.1);
+        }
+
+        // action
         .btn-action{
           display: flex;
           justify-content: flex-end;
@@ -123,6 +146,57 @@
           display: flex;
           flex-wrap: wrap;
           justify-content: space-between;
+        }
+
+        // data confirmations
+        .data-conf-patients{
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: space-between;
+          border-top: 1px solid rgba(0,0,0,0.1);
+          padding-top: 30px;
+          margin: 20px 10px 0 10px;
+
+          .title{
+            display: flex;
+            text-align: start;
+            color: $fontColor1;
+            font-size: 20px;
+            width: 100%;
+          }
+        }
+
+        .title-confirm{
+          display: flex;
+          text-align: start;
+          margin: 30px 10px 0 10px;
+          padding-top: 30px;
+          font-size: 20px;
+          color: $fontColor1;
+          border-top: 1px solid rgba(0,0,0,0.1);
+        }
+
+        // form-confirm
+        .form-confirm{
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: space-between;
+          margin-top: 30px;
+
+          @include mobileFormConfirm(){
+            flex-direction: column;
+          }
+
+          .input{
+            display: flex;
+            flex-direction: column;
+            width: 45%;
+            margin: 0 10px;
+            
+            @include mobileFormConfirm(){
+              width: 100%;
+            }
+          }
         }
       }
     }

@@ -15,7 +15,6 @@ import useSwr from 'lib/useFetch/useSwr'
 import endpoint from 'lib/api/endpoint'
 import { AuthContext } from 'lib/context/auth'
 import ShineLoading from 'components/ShineLoading'
-import Link from 'next/link'
 import API from 'lib/api'
 
 function PatientRegistration() {

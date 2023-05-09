@@ -1,6 +1,8 @@
 import styleSelectCtg from 'styles/SelectCategory.module.scss'
 
 function SelectCategory({
+    styleWrapp,
+    styleTitle,
     titleCtg,
     handleCategory,
     dataBlogCategory,
@@ -8,12 +10,12 @@ function SelectCategory({
 }) {
     return (
         <>
-            <div className={styleSelectCtg['container-category']}>
-                <h3 className={styleSelectCtg['category-blog-id']}>
+            <div className={styleSelectCtg['container-category']} style={styleWrapp}>
+                <h3 className={styleSelectCtg['category-blog-id']} style={styleTitle}>
                     {titleCtg}
                 </h3>
                 <select name="" id={idSelect} onChange={handleCategory} className={styleSelectCtg['select-category']}>
-                    {dataBlogCategory.length > 0 && dataBlogCategory.map((blog, index) => (
+                    {dataBlogCategory?.length > 0 && dataBlogCategory?.map((blog, index) => (
                         <option key={index} value={blog.id}>{blog.title}</option>
                     ))}
                 </select>
