@@ -1,4 +1,7 @@
+import DatePicker from 'react-datepicker'
 import styleInput from 'styles/Input.module.scss'
+import "react-datepicker/dist/react-datepicker.css";
+import 'react-datepicker/dist/react-datepicker-cssmodules.css';
 
 function Input({
   type,
@@ -24,7 +27,14 @@ function Input({
   placeholderTxtArea,
   valueTxtArea,
   changeTxtArea,
-  styleTxtArea
+  styleTxtArea,
+  onCalendar,
+  selected,
+  changeCalendar,
+  customInput,
+  minDate,
+  maxDate,
+  filterDate
 }) {
   return (
     <>
@@ -46,6 +56,17 @@ function Input({
       <textarea name={nameTxtArea} id="" className={styleInput['txt-area']} placeholder={placeholderTxtArea} value={valueTxtArea} onChange={changeTxtArea} style={styleTxtArea}>
 
       </textarea>
+
+      {onCalendar && (
+        <DatePicker
+          selected={selected}
+          minDate={minDate}
+          maxDate={maxDate}
+          filterDate={filterDate}
+          onChange={changeCalendar}
+          customInput={customInput}
+        />
+      )}
 
       <p className={styleInput['error-message']} style={styleInputErrMsg}>
         {errorMessage}

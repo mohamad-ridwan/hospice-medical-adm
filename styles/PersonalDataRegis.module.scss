@@ -149,7 +149,7 @@
         }
 
         // data confirmations
-        .data-conf-patients{
+        .confirm-data-group{
           display: flex;
           flex-wrap: wrap;
           justify-content: space-between;
@@ -163,6 +163,13 @@
             color: $fontColor1;
             font-size: 20px;
             width: 100%;
+          }
+
+          // btn update absent
+          .update-absent{
+            display: flex;
+            flex-wrap: wrap;
+            margin-top: 10px;
           }
         }
 

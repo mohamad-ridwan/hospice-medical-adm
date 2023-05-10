@@ -6,14 +6,17 @@ function CardPatientRegisData({
     styleIcon,
     styleDesc,
     desc,
-    styleWrapp
+    styleWrapp,
+    styleTitle,
+    styleWrappDesc,
+    children
 }) {
     return (
         <div className={style['patient-data']} style={styleWrapp}>
-            <h1 className={style['title']}>
+            <h1 className={style['title']} style={styleTitle}>
                 {title}
             </h1>
-            <div className={style['desc-data']}>
+            <div className={style['desc-data']} style={styleWrappDesc}>
                 <p className={style['desc']} style={styleDesc}>
                     <i className={icon} style={styleIcon}></i>
                     <span className="txt-desc">
@@ -21,6 +24,7 @@ function CardPatientRegisData({
                     </span>
                 </p>
             </div>
+            {children}
         </div>
     )
 }

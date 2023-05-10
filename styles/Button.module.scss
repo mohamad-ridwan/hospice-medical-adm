@@ -62,6 +62,15 @@
     }
 }
 
+.not-present-btn{
+    background-color: $pinkOld;
+    border: 1px solid $pink;
+    &:hover{
+        background-color: transparent;
+        color: $pink;
+    }
+}
+
 @keyframes load {
     to{
         transform: rotate(360deg);

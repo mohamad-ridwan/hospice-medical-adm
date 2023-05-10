@@ -1,6 +1,8 @@
 import { useState, useEffect, useContext } from 'react'
 import { useRouter } from 'next/router'
 import Head from 'next/head'
+import addMonths from 'addmonths'
+import getDay from 'date-fns/getDay'
 import style from 'styles/PersonalDataRegis.module.scss'
 import { AuthContext } from 'lib/context/auth'
 import { NotFoundRedirectCtx } from 'lib/context/notFoundRedirect'
@@ -14,13 +16,14 @@ import Input from 'components/Input'
 import HeadConfirmInfo from 'components/ConfirmInfo/HeadConfirmInfo'
 import SelectCategory from 'components/SelectCategory'
 import { monthNames } from 'lib/namesOfCalendar/monthNames'
+import { dayNamesEng } from 'lib/namesOfCalendar/dayNamesEng'
+import { dayNamesInd } from 'lib/namesOfCalendar/dayNamesInd'
 
 function PersonalDataRegistration() {
     const [onPopupEdit, setOnPopupEdit] = useState(false)
-    const [dataOfPatient, setDataOfPatient] = useState({})
     const [valueInputEdit, setValueInputEdit] = useState({
         jenisPenyakit: '',
-        appointmentDate: '',
+        appointmentDate: null,
         submissionDate: '',
         patientName: '',
         emailAddress: '',
@@ -51,6 +54,34 @@ function PersonalDataRegistration() {
     })
     const [errSubmitConfPatient, setErrSubmitConfPatient] = useState({})
     const [loadingSubmitConfPatient, setLoadingSubmitConfPatient] = useState(false)
+    const [infoLoket, setInfoLoket] = useState({})
+    const [inputConfToLoket, setInputConfToLoket] = useState({
+        message: '',
+    })
+    const [loadingSubmitConfToLoket, setLoadingSubmitConfToLoket] = useState(false)
+    const [errMsgConfToLoket, setErrMsgConfToLoket] = useState({})
+    // state update info confirmation
+    const [onPopupEditConfirm, setOnPopupEditConfirm] = useState(false)
+    const [errMsgInputUpdtConfirmInfo, setErrMsgInputUpdtConfirmInfo] = useState({})
+    const [loadingSubmitUpdtConfirmInfo, setLoadingSubmitUpdtConfirmInfo] = useState(false)
+    const [inputUpdtConfirmInfo, setInputUpdtConfirmInfo] = useState({
+        id: '',
+        message: '',
+        emailAdmin: '',
+        nameAdmin: '',
+        dateConfirm: '',
+        confirmHour: '',
+        treatmentHours: '',
+        doctorInfo: {
+            nameDoctor: '',
+            doctorSpecialist: ''
+        },
+        queueNumber: '',
+        roomInfo: {
+            roomName: ''
+        },
+        presence: ''
+    })
 
     const router = useRouter()
     const { params = [] } = router.query
@@ -79,6 +110,24 @@ function PersonalDataRegistration() {
         patient.isConfirm?.id &&
         patient.isConfirm?.roomInfo?.roomName === chooseRoom?.title
     ) : null
+    // day time service
+    const getDateOfAppointmentDate = new Date(`${patientData?.appointmentDate}`)
+    const getDayOfAppointmentDate = getDateOfAppointmentDate.toString().split(' ')[0]
+    const findDayOfAppointmentDate = dayNamesEng.findIndex(day => day === getDayOfAppointmentDate?.toLowerCase())
+    const dayOfAppointmentDate = dayNamesInd[findDayOfAppointmentDate]
+    const dayTime = [
+        {
+            day: 'Senin-Jumat'
+        },
+        {
+            day: 'Sabtu'
+        },
+        {
+            day: 'Minggu'
+        }
+    ]
+    const servicingHours = dataService?.data ? dataService.data.find(item => item?.id === 'servicing-hours') : null
+    const dataServicingHours = servicingHours ? servicingHours?.data?.find(day => dayOfAppointmentDate === 'sabtu' || dayOfAppointmentDate === 'minggu' ? day?.day?.toLowerCase()?.includes(dayOfAppointmentDate) : day?.day?.toLowerCase()?.includes(dayTime[0].day.toLowerCase())) : null
 
     // doctors
     const { data: dataDoctors, error: errDataDoctors, isLoading: loadDataDoctors } = useSwr(endpoint.getDoctors())
@@ -96,6 +145,33 @@ function PersonalDataRegistration() {
     const findCurrentSpecialist = patientData?.id && getSpecialist?.length > 0 ? getSpecialist.filter(
         item => item.spesialis.includes('/') ? item.spesialis.split('/')[0].includes(patientData.jenisPenyakit.toLowerCase()) ? item.spesialis.split('/')[0].includes(patientData.jenisPenyakit.toLowerCase()) : item.spesialis.split('/')[1].includes(patientData.jenisPenyakit.toLowerCase()) : item.spesialis.includes(patientData.jenisPenyakit.toLowerCase())
     ) : []
+    // filter calendar
+    const newDay = [
+        'Minggu',
+        'Senin',
+        'Selasa',
+        'Rabu',
+        'Kamis',
+        'Jumat',
+        'Sabtu'
+    ]
+    const getJadwalDokter = chooseDoctor?.id ? chooseDoctor.jadwalDokter : null
+    const findDayIdx = getJadwalDokter?.length === 1 ? newDay.findIndex(day => day.toLowerCase() === getJadwalDokter[0]?.toLowerCase()) : null
+    const idxOneIfDayIsTwo = getJadwalDokter?.length === 2 ? newDay.findIndex(day => day.toLowerCase() === getJadwalDokter[0]?.toLowerCase()) : null
+    const idxTwoIfDayIsTwo = getJadwalDokter?.length === 2 ? newDay.findIndex(day => day.toLowerCase() === getJadwalDokter[1]?.toLowerCase()) : null
+    const isWeekday = (date) => {
+        const day = getDay(date)
+        return getJadwalDokter?.length === 1 ? day === findDayIdx : getJadwalDokter?.length === 2 ? day === idxOneIfDayIsTwo && day === idxTwoIfDayIsTwo : day === 7
+    }
+
+    // loket
+    const { data: dataLoket, error: errDataLoket, isLoading: loadDataLoket } = useSwr(endpoint.getLoket())
+    const findInfoLoket = dataLoket?.data ? dataLoket?.data?.find(item => item.loketRules === 'info-loket') : null
+    const getLoket = findInfoLoket ? findInfoLoket?.loketInfo : null
+    const newLoket = getLoket?.length > 0 ? getLoket.map(item => ({ id: item.loketName, title: item.loketName })) : null
+    // patient-queue
+    const getPatientQueue = dataLoket?.data ? dataLoket?.data?.filter(item => item.loketRules === 'patient-queue') : null
+    const findPatientInLoket = getPatientQueue?.length > 0 ? getPatientQueue.find(patient => patient.patientId === params[4]) : null
 
     const mailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/
 
@@ -133,6 +209,40 @@ function PersonalDataRegistration() {
                 emailAddress: emailAddress,
                 dateOfBirth: dateOfBirth,
                 phone: phone
+            })
+        }
+        if (user?.id && !loadService && patientData?.id && patientData?.isConfirm?.id) {
+            const {
+                id,
+                message,
+                emailAdmin,
+                nameAdmin,
+                dateConfirm,
+                confirmHour,
+                treatmentHours,
+                doctorInfo,
+                queueNumber,
+                roomInfo,
+                presence
+            } = patientData?.isConfirm
+
+            setInputUpdtConfirmInfo({
+                id: id,
+                message,
+                emailAdmin,
+                nameAdmin,
+                dateConfirm,
+                confirmHour,
+                treatmentHours,
+                doctorInfo: {
+                    nameDoctor: doctorInfo?.nameDoctor,
+                    doctorSpecialist: doctorInfo?.doctorSpecialist
+                },
+                queueNumber,
+                roomInfo: {
+                    roomName: roomInfo?.roomName
+                },
+                presence
             })
         }
     }, [user, patientData])
@@ -176,10 +286,22 @@ function PersonalDataRegistration() {
                 }))
             }, 0)
         }
-        if(params?.length > 0 && dataService?.data && patientData?.id){
-            setDataOfPatient(patientData)
+        if (params?.length > 0 && dataService?.data && patientData?.isConfirm) {
+            setPresenceState(patientData?.isConfirm?.presence?.toUpperCase())
         }
     }, [params, dataService])
+
+    useEffect(() => {
+        if (params?.length > 0 && dataLoket?.data && newLoket?.length > 0) {
+            const findLoket = newLoket[0]?.id
+            const findPatientInLoket = getPatientQueue.filter(patient => patient.loketName === findLoket)
+            setInfoLoket({
+                id: 'patient-queue',
+                loketName: findLoket,
+                totalQueue: findPatientInLoket?.length
+            })
+        }
+    }, [params, dataLoket])
 
     const propsIconDataInfo = {
         styleIcon: {
@@ -229,7 +351,46 @@ function PersonalDataRegistration() {
                         .then(res => {
                             if (window.confirm(`update patient data from ${patientData?.patientName}?`)) {
                                 setLoadingSubmit(true)
-                                updatePersonalDataPatient()
+                                if (valueInputEdit.appointmentDate !== patientData?.appointmentDate && patientData?.isConfirm?.id) {
+                                    // for queue number of patient
+                                    const currentPatient = userAppointmentData && patientData ? userAppointmentData.filter(patient =>
+                                        patient.jenisPenyakit === patientData?.jenisPenyakit &&
+                                        patient.appointmentDate === valueInputEdit.appointmentDate &&
+                                        patient.isConfirm?.id &&
+                                        patient.isConfirm?.roomInfo?.roomName === patientData?.isConfirm?.roomInfo?.roomName
+                                    ) : null
+
+                                    const { id, message, dateConfirm, confirmHour, treatmentHours, presence } = patientData?.isConfirm
+
+                                    const dataUpdateConfirm = {
+                                        id: id,
+                                        message: message,
+                                        emailAdmin: user?.email,
+                                        nameAdmin: user?.name,
+                                        dateConfirm: dateConfirm,
+                                        confirmHour: confirmHour,
+                                        treatmentHours: treatmentHours,
+                                        doctorInfo: {
+                                            nameDoctor: patientData?.isConfirm?.doctorInfo?.nameDoctor,
+                                            doctorSpecialist: patientData?.isConfirm?.doctorInfo?.doctorSpecialist
+                                        },
+                                        queueNumber: `${currentPatient?.length + 1}`,
+                                        roomInfo: {
+                                            roomName: patientData?.isConfirm?.roomInfo?.roomName
+                                        },
+                                        presence: presence
+                                    }
+
+                                    updateIsConfirm(dataUpdateConfirm, () => {
+                                        updatePersonalDataPatient()
+                                    }, (err) => {
+                                        alert('Oops, telah terjadi kesalahan server\nMohon coba beberapa saat lagi')
+                                        setLoadingSubmit(false)
+                                        console.log(err)
+                                    })
+                                } else {
+                                    updatePersonalDataPatient()
+                                }
                             }
                         })
                         .catch(err => { return err })
@@ -306,6 +467,22 @@ function PersonalDataRegistration() {
         })
     }
 
+    const updateIsConfirm = (data, sc, error) => {
+        if (bookAnAppointment?._id && patientData?.id) {
+            API.APIPutIsConfirm(
+                bookAnAppointment._id,
+                patientData.id,
+                data
+            )
+                .then(res => {
+                    sc(res)
+                })
+                .catch(err => error(err))
+        } else {
+            error('no patient id')
+        }
+    }
+
     const updatePersonalDataPatient = () => {
         if (bookAnAppointment?._id && patientData?.id) {
             API.APIPutPatientRegistration(
@@ -344,6 +521,11 @@ function PersonalDataRegistration() {
                 if (params[1] === 'not-yet-confirmed') {
                     setTimeout(() => {
                         router.push('/patient/patient-registration')
+                    }, 100)
+                }
+                if (params[1] === 'confirmed') {
+                    setTimeout(() => {
+                        router.push('/patient/confirmation-patient')
                     }, 100)
                 }
             })
@@ -432,6 +614,7 @@ function PersonalDataRegistration() {
                 id: `${new Date().getTime()}`,
                 message: inputConfirm.message,
                 emailAdmin: user?.email,
+                nameAdmin: user?.name,
                 dateConfirm,
                 confirmHour,
                 treatmentHours: inputConfirm.treatmentHours,
@@ -475,6 +658,187 @@ function PersonalDataRegistration() {
             })
     }
 
+    const handleChangeConfToLoket = (e) => {
+        setInputConfToLoket({
+            ...inputConfToLoket,
+            [e.target.name]: e.target.value
+        })
+
+        if (Object.keys(errMsgConfToLoket).length > 0) {
+            setErrMsgConfToLoket({
+                ...errMsgConfToLoket,
+                [e.target.name]: ''
+            })
+        }
+    }
+
+    const handleSubmitConfToLoket = () => {
+        if (loadingSubmitConfToLoket === false) {
+            validateFormConfToLoket()
+                .then(res => {
+                    if (window.confirm('Confirm at the counter?')) {
+                        setLoadingSubmitConfToLoket(true)
+                        pushToPostConfToLoket()
+                    }
+                })
+                .catch(err => console.log(err))
+        }
+    }
+
+    const validateFormConfToLoket = async () => {
+        let err = {}
+
+        if (!inputConfToLoket.message.trim()) {
+            err.message = 'Must be required!'
+        }
+
+        return await new Promise((resolve, reject) => {
+            if (Object.keys(err).length === 0) {
+                resolve({ message: 'success' })
+            } else {
+                setErrMsgConfToLoket(err)
+                reject({ message: 'error' })
+            }
+        })
+    }
+
+    const pushToPostConfToLoket = () => {
+        const { id, jenisPenyakit, patientName, emailAddress, phone } = patientData
+        const data = {
+            id: `${new Date().getTime()}`,
+            loketRules: 'patient-queue',
+            loketName: infoLoket?.loketName,
+            patientId: id,
+            jenisPenyakit: jenisPenyakit,
+            patientName: patientName,
+            patientEmail: emailAddress,
+            phone: phone,
+            queueNumber: infoLoket?.totalQueue + 1,
+            message: inputConfToLoket.message,
+            emailAdmin: user?.email
+        }
+
+        updatePresencePatient((response) => {
+            console.log(response)
+            if (response?.data) {
+                API.APIPostLoket(data)
+                    .then(res => {
+                        alert('successful confirmation to the counter')
+                        console.log(res)
+                        setLoadingSubmitConfToLoket(false)
+                    })
+                    .catch(err => {
+                        alert('Oops, telah terjadi kesalahan server\nMohon coba beberapa saat lagi')
+                        console.log(err)
+                        setLoadingSubmitConfToLoket(false)
+                    })
+            } else {
+                alert('Oops, telah terjadi kesalahan server\nMohon coba beberapa saat lagi')
+                console.log(response)
+                setLoadingSubmitConfToLoket(false)
+            }
+        }, (err) => {
+            alert('Oops, telah terjadi kesalahan server\nMohon coba beberapa saat lagi')
+            console.log(err)
+            setLoadingSubmitConfToLoket(false)
+        }, 'hadir')
+
+    }
+
+    const updatePresencePatient = (sc, error, value) => {
+        const data = {
+            presence: value
+        }
+        API.APIPutPresence(bookAnAppointment?._id, patientData?.id, data)
+            .then(res => {
+                sc(res)
+            })
+            .catch(err => {
+                error(err)
+            })
+    }
+
+    const handleSelectCounter = () => {
+        const selectEl = document.getElementById('selectCounter')
+        const id = selectEl.options[selectEl.selectedIndex].value
+        if (id) {
+            const findPatientInLoket = getPatientQueue.filter(patient => patient.loketName === id)
+            setInfoLoket({
+                id: 'patient-queue',
+                loketName: id,
+                totalQueue: findPatientInLoket?.length
+            })
+        }
+    }
+
+    const changeCalendar = (date) => {
+        const newDate = date?.toString()?.split(' ')
+        const getMonth = monthNames.findIndex(month => month === newDate[1]) + 1
+        const month = getMonth.toString().length === 1 ? `0${getMonth}` : getMonth
+        const getDate = newDate[2]
+        const getYear = newDate[3]
+        const isDate = `${month}/${getDate}/${getYear}`
+        setValueInputEdit({
+            ...valueInputEdit,
+            appointmentDate: isDate
+        })
+    }
+
+    const handlePopupEditConfirmInfo = () => {
+        setOnPopupEditConfirm(!onPopupEditConfirm)
+    }
+
+    const handleChangeUpdtConfirmInfo = (e) => {
+        setInputUpdtConfirmInfo({
+            ...inputUpdtConfirmInfo,
+            [e.target.name]: e.target.value
+        })
+
+        if (Object.keys(errMsgInputUpdtConfirmInfo).length > 0) {
+            setErrMsgInputUpdtConfirmInfo({
+                ...errMsgInputUpdtConfirmInfo,
+                [e.target.name]: ''
+            })
+        }
+    }
+
+    const handleSubmitUpdtConfirmInfo = () => {
+        if (loadingSubmitUpdtConfirmInfo === false) {
+            validateFormUpdtConfInfo()
+                .then(res => {
+                    if(inputUpdtConfirmInfo.treatmentHours !== patientData?.isConfirm?.treatmentHours && window.confirm('update confirmation information?')){
+                        setLoadingSubmitUpdtConfirmInfo(true)
+                        updateIsConfirm(inputUpdtConfirmInfo, ()=>{
+                            alert('confirmation information updated successfully')
+                            setLoadingSubmitUpdtConfirmInfo(false)
+                        }, (err)=>{
+                            alert('Oops, telah terjadi kesalahan server\nMohon coba beberapa saat lagi')
+                            console.log(err)
+                            setLoadingSubmitUpdtConfirmInfo(false)
+                        })
+                    }
+                })
+                .catch(err => console.log(err))
+        }
+    }
+
+    const validateFormUpdtConfInfo = async () => {
+        let err = {}
+
+        if (!inputUpdtConfirmInfo.treatmentHours.trim()) {
+            err.treatmentHours = 'Must be required!'
+        }
+
+        return await new Promise((resolve, reject) => {
+            if (Object.keys(err).length === 0) {
+                resolve({ message: 'success' })
+            } else {
+                reject({ message: 'error' })
+                setErrMsgInputUpdtConfirmInfo(err)
+            }
+        })
+    }
+
     if (params.length > 0 && params.length !== 5) {
         router.push('/page-not-found')
     } else if (params.length === 5) {
@@ -485,7 +849,7 @@ function PersonalDataRegistration() {
                     <meta name="description" content="data pendaftaran personal pasien hospice medical" />
                 </Head>
 
-                {/* Pop up edit */}
+                {/* Pop up edit patient information */}
                 <WrappEditPR
                     clickWrapp={handlePopupEdit}
                     clickClose={handlePopupEdit}
@@ -512,13 +876,25 @@ function PersonalDataRegistration() {
                         changeInput={handleChangeEditPR}
                     />
                     <Input
-                        {...propsInputEdit}
+                        // {...propsInputEdit}
+                        styleTitle={{
+                            display: 'flex'
+                        }}
+                        styleInputText={{
+                            display: 'none'
+                        }}
                         {...propsErrMsg}
-                        type='text'
-                        nameInput='appointmentDate'
-                        valueInput={valueInputEdit.appointmentDate}
+                        onCalendar={true}
+                        minDate={new Date(`${servicingHours?.minDate}-${new Date().getDate()}`)}
+                        maxDate={addMonths(new Date(`${servicingHours?.maxDate}`), 0)}
+                        selected={new Date(valueInputEdit.appointmentDate)}
+                        filterDate={isWeekday}
+                        changeCalendar={(date) => changeCalendar(date)}
+                        // type='text'
+                        // nameInput='appointmentDate'
+                        // valueInput={valueInputEdit.appointmentDate}
                         title='Appointment Date'
-                        changeInput={handleChangeEditPR}
+                        // changeInput={handleChangeEditPR}
                         errorMessage={errorMsgSubmit?.appointmentDate}
                     />
                     <Input
@@ -584,13 +960,50 @@ function PersonalDataRegistration() {
                     />
                 </WrappEditPR>
 
+                {/* popup edit confirm admin info */}
+                <WrappEditPR
+                    clickWrapp={handlePopupEditConfirmInfo}
+                    clickClose={handlePopupEditConfirmInfo}
+                    styleWrapp={{
+                        display: onPopupEditConfirm ? 'flex' : 'none'
+                    }}>
+                    <h1 className={style['patient-name']}>
+                        <span className={style['desc-title']}>
+                            Info Confirmation Patient of
+                        </span>
+                        <span className={style['name']}>
+                            {patientData?.patientName}
+                        </span>
+                    </h1>
+                    <Input
+                        {...propsInputEdit}
+                        {...propsErrMsg}
+                        type='text'
+                        nameInput='treatmentHours'
+                        valueInput={inputUpdtConfirmInfo.treatmentHours}
+                        title='Treatment Hours'
+                        changeInput={handleChangeUpdtConfirmInfo}
+                        errorMessage={errMsgInputUpdtConfirmInfo?.treatmentHours}
+                    />
+                    <Button
+                        name='UPDATE'
+                        style={{
+                            margin: '5px 0 0 0'
+                        }}
+                        click={handleSubmitUpdtConfirmInfo}
+                        styleLoading={{
+                            display: loadingSubmitUpdtConfirmInfo ? 'flex' : 'none'
+                        }}
+                    />
+                </WrappEditPR>
+
                 <div className={onNavLeft ? `${style['wrapp']} ${style['wrapp-active']}` : style['wrapp']}>
                     <div className={style['container']}>
                         <div className={style['content']}>
                             <h1 className={style['title']}>
                                 <span className={style['patient-of']}>Patient of</span>
                                 <span className={style['name']}>
-                                    {dataOfPatient?.patientName}
+                                    {patientData?.patientName}
                                 </span>
                             </h1>
 
@@ -700,10 +1113,22 @@ function PersonalDataRegistration() {
                                         {/* data confirmations */}
                                         {patientData?.isConfirm?.id && (
                                             <>
-                                                <div className={style['data-conf-patients']}>
+                                                <div className={`${style['data-conf-patients']} ${style['confirm-data-group']}`}>
                                                     <h1 className={style['title']}>
                                                         Confirmation Data Information
                                                     </h1>
+
+                                                    {/* button action */}
+                                                    <div className={style['btn-action']} style={{
+                                                        width: '100%',
+                                                        margin: '20px 0 10px 0'
+                                                    }}>
+                                                        <button className={style['edit']}
+                                                            onClick={handlePopupEditConfirmInfo}
+                                                        >
+                                                            <i className="fa-solid fa-pencil"></i>
+                                                        </button>
+                                                    </div>
 
                                                     <CardPatientRegisData
                                                         title="Presence State"
@@ -715,7 +1140,28 @@ function PersonalDataRegistration() {
                                                             color: '#f85084',
                                                             fontWeight: 'bold'
                                                         }}
-                                                    />
+                                                    >
+                                                        <div className={style['update-absent']}>
+                                                            <Button
+                                                                name="HADIR"
+                                                                style={{
+                                                                    padding: '8px 20px',
+                                                                    fontSize: '10.5px',
+                                                                    marginRight: '10px',
+                                                                    marginTop: '10px'
+                                                                }}
+                                                            />
+                                                            <Button
+                                                                name="TIDAK HADIR"
+                                                                classBtn="not-present-btn"
+                                                                style={{
+                                                                    padding: '8px 20px',
+                                                                    fontSize: '10.5px',
+                                                                    marginTop: '10px'
+                                                                }}
+                                                            />
+                                                        </div>
+                                                    </CardPatientRegisData>
                                                     <CardPatientRegisData
                                                         {...propsIconDataInfo}
                                                         title="Queue Number"
@@ -767,11 +1213,109 @@ function PersonalDataRegistration() {
                                                         title="Confirmed Date"
                                                         desc={patientData?.isConfirm?.dateConfirm}
                                                     />
+                                                    <h1 className={style['title']} style={{
+                                                        marginTop: '30px'
+                                                    }}>
+                                                        Confirmation Admin Information
+                                                    </h1>
                                                     <CardPatientRegisData
-                                                        title="Admin Confirmation"
+                                                        title="Admin Email"
                                                         desc={patientData?.isConfirm?.emailAdmin}
                                                         styleWrapp={{
                                                             margin: '20px 0'
+                                                        }}
+                                                    />
+                                                    <CardPatientRegisData
+                                                        title="Admin Name"
+                                                        desc={patientData?.isConfirm?.nameAdmin}
+                                                    />
+                                                </div>
+                                            </>
+                                        )}
+
+                                        {/* form confirm to take medicine */}
+                                        {patientData?.isConfirm?.id && !findPatientInLoket?.id && (
+                                            <>
+                                                <div className={`${style['form-conf-take-medic']} ${style['confirm-data-group']}`} style={{
+                                                    margin: '20px 0'
+                                                }}>
+                                                    <h1 className={style['title']} style={{
+                                                        margin: '0 10px'
+                                                    }}>
+                                                        Form Confirm to Take Medicine
+                                                    </h1>
+
+                                                    <CardPatientRegisData
+                                                        styleTitle={{
+                                                            display: 'none',
+                                                        }}
+                                                        styleWrappDesc={{
+                                                            display: 'none'
+                                                        }}
+                                                        styleWrapp={{
+                                                            width: '100%',
+                                                            margin: '20px 10px 0 10px'
+                                                        }}
+                                                    >
+                                                        <Input
+                                                            {...propsInputEdit}
+                                                            {...propsErrMsg}
+                                                            styleInputText={{
+                                                                display: 'none'
+                                                            }}
+                                                            styleTxtArea={{
+                                                                display: 'flex'
+                                                            }}
+                                                            type='text'
+                                                            nameTxtArea='message'
+                                                            placeholderTxtArea={`Doctor's Prescription...`}
+                                                            valueTxtArea={inputConfToLoket.message}
+                                                            title={`Doctor's Prescription`}
+                                                            changeTxtArea={handleChangeConfToLoket}
+                                                            errorMessage={errMsgConfToLoket?.message}
+                                                        />
+                                                    </CardPatientRegisData>
+                                                    {/* select loket */}
+                                                    <CardPatientRegisData
+                                                        styleTitle={{
+                                                            display: 'none',
+                                                        }}
+                                                        styleWrappDesc={{
+                                                            display: 'none'
+                                                        }}
+                                                        styleWrapp={{
+                                                            margin: '0px 10px 20px 10px'
+                                                        }}
+                                                    >
+                                                        <SelectCategory
+                                                            styleWrapp={{
+                                                                margin: '0px 0'
+                                                            }}
+                                                            styleTitle={{
+                                                                fontSize: '13px'
+                                                            }}
+                                                            titleCtg="Select Counter"
+                                                            idSelect="selectCounter"
+                                                            handleCategory={handleSelectCounter}
+                                                            dataBlogCategory={newLoket}
+                                                        />
+                                                    </CardPatientRegisData>
+                                                    <CardPatientRegisData
+                                                        title="Total Queue"
+                                                        desc={infoLoket?.totalQueue}
+                                                        styleWrapp={{
+                                                            margin: '20px 10px 20px 10px'
+                                                        }}
+                                                    />
+                                                    <Button
+                                                        name="CONFIRM AT THE COUNTER"
+                                                        style={{
+                                                            widh: 'auto',
+                                                            margin: '0 auto'
+                                                        }}
+                                                        click={handleSubmitConfToLoket}
+                                                        styleLoading={{
+                                                            display: loadingSubmitConfToLoket ? 'flex' : 'none'
                                                         }}
                                                     />
                                                 </div>
@@ -855,6 +1399,21 @@ function PersonalDataRegistration() {
                                                             title='Room Name'
                                                             readOnly={true}
                                                             errorMessage={errSubmitConfPatient?.roomName}
+                                                        />
+                                                    </div>
+                                                    <div className={style['input']} style={{
+                                                        width: '100%'
+                                                    }}>
+                                                        <Input
+                                                            {...propsInputEdit}
+                                                            {...propsErrMsg}
+                                                            type='text'
+                                                            nameInput='appointedDay'
+                                                            placeholder='Appointed Day...'
+                                                            valueInput={`${dataServicingHours?.day} (${dataServicingHours?.time})`}
+                                                            title='Appointed Day'
+                                                            readOnly={true}
+                                                        // errorMessage={errSubmitConfPatient?.roomName}
                                                         />
                                                     </div>
                                                     <div className={style['input']}>

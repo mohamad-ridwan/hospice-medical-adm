@@ -36,6 +36,11 @@ function NavLeftMobile() {
                     icon: 'fa-solid fa-clipboard-check',
                 },
                 {
+                    name: 'Drug Counter',
+                    path: '/patient/drug-counter',
+                    icon: 'fa-solid fa-tag',
+                },
+                {
                     name: 'Finished Treatment',
                     path: '/patient/finished-treatment',
                     icon: 'fa-solid fa-chart-line',

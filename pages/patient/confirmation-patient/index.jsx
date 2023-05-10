@@ -25,7 +25,7 @@ function ConfirmationPatient() {
       name: 'Appointment Date'
     },
     {
-      name: 'Submission Date'
+      name: 'Confirmation Date'
     },
     {
       name: 'Patient Name'
@@ -84,7 +84,7 @@ function ConfirmationPatient() {
                   name: item.appointmentDate
                 },
                 {
-                  name: item.submissionDate
+                  name: item?.isConfirm?.dateConfirm
                 },
                 {
                   name: item.patientName
