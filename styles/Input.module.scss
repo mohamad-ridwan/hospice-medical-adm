@@ -9,6 +9,12 @@
     margin-bottom: 8px;
     text-align: start;
     color: $fontColor2;
+
+    .star{
+        display: none;
+        color: $pinkOld;
+        margin-left: 3px;
+    }
 }
 
 .input-card{

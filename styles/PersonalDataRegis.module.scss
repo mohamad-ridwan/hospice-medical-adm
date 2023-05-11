@@ -10,11 +10,11 @@
 
 @mixin mobileFormConfirm {
   @media (max-width: $sizeMobileUploadBlog) {
-      @content;
+    @content;
   }
 }
 
-.patient-name{
+.patient-name {
   display: flex;
   flex-wrap: wrap;
   font-size: 18px;
@@ -22,11 +22,11 @@
   margin-bottom: 15px;
   text-align: start;
 
-  .name{
-      display: flex;
-      margin-left: 5px;
-      color: $pink;
-      text-align: start;
+  .name {
+    display: flex;
+    margin-left: 5px;
+    color: $pink;
+    text-align: start;
   }
 }
 
@@ -59,17 +59,17 @@
         text-align: start;
         color: $fontColor1;
 
-        .patient-of{
+        .patient-of {
           margin-right: 10px;
           color: $fontColor3;
         }
 
-        .name{
+        .name {
           color: $pink;
         }
       }
 
-      .white-content{
+      .white-content {
         display: flex;
         flex-direction: column;
         background-color: #fff;
@@ -77,87 +77,99 @@
         padding: 40px 30px;
         margin-top: 50px;
         border-radius: 5px;
-        box-shadow: 0 2px 3px -1px rgba(0,0,0,0.2);
+        box-shadow: 0 2px 3px -1px rgba(0, 0, 0, 0.2);
 
         // confirm info
-        .confirm-info{
+        .confirm-info {
           display: flex;
           margin-bottom: 20px;
         }
 
-        .title-info{
+        .title-info {
           display: flex;
           text-align: start;
           margin: 0px 10px 20px 10px;
           padding-top: 30px;
           font-size: 20px;
           color: $fontColor1;
-          border-top: 1px solid rgba(0,0,0,0.1);
+          border-top: 1px solid rgba(0, 0, 0, 0.1);
         }
 
         // action
-        .btn-action{
+        .btn-action {
           display: flex;
           justify-content: flex-end;
           align-items: center;
-  
-          .edit{
-              display: flex;
-              height: 28px;
-              width: 35px;
-              justify-content: center;
-              align-items: center;
-              cursor: pointer;
-              margin-left: 5px;
-              border: none;
-              outline: none;
-              background-color: $colorDefault;
-              border-radius: 3px;
-              color: #fff;
-              transition: 0.2s ease-in-out;
-              &:hover{
-                  background-color: $colorDefaultOld;
-              }
-  
-              i{
-                  font-size: 13px;
-              }
-          }
-  
-          .delete{
-              background-color: #f85084;
-              &:hover{
-                  background-color: $pinkOld;
-              }
-  
-              .loading-circle{
-                  display: none;
-                  height: 20px;
-                  width: 20px;
-                  border-radius: 500px;
-                  border: 2px solid #fff;
-                  border-top-color: transparent;
-                  animation: loadSubmit 0.6s ease infinite;
-              }
-          }
-      }
 
-        .data{
+          .edit {
+            display: flex;
+            height: 28px;
+            width: 35px;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            margin-left: 5px;
+            border: none;
+            outline: none;
+            background-color: $colorDefault;
+            border-radius: 3px;
+            color: #fff;
+            transition: 0.2s ease-in-out;
+
+            &:hover {
+              background-color: $colorDefaultOld;
+            }
+
+            i {
+              font-size: 13px;
+            }
+
+            .loading-circle {
+              display: none;
+              height: 20px;
+              width: 20px;
+              border-radius: 500px;
+              border: 2px solid #fff;
+              border-top-color: transparent;
+              animation: loadSubmit 0.6s ease infinite;
+            }
+          }
+
+          .delete {
+            background-color: #f85084;
+
+            &:hover {
+              background-color: $pinkOld;
+            }
+
+            .loading-circle {
+              display: none;
+              height: 20px;
+              width: 20px;
+              border-radius: 500px;
+              border: 2px solid #fff;
+              border-top-color: transparent;
+              animation: loadSubmit 0.6s ease infinite;
+            }
+          }
+        }
+
+        .data {
           display: flex;
           flex-wrap: wrap;
           justify-content: space-between;
         }
 
         // data confirmations
-        .confirm-data-group{
+        .confirm-data-group {
           display: flex;
           flex-wrap: wrap;
           justify-content: space-between;
-          border-top: 1px solid rgba(0,0,0,0.1);
+          border-top: 1px solid rgba(0, 0, 0, 0.1);
           padding-top: 30px;
           margin: 20px 10px 0 10px;
 
-          .title{
+          .title {
             display: flex;
             text-align: start;
             color: $fontColor1;
@@ -166,41 +178,41 @@
           }
 
           // btn update absent
-          .update-absent{
+          .update-absent {
             display: flex;
             flex-wrap: wrap;
             margin-top: 10px;
           }
         }
 
-        .title-confirm{
+        .title-confirm {
           display: flex;
           text-align: start;
           margin: 30px 10px 0 10px;
           padding-top: 30px;
           font-size: 20px;
           color: $fontColor1;
-          border-top: 1px solid rgba(0,0,0,0.1);
+          border-top: 1px solid rgba(0, 0, 0, 0.1);
         }
 
         // form-confirm
-        .form-confirm{
+        .form-confirm {
           display: flex;
           flex-wrap: wrap;
           justify-content: space-between;
           margin-top: 30px;
 
-          @include mobileFormConfirm(){
+          @include mobileFormConfirm() {
             flex-direction: column;
           }
 
-          .input{
+          .input {
             display: flex;
             flex-direction: column;
             width: 45%;
             margin: 0 10px;
-            
-            @include mobileFormConfirm(){
+
+            @include mobileFormConfirm() {
               width: 100%;
             }
           }
@@ -219,7 +231,7 @@
 }
 
 @keyframes loadSubmit {
-  to{
-      transform: rotate(360deg);
+  to {
+    transform: rotate(360deg);
   }
 }

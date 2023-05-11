@@ -5,6 +5,7 @@ function TableColumns({
     clickEdit,
     clickDelete,
     styleWrappBtn,
+    styleEdit,
     classWrapp,
     styleLoadingCircle,
     styleIconDelete
@@ -16,6 +17,7 @@ function TableColumns({
             <div className={style['btn']} style={styleWrappBtn}>
                 <button className={style['edit']}
                 onClick={clickEdit}
+                style={styleEdit}
                 >
                     <i className="fa-solid fa-pencil"></i>
                 </button>

@@ -525,6 +525,9 @@ function PatientRegistration() {
                                             return (
                                                 <button key={index} className={style['columns-data']} onClick={() => toPage(pathUrlToDataDetail)}>
                                                     <TableColumns
+                                                        styleEdit={{
+                                                            display: 'none'
+                                                        }}
                                                         styleLoadingCircle={{
                                                             display: idDataRegisForUpdt === item.id && loadingSubmit ? 'flex' : 'none'
                                                         }}

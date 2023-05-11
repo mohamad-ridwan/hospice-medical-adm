@@ -6,6 +6,7 @@ import 'react-datepicker/dist/react-datepicker-cssmodules.css';
 function Input({
   type,
   styleTitle,
+  styleStar,
   title,
   placeholder,
   nameInput,
@@ -34,13 +35,14 @@ function Input({
   customInput,
   minDate,
   maxDate,
+  renderCustomHeader,
   filterDate
 }) {
   return (
     <>
       {/* title */}
       <span className={styleInput['title']} style={styleTitle}>
-        {title}
+        {title} <div className={styleInput['star']} style={styleStar}>*</div>
       </span>
 
       {/* input */}
@@ -65,6 +67,7 @@ function Input({
           filterDate={filterDate}
           onChange={changeCalendar}
           customInput={customInput}
+          renderCustomHeader={renderCustomHeader}
         />
       )}
 
