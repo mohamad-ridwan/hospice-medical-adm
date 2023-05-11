@@ -258,6 +258,7 @@ function Navbar() {
                                         />
                                     </Link>
                                     <Menu
+                                        click={handleLogOut}
                                         name="LOG OUT"
                                     />
                                 </WrappMenu>
