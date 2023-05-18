@@ -51,6 +51,29 @@
                     color: $pink;
                 }
             }
+
+            .columns-data{
+                border: none;
+                outline: none;
+                font-family: 'Mulish', sans-serif;
+                background: #fff;
+            }
+
+            .columns-data:nth-child(even){
+                background-color: #f0ffff;
+                &:hover{
+                    background-color: #d9f9f9;
+                }
+            }
+
+            .no-data{
+                display: flex;
+                padding: 40px 0;
+                width: 100%;
+                justify-content: center;
+                align-items: center;
+                text-align: center;
+            }
         }
     }
 }

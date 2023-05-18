@@ -374,7 +374,10 @@ function Register() {
       </Head>
 
       <div className={styleLogin['wrapp']}>
-        <div className={styleLogin['container-white']}>
+        <form onSubmit={(e)=>{
+          e.preventDefault()
+          submitForm()
+        }} className={styleLogin['container-white']}>
           <p className={styleLogin['title-login']}>
             Register
           </p>
@@ -460,7 +463,7 @@ function Register() {
               Signin now
             </Link>
           </div>
-        </div>
+        </form>
       </div>
     </>
   )

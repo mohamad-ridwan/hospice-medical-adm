@@ -85,6 +85,29 @@ function PersonalDataRegistration() {
         },
         presence: ''
     })
+    const [paymentMethod] = useState([
+        {
+            id: 'cash',
+            title: 'Cash'
+        },
+        {
+            id: 'BPJS Kesehatan',
+            title: 'BPJS Kesehatan'
+        }
+    ])
+    const [inputConfFinishTreatment, setInputConfFinishTreatment] = useState({
+        id: '',
+        dateConfirm: '',
+        confirmHour: '',
+        emailAdmin: '',
+        nameAdmin: '',
+        confirmState: false,
+        paymentMethod: 'cash',
+        bpjsNumber: '',
+        totalCost: ''
+    })
+    const [errSubmitConfFinishTreatment, setErrSubmitConfFinishTreatment] = useState({})
+    const [loadingConfFinishTreatment, setLoadingConfFinishTreatment] = useState(false)
 
     const router = useRouter()
     const { params = [] } = router.query
@@ -795,17 +818,22 @@ function PersonalDataRegistration() {
             phone: phone,
             queueNumber: infoLoket?.totalQueue + 1,
             message: inputConfToLoket.message,
-            emailAdmin: user?.email
+            emailAdmin: user?.email,
+            isConfirm: {
+                confirmState: false
+            }
         }
 
         updatePresencePatient((response) => {
-            console.log(response)
             if (response?.data) {
                 API.APIPostLoket(data)
                     .then(res => {
                         alert('successful confirmation to the counter')
-                        console.log(res)
                         setLoadingSubmitConfToLoket(false)
+
+                        setTimeout(() => {
+                            router.push(`${router.asPath}/counter/${data.loketName}/not-yet-confirmed/${data.queueNumber}`)
+                        }, 0)
                     })
                     .catch(err => {
                         alert('Oops, telah terjadi kesalahan server\nMohon coba beberapa saat lagi')
@@ -847,6 +875,17 @@ function PersonalDataRegistration() {
                 id: 'patient-queue',
                 loketName: id,
                 totalQueue: findPatientInLoket?.length
+            })
+        }
+    }
+
+    const handleSelectPaymentMethod = () => {
+        const selectEl = document.getElementById('selectPaymentMethod')
+        const id = selectEl.options[selectEl.selectedIndex].value
+        if (id) {
+            setInputConfFinishTreatment({
+                ...inputConfFinishTreatment,
+                paymentMethod: id,
             })
         }
     }
@@ -997,9 +1036,101 @@ function PersonalDataRegistration() {
         }
     }
 
-    if (params.length > 0 && params.length !== 5) {
-        router.push('/page-not-found')
-    } else if (params.length === 5) {
+    const onChangeFormConfFinishTreatment = (e) => {
+        setInputConfFinishTreatment({
+            ...inputConfFinishTreatment,
+            [e.target.name]: e.target.value
+        })
+
+        if (Object.keys(errSubmitConfFinishTreatment).length > 0) {
+            setErrSubmitConfFinishTreatment({
+                ...errSubmitConfFinishTreatment,
+                [e.target.name]: ''
+            })
+        }
+    }
+
+    const submitConfFinishTreatment = () => {
+        if (loadingConfFinishTreatment === false) {
+            validateFinishTreatment()
+                .then(res => {
+                    if (window.confirm('Finished treatment?')) {
+                        setLoadingConfFinishTreatment(true)
+                        pushToConfFinishTreatment()
+                    }
+                })
+                .catch(err => console.log(err))
+        }
+    }
+
+    const validateFinishTreatment = async () => {
+        let err = {}
+
+        if (!inputConfFinishTreatment.paymentMethod.trim()) {
+            err.paymentMethod = 'Must be required!'
+        }
+        if (inputConfFinishTreatment.paymentMethod.toLowerCase().includes('bpjs') && !inputConfFinishTreatment.bpjsNumber.trim()) {
+            err.bpjsNumber = 'Must be required!'
+        }
+        if (!inputConfFinishTreatment.totalCost.trim()) {
+            err.totalCost = 'Must be required!'
+        }
+
+        return await new Promise((resolve, reject) => {
+            if (Object.keys(err).length === 0) {
+                resolve({ message: 'success' })
+            } else {
+                reject({ message: `can't submit form confirm finished treatment` })
+                setErrSubmitConfFinishTreatment(err)
+            }
+        })
+    }
+
+    const pushToConfFinishTreatment = () => {
+        const { paymentMethod, bpjsNumber, totalCost } = inputConfFinishTreatment
+
+        const nowHours = `${new Date().getHours().toString().length === 1 ? `0${new Date().getHours()}` : new Date().getHours()}`
+        const nowMinutes = `${new Date().getMinutes().toString().length === 1 ? `0${new Date().getMinutes()}` : new Date().getMinutes()}`
+        const nowDate = `${new Date()}`
+        const getDate = nowDate.split(' ')[2]
+        const getYear = nowDate.split(' ')[3]
+        const getMonth = nowDate.split(' ')[1]
+        const findMonth = monthNames.findIndex(item => item === getMonth) + 1
+        const nowMonth = findMonth.toString().length === 1 ? `0${findMonth}` : findMonth
+        const dateConfirm = `${nowMonth}/${getDate}/${getYear}`
+        const confirmHour = `${nowHours}:${nowMinutes}`
+
+        const data = {
+            id: `${new Date().getTime()}`,
+            dateConfirm,
+            confirmHour,
+            emailAdmin: user?.email,
+            nameAdmin: user?.name,
+            confirmState: true,
+            paymentInfo: {
+                paymentMethod,
+                bpjsNumber,
+                totalCost
+            }
+        }
+
+        API.APIPutPatientQueueInCounter(findPatientInLoket?._id, data)
+            .then(res => {
+                alert('Successful confirmation')
+                setLoadingConfFinishTreatment(false)
+
+                const [p1, p2, p3, p4, p5, p6, p7, p8, p9] = params
+
+                setTimeout(() => {
+                    router.push(`/patient/patient-registration/${p1}/${p2}/${p3}/${p4}/${p5}/${p6}/${p7}/confirmed/${p9}`)
+                }, 0);
+            })
+            .catch(err => {
+                alert('Oops, telah terjadi kesalahan server!\nMohon coba beberapa saat lagi')
+            })
+    }
+
+    if (params.length === 5 || params.length === 9) {
         return (
             <>
                 <Head>
@@ -1794,11 +1925,305 @@ function PersonalDataRegistration() {
                                     </>
                                 )}
                             </div>
+
+                            {/* info pasien di loket */}
+                            {params.length === 9 && (
+                                <>
+                                    <h1 className={style['title']} style={{
+                                        margin: '50px 0 0 0',
+                                        fontSize: '28px'
+                                    }}>
+                                        <span className={style['patient-of']}>Counter From</span>
+                                        <span className={style['name']}>
+                                            {params[6]}
+                                        </span>
+                                    </h1>
+
+                                    <div className={style['white-content']}>
+                                        {/* confirm info */}
+                                        <div className={style['confirm-info']}>
+                                            {findPatientInLoket?.isConfirm?.confirmState && (
+                                                <>
+                                                    <HeadConfirmInfo
+                                                        icon="fa-solid fa-circle-check"
+                                                        styleTitle={{
+                                                            color: '#288bbc'
+                                                        }}
+                                                        desc="Confirmed"
+                                                    />
+                                                </>
+                                            )}
+                                            {!findPatientInLoket?.isConfirm?.confirmState && (
+                                                <>
+                                                    <HeadConfirmInfo
+                                                        icon="fa-sharp fa-solid fa-circle-exclamation"
+                                                        styleTitle={{
+                                                            color: '#ff296d'
+                                                        }}
+                                                        desc="Not yet confirmed"
+                                                    />
+                                                </>
+                                            )}
+                                        </div>
+
+                                        <h1 className={style['title-info']}>
+                                            Information Counter
+                                        </h1>
+
+                                        {/* data info patient in the counter*/}
+                                        {findPatientInLoket ? (
+                                            <>
+                                                <div className={style['data']}>
+                                                    <CardPatientRegisData
+                                                        title="Queue Number"
+                                                        desc={findPatientInLoket.queueNumber}
+                                                        styleIcon={{
+                                                            display: 'flex'
+                                                        }}
+                                                        icon='fa-solid fa-id-card'
+                                                        styleDesc={{
+                                                            color: '#288bbc',
+                                                        }}
+                                                    />
+                                                    <CardPatientRegisData
+                                                        title="Patient Name"
+                                                        desc={findPatientInLoket.patientName}
+                                                    />
+                                                    <CardPatientRegisData
+                                                        title="Doctor's Prescription"
+                                                        desc={findPatientInLoket.message}
+                                                    />
+                                                    <CardPatientRegisData
+                                                        title="Disease Type"
+                                                        desc={patientData?.jenisPenyakit}
+                                                    />
+                                                    <CardPatientRegisData
+                                                        title="Counter Name"
+                                                        desc={findPatientInLoket.loketName}
+                                                    />
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <></>
+                                        )}
+
+                                        {/* form confirm patient in the counter */}
+                                        {!findPatientInLoket?.isConfirm?.confirmState && (
+                                            <>
+                                                <div className={`${style['form-conf-take-medic']} ${style['confirm-data-group']}`} style={{
+                                                    margin: '20px 0'
+                                                }}>
+                                                    <h1 className={style['title']} style={{
+                                                        margin: '0 10px'
+                                                    }}>
+                                                        Form Confirmation
+                                                    </h1>
+
+                                                    {/* select loket */}
+                                                    <CardPatientRegisData
+                                                        styleTitle={{
+                                                            display: 'none',
+                                                        }}
+                                                        styleWrappDesc={{
+                                                            display: 'none'
+                                                        }}
+                                                        styleWrapp={{
+                                                            width: '100%',
+                                                            margin: '0px 10px 0px 10px'
+                                                        }}
+                                                    >
+                                                        <SelectCategory
+                                                            styleWrapp={{
+                                                                margin: '0px 0'
+                                                            }}
+                                                            styleTitle={{
+                                                                fontSize: '13px'
+                                                            }}
+                                                            titleCtg="Select Payment Method"
+                                                            idSelect="selectPaymentMethod"
+                                                            handleCategory={handleSelectPaymentMethod}
+                                                            dataBlogCategory={paymentMethod}
+                                                        />
+                                                    </CardPatientRegisData>
+
+                                                    <CardPatientRegisData
+                                                        styleTitle={{
+                                                            display: 'none',
+                                                        }}
+                                                        styleWrappDesc={{
+                                                            display: 'none'
+                                                        }}
+                                                        styleWrapp={{
+                                                            margin: '20px 10px 0 10px'
+                                                        }}
+                                                    >
+                                                        <Input
+                                                            {...propsInputEdit}
+                                                            {...propsErrMsg}
+                                                            type='text'
+                                                            nameInput='paymentMethod'
+                                                            placeholder='Payment Method...'
+                                                            valueInput={inputConfFinishTreatment.paymentMethod}
+                                                            title='Payment Method'
+                                                            readOnly={true}
+                                                            // changeInput={handleChangeInputConfirm}
+                                                            errorMessage={errSubmitConfFinishTreatment?.paymentMethod}
+                                                        />
+                                                    </CardPatientRegisData>
+                                                    {inputConfFinishTreatment.paymentMethod.toLowerCase().includes('bpjs') && (
+                                                        <CardPatientRegisData
+                                                            styleTitle={{
+                                                                display: 'none',
+                                                            }}
+                                                            styleWrappDesc={{
+                                                                display: 'none'
+                                                            }}
+                                                            styleWrapp={{
+                                                                margin: '20px 10px 0 10px'
+                                                            }}
+                                                        >
+                                                            <Input
+                                                                {...propsInputEdit}
+                                                                {...propsErrMsg}
+                                                                type='number'
+                                                                nameInput='bpjsNumber'
+                                                                placeholder='BPJS Number...'
+                                                                valueInput={inputConfFinishTreatment.bpjsNumber}
+                                                                title='BPJS Number'
+                                                                changeInput={onChangeFormConfFinishTreatment}
+                                                                errorMessage={errSubmitConfFinishTreatment?.bpjsNumber}
+                                                            />
+                                                        </CardPatientRegisData>
+                                                    )}
+                                                    <CardPatientRegisData
+                                                        styleTitle={{
+                                                            display: 'none',
+                                                        }}
+                                                        styleWrappDesc={{
+                                                            display: 'none'
+                                                        }}
+                                                        styleWrapp={{
+                                                            width: inputConfFinishTreatment.paymentMethod.toLowerCase().includes('bpjs') ? '100%' : '45%',
+                                                            margin: '20px 10px 0 10px'
+                                                        }}
+                                                    >
+                                                        <Input
+                                                            {...propsInputEdit}
+                                                            {...propsErrMsg}
+                                                            type='number'
+                                                            nameInput='totalCost'
+                                                            placeholder='Total Cost...'
+                                                            valueInput={inputConfFinishTreatment.totalCost}
+                                                            title='Total Cost'
+                                                            changeInput={onChangeFormConfFinishTreatment}
+                                                            errorMessage={errSubmitConfFinishTreatment?.totalCost}
+                                                        />
+                                                    </CardPatientRegisData>
+                                                    <Button
+                                                        name="FINISHED TREATMENT"
+                                                        style={{
+                                                            widh: 'auto',
+                                                            margin: '0 auto'
+                                                        }}
+                                                        click={submitConfFinishTreatment}
+                                                        styleLoading={{
+                                                            display: loadingConfFinishTreatment ? 'flex' : 'none'
+                                                        }}
+                                                    />
+                                                </div>
+                                            </>
+                                        )}
+
+                                        {findPatientInLoket?.isConfirm?.confirmState && (
+                                            <>
+                                                <h1 className={`${style['title']} ${style['patient-confirm-at-the-counter']}`} style={{
+                                                    margin: '20px 10px 20px 10px',
+                                                    paddingTop: '30px',
+                                                    fontSize: '20px',
+                                                    borderTop: '1px solid rgba(0, 0, 0, 0.1)'
+                                                }}>
+                                                    Confirmation Data Information
+                                                </h1>
+
+                                                <div className={style['data']}>
+                                                    <CardPatientRegisData
+                                                        title="Confirmation hour"
+                                                        desc={findPatientInLoket?.isConfirm?.confirmHour}
+                                                        styleIcon={{
+                                                            display: 'flex'
+                                                        }}
+                                                        icon='fa-solid fa-clock'
+                                                        styleDesc={{
+                                                            color: '#f85084',
+                                                        }}
+                                                    />
+                                                    <CardPatientRegisData
+                                                        title="Confirmed Date"
+                                                        icon="fa-solid fa-calendar-days"
+                                                        desc={findPatientInLoket?.isConfirm?.dateConfirm}
+                                                        styleIcon={{
+                                                            display: 'flex'
+                                                        }}
+                                                        styleDesc={{
+                                                            color: '#288bbc',
+                                                        }}
+                                                    />
+                                                </div>
+
+                                                <h1 className={`${style['title']} ${style['patient-payment-method']}`} style={{
+                                                    margin: '20px 10px 0px 10px',
+                                                    fontSize: '20px',
+                                                }}>
+                                                    Payment Info
+                                                </h1>
+
+                                                <div className={style['data']}>
+                                                    <CardPatientRegisData
+                                                        title="Payment Method"
+                                                        desc={findPatientInLoket?.isConfirm?.paymentInfo?.paymentMethod}
+                                                    />
+                                                    <CardPatientRegisData
+                                                        title="BPJS Number"
+                                                        desc={findPatientInLoket?.isConfirm?.paymentInfo?.bpjsNumber}
+                                                        styleWrapp={{
+                                                            display: findPatientInLoket?.isConfirm?.paymentInfo?.paymentMethod?.toLowerCase()?.includes('bpjs') ? 'flex' : 'none'
+                                                        }}
+                                                    />
+                                                    <CardPatientRegisData
+                                                        title="Total Cost"
+                                                        desc={`Rp${findPatientInLoket?.isConfirm?.paymentInfo?.totalCost}`}
+                                                    />
+                                                </div>
+
+                                                <h1 className={`${style['title']} ${style['confirm-admin-information']}`} style={{
+                                                    margin: '20px 10px 0px 10px',
+                                                    fontSize: '20px',
+                                                }}>
+                                                    Confirmation Admin Information
+                                                </h1>
+
+                                                <div className={style['data']}>
+                                                    <CardPatientRegisData
+                                                        title="Admin Email"
+                                                        desc={findPatientInLoket?.isConfirm?.emailAdmin}
+                                                    />
+                                                    <CardPatientRegisData
+                                                        title="Admin Name"
+                                                        desc={findPatientInLoket?.isConfirm?.nameAdmin}
+                                                    />
+                                                </div>
+                                            </>
+                                        )}
+                                    </div>
+                                </>
+                            )}
                         </div>
                     </div>
                 </div>
             </>
         )
+    } else if (params.length > 0) {
+        router.push('/page-not-found')
     }
 }
 

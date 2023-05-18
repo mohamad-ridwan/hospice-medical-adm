@@ -108,7 +108,10 @@ function Login() {
                 <meta name="description" content="login admin Hospice Medical" />
             </Head>
 
-            <div className={styleLogin['wrapp']}>
+            <form onSubmit={(e)=>{
+                e.preventDefault()
+                submitForm()
+            }} className={styleLogin['wrapp']}>
                 <div className={styleLogin['container-white']}>
                     <p className={styleLogin['title-login']}>
                         Login
@@ -166,7 +169,7 @@ function Login() {
                         </Link>
                     </div>
                 </div>
-            </div>
+            </form>
         </>
     )
 }
