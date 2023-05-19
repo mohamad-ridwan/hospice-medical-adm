@@ -1,6 +1,8 @@
 import style from 'styles/LeftMenuNavChild.module.scss'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
+import { useContext } from 'react'
+import { NotFoundRedirectCtx } from 'lib/context/notFoundRedirect'
 
 function LeftMenuNavChild({
     data,
@@ -9,6 +11,8 @@ function LeftMenuNavChild({
 }) {
     const router = useRouter()
     const { route } = router
+
+    const {handleOnNavLeft} = useContext(NotFoundRedirectCtx)
 
     return (
         <ul className={style['wrapp']} id={`${id}${index}`}

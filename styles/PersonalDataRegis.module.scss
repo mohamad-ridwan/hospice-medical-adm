@@ -93,6 +93,10 @@
           font-size: 20px;
           color: $fontColor1;
           border-top: 1px solid rgba(0, 0, 0, 0.1);
+
+          @include mobileFormConfirm() {
+            margin: 0 0 20px 0;
+          }
         }
 
         // action
@@ -169,6 +173,10 @@
           padding-top: 30px;
           margin: 20px 10px 0 10px;
 
+          @include mobileFormConfirm() {
+            margin: 20px 0 0 0;
+          }
+
           .title {
             display: flex;
             text-align: start;
@@ -193,6 +201,35 @@
           font-size: 20px;
           color: $fontColor1;
           border-top: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .title-confirm-loket {
+          margin: 20px 10px 0px 10px;
+          font-size: 20px;
+
+          @include mobileFormConfirm() {
+            margin: 20px 0 0px 0;
+          }
+        }
+
+        .patient-payment-method {
+          margin: 20px 10px 20px 10px;
+          font-size: 20px;
+
+          @include mobileFormConfirm() {
+            margin: 20px 0 20px 0;
+          }
+        }
+
+        .patient-confirm-at-the-counter {
+          margin: 20px 10px 20px 10px;
+          padding-top: 30px;
+          font-size: 20px;
+          border-top: 1px solid rgba(0, 0, 0, 0.1);
+
+          @include mobileFormConfirm() {
+            margin: 20px 0 20px 0;
+          }
         }
 
         // form-confirm

@@ -2,6 +2,8 @@ import Link from 'next/link'
 import { useRouter } from 'next/router'
 import style from 'styles/MenuNavLeft.module.scss'
 import LeftMenuNavChild from './LeftMenuNavChild'
+import { useContext } from 'react'
+import { NotFoundRedirectCtx } from 'lib/context/notFoundRedirect'
 
 function MenuNavLeft({
     data,
@@ -17,6 +19,8 @@ function MenuNavLeft({
 }) {
     const router = useRouter()
     const { route } = router
+
+    const {handleOnNavLeft} = useContext(NotFoundRedirectCtx)
 
     return (
         <>

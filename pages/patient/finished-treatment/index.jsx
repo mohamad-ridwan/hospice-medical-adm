@@ -204,7 +204,7 @@ function FinishedTreatment() {
                                 />
 
                                 {patientRegistration?.length > 0 ? patientRegistration.map((item, index) => {
-                                    const jenisPenyakit = item.data[2].name.replace('-', '')
+                                    const jenisPenyakit = item.data[2].name?.replace('-', '')
                                     const newJenisPenyakit = jenisPenyakit.replace(/ /gi, '-').toLowerCase()
                                     const emailPatient = item.data[5].name
                                     const pathUrlToDataDetail = `/patient/patient-registration/personal-data/confirmed/${newJenisPenyakit}/${emailPatient}/${item.patientId}/counter/${item.dataPatientInCounter?.loketName}/${item.dataPatientInCounter?.confirmState ? 'confirmed' : 'not-yet-confirmed'}/${item.dataPatientInCounter?.queueNumber}`
@@ -229,8 +229,9 @@ function FinishedTreatment() {
                                                                 cursor: 'pointer'
                                                             }}
                                                             styleName={{
+                                                                fontSize: idx === 0 ? '12px' : '14px',
                                                                 color: idx === 0 ? '#fff' : '#000',
-                                                                padding: idx === 0 ? '7px 12px' : '',
+                                                                padding: idx === 0 ? '6px 10px' : '',
                                                                 borderRadius: idx === 0 ? '3px' : '0',
                                                                 background: idx === 0 ? data?.name?.toLowerCase()?.includes('hadir') ? '#288bbc' : '#ff296d' : 'transparent'
                                                             }}

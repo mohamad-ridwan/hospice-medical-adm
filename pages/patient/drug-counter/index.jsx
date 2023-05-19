@@ -24,14 +24,23 @@ function DrugCounter() {
     const { user, loadingAuth } = useContext(AuthContext)
     const { onNavLeft } = useContext(NotFoundRedirectCtx)
 
-    useEffect(()=>{
-        if(dataLoket?.data && newLoket?.length > 0){
+    // now date
+    const newGetCurrentMonth = new Date().getMonth() + 1
+    const getCurrentMonth = newGetCurrentMonth.toString().length === 1 ? `0${newGetCurrentMonth}` : newGetCurrentMonth
+    const getCurrentDate = new Date().getDate().toString().length === 1 ? `0${new Date().getDate()}` : new Date().getDate()
+    const getCurrentYear = new Date().getFullYear()
+    const currentDate = `${getCurrentMonth}/${getCurrentDate}/${getCurrentYear}`
+
+    useEffect(() => {
+        if (dataLoket?.data && newLoket?.length > 0) {
             const findLoket = newLoket[0]?.id
-            const findPatientInLoket = getPatientQueue.filter(patient=>patient.loketName === findLoket && patient?.isConfirm?.confirmState === false)
+            const findPatientInLoket = getPatientQueue.filter(patient => patient.loketName === findLoket && patient?.isConfirm?.confirmState === false)
+            const findTotalPatientToday = getPatientQueue.filter(patient => patient.loketName === findLoket && patient?.isConfirm?.confirmState && patient?.isConfirm?.dateConfirm === currentDate)
             setChooseCounter({
                 id: 'patient-queue',
                 loketName: findLoket,
-                totalQueue: findPatientInLoket?.length
+                totalQueue: findPatientInLoket?.length,
+                totalPatientToday: findTotalPatientToday?.length
             })
         }
     }, [dataLoket])
@@ -39,12 +48,14 @@ function DrugCounter() {
     const handleSelectCounter = () => {
         const selectEl = document.getElementById('selectCounter')
         const id = selectEl.options[selectEl.selectedIndex].value
-        if(id){
-            const findPatientInLoket = getPatientQueue.filter(patient=>patient.loketName === id && patient?.isConfirm?.confirmState === false)
+        if (id) {
+            const findPatientInLoket = getPatientQueue.filter(patient => patient.loketName === id && patient?.isConfirm?.confirmState === false)
+            const findTotalPatientToday = getPatientQueue.filter(patient => patient.loketName === id && patient?.isConfirm?.confirmState && patient?.isConfirm?.dateConfirm === currentDate)
             setChooseCounter({
                 id: 'patient-queue',
                 loketName: id,
-                totalQueue: findPatientInLoket?.length
+                totalQueue: findPatientInLoket?.length,
+                totalPatientToday: findTotalPatientToday?.length
             })
         }
     }
@@ -83,6 +94,14 @@ function DrugCounter() {
                                 </p>
                                 <span className={style['number']}>
                                     {chooseCounter?.totalQueue}
+                                </span>
+                            </div>
+                            <div className={`${style['total-patient-waiting']} total-patient-at-the-counter-today`}>
+                                <p className={style['desc']}>
+                                    Finished Taking Medicine Today :
+                                </p>
+                                <span className={style['number']}>
+                                    {chooseCounter?.totalPatientToday}
                                 </span>
                             </div>
                             <Link href={`/patient/drug-counter/${chooseCounter?.loketName}`} style={{

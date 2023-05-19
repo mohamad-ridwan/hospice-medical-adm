@@ -222,6 +222,13 @@ function PersonalDataRegistration() {
         "December",
     ]
 
+    // now date
+    const newGetCurrentMonth = new Date().getMonth() + 1
+    const getCurrentMonth = newGetCurrentMonth.toString().length === 1 ? `0${newGetCurrentMonth}` : newGetCurrentMonth
+    const getCurrentDate = new Date().getDate().toString().length === 1 ? `0${new Date().getDate()}` : new Date().getDate()
+    const getCurrentYear = new Date().getFullYear()
+    const currentDate = `${getCurrentMonth}/${getCurrentDate}/${getCurrentYear}`
+
     const mailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/
 
     // context
@@ -343,11 +350,12 @@ function PersonalDataRegistration() {
     useEffect(() => {
         if (params?.length > 0 && dataLoket?.data && newLoket?.length > 0) {
             const findLoket = newLoket[0]?.id
-            const findPatientInLoket = getPatientQueue.filter(patient => patient.loketName === findLoket)
+            const findPatientInLoket = getPatientQueue.filter(patient => patient.loketName === findLoket && patient?.isConfirm?.confirmState === false)
+            const findPatientToday = getPatientQueue.filter(patient => patient.loketName === findLoket && patient?.isConfirm?.confirmState && patient?.isConfirm?.dateConfirm === currentDate)
             setInfoLoket({
                 id: 'patient-queue',
                 loketName: findLoket,
-                totalQueue: findPatientInLoket?.length
+                totalQueue: findPatientInLoket?.length + findPatientToday?.length
             })
         }
     }, [params, dataLoket])
@@ -870,11 +878,12 @@ function PersonalDataRegistration() {
         const selectEl = document.getElementById('selectCounter')
         const id = selectEl.options[selectEl.selectedIndex].value
         if (id) {
-            const findPatientInLoket = getPatientQueue.filter(patient => patient.loketName === id)
+            const findPatientInLoket = getPatientQueue.filter(patient => patient.loketName === id && patient?.isConfirm?.confirmState === false)
+            const findPatientToday = getPatientQueue.filter(patient => patient.loketName === id && patient?.isConfirm?.confirmState && patient?.isConfirm?.dateConfirm === currentDate)
             setInfoLoket({
                 id: 'patient-queue',
                 loketName: id,
-                totalQueue: findPatientInLoket?.length
+                totalQueue: findPatientInLoket?.length + findPatientToday?.length
             })
         }
     }
@@ -2167,12 +2176,7 @@ function PersonalDataRegistration() {
 
                                         {findPatientInLoket?.isConfirm?.confirmState && (
                                             <>
-                                                <h1 className={`${style['title']} ${style['patient-confirm-at-the-counter']}`} style={{
-                                                    margin: '20px 10px 20px 10px',
-                                                    paddingTop: '30px',
-                                                    fontSize: '20px',
-                                                    borderTop: '1px solid rgba(0, 0, 0, 0.1)'
-                                                }}>
+                                                <h1 className={`${style['title']} ${style['patient-confirm-at-the-counter']}`} >
                                                     Confirmation Data Information
                                                 </h1>
 
@@ -2201,10 +2205,7 @@ function PersonalDataRegistration() {
                                                     />
                                                 </div>
 
-                                                <h1 className={`${style['title']} ${style['patient-payment-method']}`} style={{
-                                                    margin: '20px 10px 0px 10px',
-                                                    fontSize: '20px',
-                                                }}>
+                                                <h1 className={`${style['title']} ${style['patient-payment-method']} ${style['title-confirm-loket']}`}>
                                                     Payment Info
                                                 </h1>
 
@@ -2226,10 +2227,7 @@ function PersonalDataRegistration() {
                                                     />
                                                 </div>
 
-                                                <h1 className={`${style['title']} ${style['confirm-admin-information']}`} style={{
-                                                    margin: '20px 10px 0px 10px',
-                                                    fontSize: '20px',
-                                                }}>
+                                                <h1 className={`${style['title']} ${style['confirm-admin-information']} ${style['title-confirm-loket']}`}>
                                                     Confirmation Admin Information
                                                 </h1>
 

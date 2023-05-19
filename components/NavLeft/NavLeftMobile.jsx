@@ -66,7 +66,7 @@ function NavLeftMobile() {
     const [heightMenuChild, setHeightMenuChild] = useState('42px')
 
     const { user, loadingAuth } = useContext(AuthContext)
-    const { onNavLeft, handleOnNavLeft, onNotif, setOnNotif } = useContext(NotFoundRedirectCtx)
+    const { onNavLeft, handleOnNavLeft, onNotif} = useContext(NotFoundRedirectCtx)
 
     const handleOnListMenu = () => {
         if (onNavLeft) {
