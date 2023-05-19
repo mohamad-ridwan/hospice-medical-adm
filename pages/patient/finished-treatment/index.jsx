@@ -217,7 +217,6 @@ function FinishedTreatment() {
                                                 }}
                                                 clickDelete={(e) => {
                                                     e.stopPropagation()
-                                                    // clickDeletePersonalDataInCounter(item._id)
                                                 }}
                                             >
                                                 {item.data.map((data, idx) => {
