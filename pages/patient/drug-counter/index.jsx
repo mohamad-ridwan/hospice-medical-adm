@@ -27,7 +27,7 @@ function DrugCounter() {
     useEffect(()=>{
         if(dataLoket?.data && newLoket?.length > 0){
             const findLoket = newLoket[0]?.id
-            const findPatientInLoket = getPatientQueue.filter(patient=>patient.loketName === findLoket)
+            const findPatientInLoket = getPatientQueue.filter(patient=>patient.loketName === findLoket && patient?.isConfirm?.confirmState === false)
             setChooseCounter({
                 id: 'patient-queue',
                 loketName: findLoket,
@@ -40,7 +40,7 @@ function DrugCounter() {
         const selectEl = document.getElementById('selectCounter')
         const id = selectEl.options[selectEl.selectedIndex].value
         if(id){
-            const findPatientInLoket = getPatientQueue.filter(patient=>patient.loketName === id)
+            const findPatientInLoket = getPatientQueue.filter(patient=>patient.loketName === id && patient?.isConfirm?.confirmState === false)
             setChooseCounter({
                 id: 'patient-queue',
                 loketName: id,

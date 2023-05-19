@@ -1114,20 +1114,51 @@ function PersonalDataRegistration() {
             }
         }
 
+        const dataFinishTreatment = {
+            id: `${new Date().getTime()}`,
+            rulesTreatment: 'patient-registration',
+            patientId: findPatientInLoket?.patientId,
+            patientName: findPatientInLoket?.patientName,
+            patientEmail: patientData?.emailAddress,
+            phone: findPatientInLoket?.phone,
+            confirmedTime: {
+                confirmHour: data.confirmHour,
+                dateConfirm: data.dateConfirm
+            },
+            adminInfo: {
+                emailAdmin: data.emailAdmin,
+                nameAdmin: data.nameAdmin
+            }
+        }
+
         API.APIPutPatientQueueInCounter(findPatientInLoket?._id, data)
             .then(res => {
-                alert('Successful confirmation')
-                setLoadingConfFinishTreatment(false)
+                postToPatientFinishTreatment(dataFinishTreatment, () => {
+                    alert('Successful confirmation')
+                    setLoadingConfFinishTreatment(false)
 
-                const [p1, p2, p3, p4, p5, p6, p7, p8, p9] = params
+                    const [p1, p2, p3, p4, p5, p6, p7, p8, p9] = params
 
-                setTimeout(() => {
-                    router.push(`/patient/patient-registration/${p1}/${p2}/${p3}/${p4}/${p5}/${p6}/${p7}/confirmed/${p9}`)
-                }, 0);
+                    setTimeout(() => {
+                        router.push(`/patient/patient-registration/${p1}/${p2}/${p3}/${p4}/${p5}/${p6}/${p7}/confirmed/${p9}`)
+                    }, 0);
+                }, (err) => {
+                    alert('Oops, telah terjadi kesalahan server!\nMohon coba beberapa saat lagi')
+                    console.log(err)
+                    setLoadingConfFinishTreatment(false)
+                })
             })
             .catch(err => {
                 alert('Oops, telah terjadi kesalahan server!\nMohon coba beberapa saat lagi')
+                console.log(err)
+                setLoadingConfFinishTreatment(false)
             })
+    }
+
+    const postToPatientFinishTreatment = (data, success, error) => {
+        API.APIPostPatientFinishTreatment(data)
+            .then(res => success())
+            .catch(err => error(err))
     }
 
     if (params.length === 5 || params.length === 9) {

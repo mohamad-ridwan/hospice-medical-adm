@@ -1,22 +1,21 @@
-import { useState, useEffect, useContext } from 'react'
-import Head from 'next/head'
+import { useState, useContext, useEffect } from 'react'
 import { useRouter } from 'next/router'
-import style from 'styles/DetailCounter.module.scss'
+import Head from 'next/head'
+import style from 'styles/FinishedTreatment.module.scss'
 import { AuthContext } from 'lib/context/auth'
 import { NotFoundRedirectCtx } from 'lib/context/notFoundRedirect'
-import useSwr from 'lib/useFetch/useSwr'
-import endpoint from 'lib/api/endpoint'
 import TableContainer from 'components/Table/TableContainer'
 import TableBody from 'components/Table/TableBody'
 import TableHead from 'components/Table/TableHead'
+import useSwr from 'lib/useFetch/useSwr'
+import endpoint from 'lib/api/endpoint'
 import TableColumns from 'components/Table/TableColumns'
 import TableData from 'components/Table/TableData'
-import API from 'lib/api'
 
-function DetailCounter() {
+function FinishedTreatment() {
     const [head] = useState([
         {
-            name: 'Queue Number'
+            name: 'Presence'
         },
         {
             name: 'Patient Name'
@@ -25,23 +24,27 @@ function DetailCounter() {
             name: 'Disease Type'
         },
         {
-            name: 'Email'
+            name: 'Confirmation Date'
         },
         {
-            name: 'Phone'
+            name: 'Confirmation Hour'
+        },
+        {
+            name: 'Email'
         },
         {
             name: 'Date of Birth'
         },
         {
-            name: 'Patient ID'
+            name: 'Phone'
         },
     ])
-    const [idDataRegisForUpdt, setIdDataRegisForUpdt] = useState(null)
-    const [loadingSubmit, setLoadingSubmit] = useState(false)
+
+    // context
+    const { user, loadingAuth } = useContext(AuthContext)
+    const { onNavLeft } = useContext(NotFoundRedirectCtx)
 
     const router = useRouter()
-    const { counterName = '' } = router.query
 
     // swr fetching
     // servicing hours data
@@ -49,144 +52,143 @@ function DetailCounter() {
     const bookAnAppointment = dataService?.data?.find(item => item.id === 'book-an-appointment')
     const getUserAppointmentData = bookAnAppointment?.userAppointmentData
     const userAppointmentData = getUserAppointmentData?.length > 0 ? getUserAppointmentData : []
+    // console.log(userAppointmentData)
 
-    // loket data
+    // loket
     const { data: loketData, error: errLoketData, isLoading: loadLoketData } = useSwr(endpoint.getLoket())
     const findLoketPatientQueue = loketData?.data ? loketData.data.filter(item => item?.loketRules === 'patient-queue') : null
-    const getCurrentLoket = findLoketPatientQueue?.length > 0 ? findLoketPatientQueue.filter(item => item.loketName === counterName && item?.isConfirm?.confirmState === false) : null
-    const getLoket = getCurrentLoket?.length > 0 ? getCurrentLoket.map((item) => {
-        const getEveryDetailPatient = userAppointmentData.filter(patient => patient.id === item.patientId)
+
+    // finished treatment data
+    const { data: dataFinishTreatment, error: errDataFinishTreatment, isLoading: loadDataFinishTreatment } = useSwr(endpoint.getFinishedTreatment())
+    const getPatientRegis = dataFinishTreatment?.data ? dataFinishTreatment?.data?.filter(item => item.rulesTreatment === 'patient-registration') : null
+    const patientRegistration = getPatientRegis?.length > 0 ? getPatientRegis.map(item => {
+        const findPatientInRegisData = userAppointmentData?.length > 0 ? userAppointmentData.find(patient => patient.id === item.patientId) : {}
+        const getCurrentLoket = findLoketPatientQueue?.length > 0 ? findLoketPatientQueue.find(data => data.patientId === item.patientId && data?.isConfirm?.confirmState) : null
 
         return {
             _id: item._id,
             id: item.id,
             patientId: item.patientId,
-            isNotif: item.isNotif,
-            confirmState: item?.isConfirm?.confirmState,
+            confirmedTime: {
+                confirmHour: item?.confirmedTime?.confirmHour,
+                dateConfirm: item?.confirmedTime?.dateConfirm
+            },
+            created: item.createdAt,
+            dataPatientInCounter: {
+                confirmState: getCurrentLoket?.isConfirm?.confirmState,
+                loketName: getCurrentLoket?.loketName,
+                queueNumber: getCurrentLoket?.queueNumber
+            },
             data: [
                 {
-                    name: item.queueNumber
+                    name: findPatientInRegisData?.isConfirm?.presence?.toUpperCase()
                 },
                 {
                     name: item.patientName
                 },
                 {
-                    name: item.jenisPenyakit
+                    name: findPatientInRegisData?.jenisPenyakit
                 },
                 {
-                    name: getEveryDetailPatient[0]?.emailAddress
+                    name: item?.confirmedTime?.dateConfirm
                 },
                 {
-                    name: getEveryDetailPatient[0]?.phone
+                    name: item?.confirmedTime?.confirmHour
                 },
                 {
-                    name: getEveryDetailPatient[0]?.dateOfBirth
+                    name: item.patientEmail
                 },
                 {
-                    name: item.patientId
+                    name: findPatientInRegisData?.dateOfBirth
+                },
+                {
+                    name: item.phone
                 },
             ]
         }
     }) : []
 
-    // context
-    const { user, loadingAuth } = useContext(AuthContext)
-    const { onNavLeft } = useContext(NotFoundRedirectCtx)
+    const date = new Date(1684466604907)
 
-    useEffect(() => {
-        if (!loadLoketData && errLoketData) {
-            console.log({ message: 'error loket data', error: errLoketData })
-        }
-    }, [])
+    const arr = [{date: 'Mar 12 2012 10:00:00'}, {date: 'Mar 8 2012 08:00:00'}]
+
+    const newPatientRegistration = patientRegistration?.length > 0 ? patientRegistration.sort((item, twoItem) => {
+        const confirmedTime = item.confirmedTime
+        const year = confirmedTime.dateConfirm?.split('/')[2]
+        const month = confirmedTime.dateConfirm?.split('/')[0]
+        const getDate = confirmedTime.dateConfirm?.split('/')[1]
+
+        const confirmedTime2 = twoItem.confirmedTime
+        const yearTwo = confirmedTime2.dateConfirm?.split('/')[2]
+        const monthTwo = confirmedTime2.dateConfirm?.split('/')[0]
+        const getDateTwo = confirmedTime2.dateConfirm?.split('/')[1]
+
+        return new Date(`${item.id}`) - new Date(`${twoItem.id}`)
+    }) : []
+
+    const sortjing = arr.sort((a, b)=> new Date(a.date) - new Date(b.date))
+    // console.log(sortjing)
 
     const changeTableStyle = () => {
         let elementTHead = document.getElementById('tHead0')
         let elementTData = document.getElementById('tData00')
 
-        if (elementTHead) {
+        if (patientRegistration?.length > 0 && elementTHead) {
             elementTHead = document.getElementById(`tHead0`)
             elementTHead.style.width = 'calc(100%/10)'
             elementTHead = document.getElementById(`tHead1`)
             elementTHead.style.width = 'calc(100%/7)'
             elementTHead = document.getElementById(`tHead2`)
-            elementTHead.style.width = 'calc(100%/8)'
+            elementTHead.style.width = 'calc(100%/7)'
             elementTHead = document.getElementById(`tHead3`)
-            elementTHead.style.width = 'calc(100%/6)'
-            elementTHead = document.getElementById(`tHead4`)
             elementTHead.style.width = 'calc(100%/8)'
+            elementTHead = document.getElementById(`tHead4`)
+            elementTHead.style.width = 'calc(100%/7)'
+            elementTHead = document.getElementById(`tHead5`)
+            elementTHead.style.width = 'calc(100%/6)'
         }
-        if (elementTData) {
-            for (let i = 0; i < getLoket?.length; i++) {
+        if (patientRegistration?.length > 0 && elementTData) {
+            for (let i = 0; i < patientRegistration?.length; i++) {
                 elementTData = document.getElementById(`tData${i}0`)
                 elementTData.style.width = 'calc(100%/10)'
                 elementTData = document.getElementById(`tData${i}1`)
                 elementTData.style.width = 'calc(100%/7)'
                 elementTData = document.getElementById(`tData${i}2`)
-                elementTData.style.width = 'calc(100%/8)'
+                elementTData.style.width = 'calc(100%/7)'
                 elementTData = document.getElementById(`tData${i}3`)
-                elementTData.style.width = 'calc(100%/6)'
-                elementTData = document.getElementById(`tData${i}4`)
                 elementTData.style.width = 'calc(100%/8)'
+                elementTData = document.getElementById(`tData${i}4`)
+                elementTData.style.width = 'calc(100%/7)'
+                elementTData = document.getElementById(`tData${i}5`)
+                elementTData.style.width = 'calc(100%/6)'
             }
         }
     }
 
     useEffect(() => {
-        if (getLoket?.length > 0) {
+        if (patientRegistration?.length > 0) {
             setTimeout(() => {
                 changeTableStyle()
-            }, 500);
+            }, 0);
         }
-    }, [getLoket])
+    }, [patientRegistration])
 
-    const toPage = (path) => {
+    const toPage = (path)=>{
         router.push(path)
-    }
-
-    const clickDeletePersonalDataInCounter = (_id) => {
-        if(idDataRegisForUpdt !== null){
-            alert('There is a process running\nPlease wait a moment')
-        }else {
-            if (loadingSubmit === false && window.confirm('Delete this data?')) {
-                setIdDataRegisForUpdt(_id)
-                setLoadingSubmit(true)
-                deletePersonalDataInCounter(_id)
-            }
-        }
-    }
-
-    const deletePersonalDataInCounter = (_id) => {
-        API.APIDeleteLoket(_id)
-            .then(res => {
-                setIdDataRegisForUpdt(null)
-                setLoadingSubmit(false)
-                setTimeout(() => {
-                    alert('Deleted successfully')
-                }, 0)
-            })
-            .catch(err => {
-                alert('Oops, telah terjadi kesalahan server\nMohon coba beberapa saat lagi')
-                setLoadingSubmit(false)
-            })
     }
 
     return (
         <>
             <Head>
-                <title>Counter {counterName} | Admin Hospice Medical</title>
-                <meta name="description" content="daftar dari pendaftaran pasien yang belum dikonfirmasi" />
+                <title>Finished Treatment | Admin Hospice Medical</title>
+                <meta name="description" content="pasien telah menyelesaikan tahap berobat di Hospice Medical" />
             </Head>
 
             <div className={onNavLeft ? `${style['wrapp']} ${style['wrapp-active']}` : style['wrapp']}>
                 <div className={style['container']}>
                     <div className={style['content']}>
                         <h1 className={style['title']}>
-                            <span className={style['desc']}>
-                                Patient Queue List from Counter
-                            </span>
-                            <span className={style['name-loket']}>
-                                {counterName}
-                            </span>
+                            List of Patient Treated
                         </h1>
 
                         <TableContainer styleWrapp={{
@@ -201,27 +203,21 @@ function DetailCounter() {
                                     }}
                                 />
 
-                                {getLoket.length > 0 ? getLoket.map((item, index) => {
+                                {patientRegistration?.length > 0 ? patientRegistration.map((item, index) => {
                                     const jenisPenyakit = item.data[2].name.replace('-', '')
                                     const newJenisPenyakit = jenisPenyakit.replace(/ /gi, '-').toLowerCase()
-                                    const emailPatient = item.data[3].name
-                                    const pathUrlToDataDetail = `/patient/patient-registration/personal-data/confirmed/${newJenisPenyakit}/${emailPatient}/${item.patientId}/counter/${counterName}/${item.confirmState ? 'confirmed' : 'not-yet-confirmed'}/${item.data[0]?.name}`
+                                    const emailPatient = item.data[5].name
+                                    const pathUrlToDataDetail = `/patient/patient-registration/personal-data/confirmed/${newJenisPenyakit}/${emailPatient}/${item.patientId}/counter/${item.dataPatientInCounter?.loketName}/${item.dataPatientInCounter?.confirmState ? 'confirmed' : 'not-yet-confirmed'}/${item.dataPatientInCounter?.queueNumber}`
 
                                     return (
-                                        <button key={index} className={style['columns-data']} onClick={() => toPage(pathUrlToDataDetail)}>
+                                        <button key={index} className={style['columns-data']} onClick={()=>toPage(pathUrlToDataDetail)}>
                                             <TableColumns
                                                 styleEdit={{
                                                     display: 'none'
                                                 }}
-                                                styleLoadingCircle={{
-                                                    display: idDataRegisForUpdt === item._id && loadingSubmit ? 'flex' : 'none'
-                                                }}
-                                                styleIconDelete={{
-                                                    display: idDataRegisForUpdt === item._id && loadingSubmit ? 'none' : 'flex'
-                                                }}
                                                 clickDelete={(e) => {
                                                     e.stopPropagation()
-                                                    clickDeletePersonalDataInCounter(item._id)
+                                                    // clickDeletePersonalDataInCounter(item._id)
                                                 }}
                                             >
                                                 {item.data.map((data, idx) => {
@@ -229,9 +225,15 @@ function DetailCounter() {
                                                         <TableData
                                                             key={idx}
                                                             id={`tData${index}${idx}`}
-                                                            name={data.name}
+                                                            name={data?.name}
                                                             styleWrapp={{
                                                                 cursor: 'pointer'
+                                                            }}
+                                                            styleName={{
+                                                                color: idx === 0 ? '#fff' : '#000',
+                                                                padding: idx === 0 ? '7px 12px' : '',
+                                                                borderRadius: idx === 0 ? '3px' : '0',
+                                                                background: idx === 0 ? data?.name?.toLowerCase()?.includes('hadir') ? '#288bbc' : '#ff296d' : 'transparent'
                                                             }}
                                                         />
                                                     )
@@ -253,4 +255,4 @@ function DetailCounter() {
     )
 }
 
-export default DetailCounter
+export default FinishedTreatment

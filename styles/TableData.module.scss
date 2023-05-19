@@ -10,4 +10,9 @@
     text-align: start;
     // overflow: hidden;
     overflow-x: auto;
+
+    .name{
+        display: flex;
+        text-align: start;
+    }
 }

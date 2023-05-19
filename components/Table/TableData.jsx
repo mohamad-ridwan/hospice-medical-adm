@@ -5,13 +5,18 @@ function TableData({
     name,
     children,
     styleWrapp,
-    click
+    click,
+    styleName
 }) {
     return (
         <div className={style['table-data']} id={id} style={styleWrapp}
-        onClick={click}
+            onClick={click}
         >
-            {name === undefined ? children : name}
+            {name === undefined ? children : (
+                <p className={style['name']} style={styleName}>
+                    {name}
+                </p>
+            )}
         </div>
     )
 }
