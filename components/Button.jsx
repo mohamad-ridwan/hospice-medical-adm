@@ -7,7 +7,8 @@ function Button({
   classBtn,
   icon,
   styleIcon,
-  styleLoading
+  styleLoading,
+  styleLoadCircle
 }) {
   return <button className={classBtn ? `${styleBtn['btn-card']} ${styleBtn[classBtn]}` : styleBtn['btn-card']} onClick={click} style={style}>
     {name}
@@ -15,7 +16,7 @@ function Button({
     <i className={icon} style={styleIcon}></i>
 
     <div className={styleBtn['loading-btn']} style={styleLoading}>
-      <div className={styleBtn['loading-circle']}></div>
+      <div className={styleBtn['loading-circle']} style={styleLoadCircle}></div>
     </div>
   </button>
 }

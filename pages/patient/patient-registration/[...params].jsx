@@ -795,7 +795,7 @@ function PersonalDataRegistration() {
     }
 
     const handleSubmitConfToLoket = () => {
-        if (loadingSubmitConfToLoket === false) {
+        if (loadingSubmitConfToLoket === false && loadingSubmitUpdtConfirmInfo === false) {
             validateFormConfToLoket()
                 .then(res => {
                     if (window.confirm('Confirm at the counter?')) {
@@ -847,12 +847,27 @@ function PersonalDataRegistration() {
             if (response?.data) {
                 API.APIPostLoket(data)
                     .then(res => {
-                        alert('successful confirmation to the counter')
-                        setLoadingSubmitConfToLoket(false)
+                        if (findCurrentPatientFinishTreatment?.id) {
+                            deleteFinishedTreatment(() => {
+                                alert('successful confirmation to the counter')
+                                setLoadingSubmitConfToLoket(false)
 
-                        setTimeout(() => {
-                            router.push(`${router.asPath}/counter/${data.loketName}/not-yet-confirmed/${data.queueNumber}`)
-                        }, 0)
+                                setTimeout(() => {
+                                    router.push(`${router.asPath}/counter/${data.loketName}/not-yet-confirmed/${data.queueNumber}`)
+                                }, 0)
+                            }, (err) => {
+                                alert('Oops, telah terjadi kesalahan server\nMohon coba beberapa saat lagi')
+                                console.log(err)
+                                setLoadingSubmitConfToLoket(false)
+                            })
+                        } else {
+                            alert('successful confirmation to the counter')
+                            setLoadingSubmitConfToLoket(false)
+
+                            setTimeout(() => {
+                                router.push(`${router.asPath}/counter/${data.loketName}/not-yet-confirmed/${data.queueNumber}`)
+                            }, 0)
+                        }
                     })
                     .catch(err => {
                         alert('Oops, telah terjadi kesalahan server\nMohon coba beberapa saat lagi')
@@ -883,6 +898,12 @@ function PersonalDataRegistration() {
             .catch(err => {
                 error(err)
             })
+    }
+
+    const deleteFinishedTreatment = (success, error) => {
+        API.APIDeleteFinishedTreatment(findCurrentPatientFinishTreatment?._id)
+            .then(res => success(res))
+            .catch(err => error(err))
     }
 
     const handleSelectCounter = () => {
@@ -1022,37 +1043,55 @@ function PersonalDataRegistration() {
     }
 
     const clickPresenceConfInfo = (status) => {
-        if (loadingSubmitUpdtConfirmInfo === false && inputUpdtConfirmInfo.id.length > 0 && window.confirm(`patient ${status}?`)) {
+        if (loadingSubmitUpdtConfirmInfo === false && loadingSubmitConfToLoket === false && inputUpdtConfirmInfo.id.length > 0 && window.confirm(`pasien ${status}?`)) {
             setLoadingSubmitUpdtConfirmInfo(true)
 
-            const { id, message, emailAdmin, nameAdmin, dateConfirm, confirmHour, treatmentHours, doctorInfo, queueNumber, roomInfo } = inputUpdtConfirmInfo
+            updatePresencePatient(() => {
+                if (status === 'tidak hadir') {
+                    const nowHours = `${new Date().getHours().toString().length === 1 ? `0${new Date().getHours()}` : new Date().getHours()}`
+                    const nowMinutes = `${new Date().getMinutes().toString().length === 1 ? `0${new Date().getMinutes()}` : new Date().getMinutes()}`
+                    const nowDate = `${new Date()}`
+                    const getDate = nowDate.split(' ')[2]
+                    const getYear = nowDate.split(' ')[3]
+                    const getMonth = nowDate.split(' ')[1]
+                    const findMonth = monthNames.findIndex(item => item === getMonth) + 1
+                    const nowMonth = findMonth.toString().length === 1 ? `0${findMonth}` : findMonth
+                    const dateConfirm = `${nowMonth}/${getDate}/${getYear}`
+                    const confirmHour = `${nowHours}:${nowMinutes}`
 
-            const data = {
-                id,
-                message,
-                emailAdmin,
-                nameAdmin,
-                dateConfirm,
-                confirmHour,
-                treatmentHours,
-                doctorInfo: {
-                    nameDoctor: doctorInfo.nameDoctor,
-                    doctorSpecialist: doctorInfo.doctorSpecialist
-                },
-                queueNumber,
-                roomInfo: {
-                    roomName: roomInfo.roomName
-                },
-                presence: status
-            }
-            updateIsConfirm(data, () => {
-                alert('confirmation information updated successfully')
-                setLoadingSubmitUpdtConfirmInfo(false)
+                    const dataFinishTreatment = {
+                        id: `${new Date().getTime()}`,
+                        rulesTreatment: 'patient-registration',
+                        patientId: patientData?.id,
+                        patientName: patientData?.patientName,
+                        patientEmail: patientData?.emailAddress,
+                        phone: patientData?.phone,
+                        confirmedTime: {
+                            confirmHour: confirmHour,
+                            dateConfirm: dateConfirm
+                        },
+                        adminInfo: {
+                            emailAdmin: user?.email,
+                            nameAdmin: user?.name
+                        }
+                    }
+                    postToPatientFinishTreatment(dataFinishTreatment, () => {
+                        alert('confirmation information updated successfully')
+                        setLoadingSubmitUpdtConfirmInfo(false)
+                    }, (err) => {
+                        alert('Oops, telah terjadi kesalahan server!\nMohon coba beberapa saat lagi')
+                        console.log(err)
+                        setLoadingSubmitUpdtConfirmInfo(false)
+                    })
+                } else if (status === 'hadir') {
+                    alert('confirmation information updated successfully')
+                    setLoadingSubmitUpdtConfirmInfo(false)
+                }
             }, (err) => {
-                alert('Oops, telah terjadi kesalahan server\nMohon coba beberapa saat lagi')
+                alert('Oops, telah terjadi kesalahan server!\nMohon coba beberapa saat lagi')
                 console.log(err)
                 setLoadingSubmitUpdtConfirmInfo(false)
-            })
+            }, status)
         }
     }
 
@@ -1665,7 +1704,7 @@ function PersonalDataRegistration() {
                                                                     marginTop: '10px'
                                                                 }}
                                                             /> */}
-                                                            <Button
+                                                            {/* <Button
                                                                 name="TIDAK HADIR"
                                                                 classBtn="not-present-btn"
                                                                 click={() => clickPresenceConfInfo('tidak hadir')}
@@ -1674,7 +1713,7 @@ function PersonalDataRegistration() {
                                                                     fontSize: '10.5px',
                                                                     marginTop: '10px'
                                                                 }}
-                                                            />
+                                                            /> */}
                                                         </div>
                                                     </CardPatientRegisData>
                                                     <CardPatientRegisData
@@ -1826,13 +1865,31 @@ function PersonalDataRegistration() {
                                                         name="CONFIRM AT THE COUNTER"
                                                         style={{
                                                             widh: 'auto',
-                                                            margin: '0 auto'
+                                                            margin: findCurrentPatientFinishTreatment?.id ? '0 auto' : '20px 0 0 0'
                                                         }}
                                                         click={handleSubmitConfToLoket}
                                                         styleLoading={{
-                                                            display: loadingSubmitConfToLoket ? 'flex' : 'none'
+                                                            display: loadingSubmitConfToLoket || loadingSubmitUpdtConfirmInfo ? 'flex' : 'none'
                                                         }}
                                                     />
+                                                    {!findCurrentPatientFinishTreatment?.id && (
+                                                        <Button
+                                                            name="PATIENT NOT PRESENT"
+                                                            classBtn="not-present-btn"
+                                                            style={{
+                                                                widh: 'auto',
+                                                                margin: '20px 0 0 0'
+                                                            }}
+                                                            click={() => clickPresenceConfInfo('tidak hadir')}
+                                                            styleLoading={{
+                                                                display: loadingSubmitConfToLoket || loadingSubmitUpdtConfirmInfo ? 'flex' : 'none',
+                                                                backgroundColor: '#ff296d'
+                                                            }}
+                                                            styleLoadCircle={{
+                                                                borderTopColor: '#ff296d'
+                                                            }}
+                                                        />
+                                                    )}
                                                 </div>
                                             </>
                                         )}

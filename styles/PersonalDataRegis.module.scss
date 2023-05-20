@@ -57,21 +57,21 @@
         display: flex;
         flex-wrap: wrap;
         justify-content: space-between;
+      }
 
-        .title {
-          display: flex;
-          flex-wrap: wrap;
-          text-align: start;
-          color: $fontColor1;
-  
-          .patient-of {
-            margin-right: 10px;
-            color: $fontColor3;
-          }
-  
-          .name {
-            color: $pink;
-          }
+      .title {
+        display: flex;
+        flex-wrap: wrap;
+        text-align: start;
+        color: $fontColor1;
+
+        .patient-of {
+          margin-right: 10px;
+          color: $fontColor3;
+        }
+
+        .name {
+          color: $pink;
         }
       }
 

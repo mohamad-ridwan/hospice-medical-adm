@@ -234,7 +234,7 @@ function FinishedTreatment() {
                                                                 color: idx === 0 ? '#fff' : '#000',
                                                                 padding: idx === 0 ? '6px 10px' : '',
                                                                 borderRadius: idx === 0 ? '3px' : '0',
-                                                                background: idx === 0 ? data?.name?.toLowerCase()?.includes('hadir') ? '#288bbc' : '#ff296d' : 'transparent'
+                                                                background: idx === 0 ? data?.name?.toLowerCase() === 'hadir' ? '#288bbc' : '#ff296d' : 'transparent'
                                                             }}
                                                         />
                                                     )
