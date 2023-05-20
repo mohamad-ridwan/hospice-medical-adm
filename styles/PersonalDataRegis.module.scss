@@ -53,19 +53,25 @@
       flex-direction: column;
       width: 1300px;
 
-      .title {
+      .head-content{
         display: flex;
         flex-wrap: wrap;
-        text-align: start;
-        color: $fontColor1;
+        justify-content: space-between;
 
-        .patient-of {
-          margin-right: 10px;
-          color: $fontColor3;
-        }
-
-        .name {
-          color: $pink;
+        .title {
+          display: flex;
+          flex-wrap: wrap;
+          text-align: start;
+          color: $fontColor1;
+  
+          .patient-of {
+            margin-right: 10px;
+            color: $fontColor3;
+          }
+  
+          .name {
+            color: $pink;
+          }
         }
       }
 

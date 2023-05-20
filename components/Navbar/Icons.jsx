@@ -19,6 +19,7 @@ function Icons({
         <>
             <div className={`${style['icons']} ${style[classWrapp]}`} style={styleWrapp} onClick={click}>
                 <Image
+                    className={style['image-profile']}
                     src={urlImg}
                     alt={nameAdmin}
                     width={45}

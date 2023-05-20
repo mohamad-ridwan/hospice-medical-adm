@@ -20,6 +20,11 @@
     cursor: pointer;
     position: relative;
 
+    .image-profile{
+        display: flex;
+        object-fit: cover;
+    }
+
     .name-admin{
         font-size: 14px;
         font-weight: bold;

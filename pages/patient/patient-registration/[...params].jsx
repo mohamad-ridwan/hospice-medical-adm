@@ -206,6 +206,11 @@ function PersonalDataRegistration() {
     const getPatientQueue = dataLoket?.data ? dataLoket?.data?.filter(item => item.loketRules === 'patient-queue') : null
     const findPatientInLoket = getPatientQueue?.length > 0 ? getPatientQueue.find(patient => patient.patientId === params[4]) : null
 
+    // finished treatment
+    const { data: dataFinishTreatment, error: errDataFinishTreatment, isLoading: loadDataFinishTreatment } = useSwr(endpoint.getFinishedTreatment())
+    const patientRegisAtFinishTreatment = dataFinishTreatment?.data ? dataFinishTreatment?.data?.filter(item => item.rulesTreatment === 'patient-registration') : null
+    const findCurrentPatientFinishTreatment = patientRegisAtFinishTreatment?.length > 0 ? patientRegisAtFinishTreatment.find(patient => patient.patientId === patientData?.id) : null
+
     const yearsCalendar = range(1900, getYear(new Date()) + 1, 1)
     const monthsCalendar = [
         "January",
@@ -633,6 +638,12 @@ function PersonalDataRegistration() {
         if (id) {
             const findRoom = roomDiseaseType.find(doc => doc.id === id)
             setChooseRoom(findRoom)
+            setInputConfirm({
+                ...inputConfirm,
+                roomInfo: {
+                    roomName: findRoom?.title
+                }
+            })
         }
     }
 
@@ -1469,12 +1480,32 @@ function PersonalDataRegistration() {
                 <div className={onNavLeft ? `${style['wrapp']} ${style['wrapp-active']}` : style['wrapp']}>
                     <div className={style['container']}>
                         <div className={style['content']}>
-                            <h1 className={style['title']}>
-                                <span className={style['patient-of']}>Patient of</span>
-                                <span className={style['name']}>
-                                    {patientData?.patientName}
-                                </span>
-                            </h1>
+                            <div className={style['head-content']}>
+                                <h1 className={style['title']}>
+                                    <span className={style['patient-of']}>Patient of</span>
+                                    <span className={style['name']}>
+                                        {patientData?.patientName}
+                                    </span>
+                                </h1>
+
+                                {findCurrentPatientFinishTreatment?.id && (
+                                    <h1 className={style['title']} style={{
+                                        fontSize: '26px',
+                                        marginTop: '30px'
+                                    }}>
+                                        <span className={style['patient-of']} style={{
+                                            color: '#0ab110'
+                                        }}>
+                                            <i className="fa-solid fa-check-to-slot"></i>
+                                        </span>
+                                        <span className={style['name']} style={{
+                                            color: '#0ab110'
+                                        }}>
+                                            Have Finished Treatment
+                                        </span>
+                                    </h1>
+                                )}
+                            </div>
 
                             <div className={style['white-content']}>
                                 {patientData?.id && (

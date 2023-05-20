@@ -11,6 +11,7 @@ import useSwr from 'lib/useFetch/useSwr'
 import endpoint from 'lib/api/endpoint'
 import TableColumns from 'components/Table/TableColumns'
 import TableData from 'components/Table/TableData'
+import { monthNames } from 'lib/namesOfCalendar/monthNames'
 
 function FinishedTreatment() {
     const [head] = useState([
@@ -108,32 +109,32 @@ function FinishedTreatment() {
         }
     }) : []
 
-    const date = new Date(1684466604907)
-
-    const arr = [{date: 'Mar 12 2012 10:00:00'}, {date: 'Mar 8 2012 08:00:00'}]
+    // const formatDateForSortDate = [{date: 'Mar 12 2012 10:00:00'}, {date: 'Mar 08 2012 08:00:00'}]
+    // const exampleSortDate = arr.sort((a, b)=> new Date(a.date) + new Date(b.date))
 
     const newPatientRegistration = patientRegistration?.length > 0 ? patientRegistration.sort((item, twoItem) => {
         const confirmedTime = item.confirmedTime
-        const year = confirmedTime.dateConfirm?.split('/')[2]
-        const month = confirmedTime.dateConfirm?.split('/')[0]
-        const getDate = confirmedTime.dateConfirm?.split('/')[1]
+        const year = confirmedTime?.dateConfirm?.split('/')[2]
+        const month = confirmedTime?.dateConfirm?.split('/')[0]
+        const newMonth = month?.split('')[0] === '0' ? month?.substr(1) : month
+        const getDate = confirmedTime?.dateConfirm?.split('/')[1]
+        const dateOne = new Date(`${monthNames[Number(newMonth) - 1]} ${getDate} ${year} ${item.confirmedTime?.confirmHour}:00`)
 
         const confirmedTime2 = twoItem.confirmedTime
-        const yearTwo = confirmedTime2.dateConfirm?.split('/')[2]
-        const monthTwo = confirmedTime2.dateConfirm?.split('/')[0]
-        const getDateTwo = confirmedTime2.dateConfirm?.split('/')[1]
+        const yearTwo = confirmedTime2?.dateConfirm?.split('/')[2]
+        const monthTwo = confirmedTime2?.dateConfirm?.split('/')[0]
+        const newMonthTwo = monthTwo?.split('')[0] === '0' ? monthTwo?.substr(1) : monthTwo
+        const getDateTwo = confirmedTime2?.dateConfirm?.split('/')[1]
+        const dateTwo = new Date(`${monthNames[Number(newMonthTwo) - 1]} ${getDateTwo} ${yearTwo} ${twoItem.confirmedTime?.confirmHour}:00`)
 
-        return new Date(`${item.id}`) - new Date(`${twoItem.id}`)
+        return dateTwo - dateOne
     }) : []
-
-    const sortjing = arr.sort((a, b)=> new Date(a.date) - new Date(b.date))
-    // console.log(sortjing)
 
     const changeTableStyle = () => {
         let elementTHead = document.getElementById('tHead0')
         let elementTData = document.getElementById('tData00')
 
-        if (patientRegistration?.length > 0 && elementTHead) {
+        if (newPatientRegistration?.length > 0 && elementTHead) {
             elementTHead = document.getElementById(`tHead0`)
             elementTHead.style.width = 'calc(100%/10)'
             elementTHead = document.getElementById(`tHead1`)
@@ -147,8 +148,8 @@ function FinishedTreatment() {
             elementTHead = document.getElementById(`tHead5`)
             elementTHead.style.width = 'calc(100%/6)'
         }
-        if (patientRegistration?.length > 0 && elementTData) {
-            for (let i = 0; i < patientRegistration?.length; i++) {
+        if (newPatientRegistration?.length > 0 && elementTData) {
+            for (let i = 0; i < newPatientRegistration?.length; i++) {
                 elementTData = document.getElementById(`tData${i}0`)
                 elementTData.style.width = 'calc(100%/10)'
                 elementTData = document.getElementById(`tData${i}1`)
@@ -166,12 +167,12 @@ function FinishedTreatment() {
     }
 
     useEffect(() => {
-        if (patientRegistration?.length > 0) {
+        if (newPatientRegistration?.length > 0) {
             setTimeout(() => {
                 changeTableStyle()
             }, 0);
         }
-    }, [patientRegistration])
+    }, [newPatientRegistration])
 
     const toPage = (path)=>{
         router.push(path)
@@ -203,9 +204,9 @@ function FinishedTreatment() {
                                     }}
                                 />
 
-                                {patientRegistration?.length > 0 ? patientRegistration.map((item, index) => {
+                                {newPatientRegistration?.length > 0 ? newPatientRegistration.map((item, index) => {
                                     const jenisPenyakit = item.data[2].name?.replace('-', '')
-                                    const newJenisPenyakit = jenisPenyakit.replace(/ /gi, '-').toLowerCase()
+                                    const newJenisPenyakit = jenisPenyakit?.replace(/ /gi, '-')?.toLowerCase()
                                     const emailPatient = item.data[5].name
                                     const pathUrlToDataDetail = `/patient/patient-registration/personal-data/confirmed/${newJenisPenyakit}/${emailPatient}/${item.patientId}/counter/${item.dataPatientInCounter?.loketName}/${item.dataPatientInCounter?.confirmState ? 'confirmed' : 'not-yet-confirmed'}/${item.dataPatientInCounter?.queueNumber}`
 
