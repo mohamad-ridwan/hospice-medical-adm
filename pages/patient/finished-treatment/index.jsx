@@ -19,6 +19,9 @@ function FinishedTreatment() {
             name: 'Presence'
         },
         {
+            name: 'Attendance Record'
+        },
+        {
             name: 'Patient Name'
         },
         {
@@ -80,9 +83,13 @@ function FinishedTreatment() {
                 loketName: getCurrentLoket?.loketName,
                 queueNumber: getCurrentLoket?.queueNumber
             },
+            completionStage: getCurrentLoket?.presence === 'tidak hadir' || getCurrentLoket?.presence === 'hadir' ? 'counter' : 'room',
             data: [
                 {
-                    name: findPatientInRegisData?.isConfirm?.presence?.toUpperCase()
+                    name: findPatientInRegisData?.isConfirm?.presence === 'hadir' ? getCurrentLoket?.presence?.toUpperCase() : findPatientInRegisData?.isConfirm?.presence?.toUpperCase()
+                },
+                {
+                    name: findPatientInRegisData?.isConfirm?.presence === 'hadir' ? getCurrentLoket?.presence === 'hadir' ? 'Finished until taking Medicine' : 'Not at the Counter' : 'Not in the Treatment Room'
                 },
                 {
                     name: item.patientName
@@ -144,8 +151,14 @@ function FinishedTreatment() {
             elementTHead = document.getElementById(`tHead3`)
             elementTHead.style.width = 'calc(100%/8)'
             elementTHead = document.getElementById(`tHead4`)
-            elementTHead.style.width = 'calc(100%/7)'
+            elementTHead.style.width = 'calc(100%/8)'
             elementTHead = document.getElementById(`tHead5`)
+            elementTHead.style.width = 'calc(100%/7)'
+            elementTHead = document.getElementById(`tHead6`)
+            elementTHead.style.width = 'calc(100%/6)'
+            elementTHead = document.getElementById(`tHead7`)
+            elementTHead.style.width = 'calc(100%/10)'
+            elementTHead = document.getElementById(`tHead8`)
             elementTHead.style.width = 'calc(100%/6)'
         }
         if (newPatientRegistration?.length > 0 && elementTData) {
@@ -159,8 +172,14 @@ function FinishedTreatment() {
                 elementTData = document.getElementById(`tData${i}3`)
                 elementTData.style.width = 'calc(100%/8)'
                 elementTData = document.getElementById(`tData${i}4`)
-                elementTData.style.width = 'calc(100%/7)'
+                elementTData.style.width = 'calc(100%/8)'
                 elementTData = document.getElementById(`tData${i}5`)
+                elementTData.style.width = 'calc(100%/7)'
+                elementTData = document.getElementById(`tData${i}6`)
+                elementTData.style.width = 'calc(100%/6)'
+                elementTData = document.getElementById(`tData${i}7`)
+                elementTData.style.width = 'calc(100%/10)'
+                elementTData = document.getElementById(`tData${i}8`)
                 elementTData.style.width = 'calc(100%/6)'
             }
         }
@@ -195,7 +214,9 @@ function FinishedTreatment() {
                         <TableContainer styleWrapp={{
                             margin: '50px 0 0 0'
                         }}>
-                            <TableBody>
+                            <TableBody styleWrapp={{
+                                width: '1500px'
+                            }}>
                                 <TableHead
                                     id='tHead'
                                     data={head}
@@ -207,11 +228,12 @@ function FinishedTreatment() {
                                 {newPatientRegistration?.length > 0 ? newPatientRegistration.map((item, index) => {
                                     const jenisPenyakit = item.data[2].name?.replace('-', '')
                                     const newJenisPenyakit = jenisPenyakit?.replace(/ /gi, '-')?.toLowerCase()
-                                    const emailPatient = item.data[5].name
-                                    const pathUrlToDataDetail = `/patient/patient-registration/personal-data/confirmed/${newJenisPenyakit}/${emailPatient}/${item.patientId}/counter/${item.dataPatientInCounter?.loketName}/${item.dataPatientInCounter?.confirmState ? 'confirmed' : 'not-yet-confirmed'}/${item.dataPatientInCounter?.queueNumber}`
+                                    const emailPatient = item.data[6].name
+                                    const pathUrlToCounterStage = `/patient/patient-registration/personal-data/confirmed/${newJenisPenyakit}/${emailPatient}/${item.patientId}/counter/${item.dataPatientInCounter?.loketName}/${item.dataPatientInCounter?.confirmState ? 'confirmed' : 'not-yet-confirmed'}/${item.dataPatientInCounter?.queueNumber}`
+                                    const pathUrlToRoomStage = `/patient/patient-registration/personal-data/confirmed/${newJenisPenyakit}/${emailPatient}/${item.patientId}`
 
                                     return (
-                                        <button key={index} className={style['columns-data']} onClick={()=>toPage(pathUrlToDataDetail)}>
+                                        <button key={index} className={style['columns-data']} onClick={()=>toPage(item.completionStage === 'room' ? pathUrlToRoomStage : pathUrlToCounterStage)}>
                                             <TableColumns
                                                 styleEdit={{
                                                     display: 'none'
@@ -231,7 +253,8 @@ function FinishedTreatment() {
                                                             }}
                                                             styleName={{
                                                                 fontSize: idx === 0 ? '12px' : '14px',
-                                                                color: idx === 0 ? '#fff' : '#000',
+                                                                fontWeight: idx === 1 ? 'bold' : 'normal',
+                                                                color: idx === 0 ? '#fff' : idx === 1 ? data?.name === 'Not in the Treatment Room' ? '#ff296d' : data?.name === 'Not at the Counter' ? '#be2ed6' : '#288bbc' : '#000',
                                                                 padding: idx === 0 ? '6px 10px' : '',
                                                                 borderRadius: idx === 0 ? '3px' : '0',
                                                                 background: idx === 0 ? data?.name?.toLowerCase() === 'hadir' ? '#288bbc' : '#ff296d' : 'transparent'

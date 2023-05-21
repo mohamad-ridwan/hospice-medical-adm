@@ -838,6 +838,7 @@ function PersonalDataRegistration() {
             queueNumber: infoLoket?.totalQueue + 1,
             message: inputConfToLoket.message,
             emailAdmin: user?.email,
+            presence: 'menunggu',
             isConfirm: {
                 confirmState: false
             }
@@ -1193,14 +1194,20 @@ function PersonalDataRegistration() {
         API.APIPutPatientQueueInCounter(findPatientInLoket?._id, data)
             .then(res => {
                 postToPatientFinishTreatment(dataFinishTreatment, () => {
-                    alert('Successful confirmation')
-                    setLoadingConfFinishTreatment(false)
+                    updatePatientPresenceInCounter('hadir', () => {
+                        alert('Successful confirmation')
+                        setLoadingConfFinishTreatment(false)
 
-                    const [p1, p2, p3, p4, p5, p6, p7, p8, p9] = params
+                        const [p1, p2, p3, p4, p5, p6, p7, p8, p9] = params
 
-                    setTimeout(() => {
-                        router.push(`/patient/patient-registration/${p1}/${p2}/${p3}/${p4}/${p5}/${p6}/${p7}/confirmed/${p9}`)
-                    }, 0);
+                        setTimeout(() => {
+                            router.push(`/patient/patient-registration/${p1}/${p2}/${p3}/${p4}/${p5}/${p6}/${p7}/confirmed/${p9}`)
+                        }, 0);
+                    }, (err) => {
+                        alert('Oops, telah terjadi kesalahan server!\nMohon coba beberapa saat lagi')
+                        console.log(err)
+                        setLoadingConfFinishTreatment(false)
+                    })
                 }, (err) => {
                     alert('Oops, telah terjadi kesalahan server!\nMohon coba beberapa saat lagi')
                     console.log(err)
@@ -1212,6 +1219,91 @@ function PersonalDataRegistration() {
                 console.log(err)
                 setLoadingConfFinishTreatment(false)
             })
+    }
+
+    const clickPatientNotPresentInCounter = () => {
+        if (loadingConfFinishTreatment === false && window.confirm('pasien tidak hadir?')) {
+            setLoadingConfFinishTreatment(true)
+            const nowHours = `${new Date().getHours().toString().length === 1 ? `0${new Date().getHours()}` : new Date().getHours()}`
+            const nowMinutes = `${new Date().getMinutes().toString().length === 1 ? `0${new Date().getMinutes()}` : new Date().getMinutes()}`
+            const nowDate = `${new Date()}`
+            const getDate = nowDate.split(' ')[2]
+            const getYear = nowDate.split(' ')[3]
+            const getMonth = nowDate.split(' ')[1]
+            const findMonth = monthNames.findIndex(item => item === getMonth) + 1
+            const nowMonth = findMonth.toString().length === 1 ? `0${findMonth}` : findMonth
+            const dateConfirm = `${nowMonth}/${getDate}/${getYear}`
+            const confirmHour = `${nowHours}:${nowMinutes}`
+
+
+            updatePatientPresenceInCounter('tidak hadir', () => {
+                const data = {
+                    id: `${new Date().getTime()}`,
+                    dateConfirm,
+                    confirmHour,
+                    emailAdmin: user?.email,
+                    nameAdmin: user?.name,
+                    confirmState: true,
+                    paymentInfo: {
+                        paymentMethod: '-',
+                        bpjsNumber: '-',
+                        totalCost: '-'
+                    }
+                }
+
+                API.APIPutPatientQueueInCounter(findPatientInLoket?._id, data)
+                    .then(res => {
+                        const dataFinishTreatment = {
+                            id: `${new Date().getTime()}`,
+                            rulesTreatment: 'patient-registration',
+                            patientId: patientData?.id,
+                            patientName: patientData?.patientName,
+                            patientEmail: patientData?.emailAddress,
+                            phone: patientData?.phone,
+                            confirmedTime: {
+                                confirmHour: confirmHour,
+                                dateConfirm: dateConfirm
+                            },
+                            adminInfo: {
+                                emailAdmin: user?.email,
+                                nameAdmin: user?.name
+                            }
+                        }
+                        postToPatientFinishTreatment(dataFinishTreatment, () => {
+                            alert('confirmed successfully')
+                            setLoadingConfFinishTreatment(false)
+
+                            const [p1, p2, p3, p4, p5, p6, p7, p8, p9] = params
+
+                            setTimeout(() => {
+                                router.push(`/patient/patient-registration/${p1}/${p2}/${p3}/${p4}/${p5}/${p6}/${p7}/confirmed/${p9}`)
+                            }, 0);
+                        }, (err) => {
+                            alert('Oops, telah terjadi kesalahan server\nMohon coba beberapa saat lagi')
+                            console.log(err)
+                            setLoadingConfFinishTreatment(false)
+                        })
+                    })
+                    .catch(err => {
+                        alert('Oops, telah terjadi kesalahan server\nMohon coba beberapa saat lagi')
+                        console.log(err)
+                        setLoadingConfFinishTreatment(false)
+                    })
+            }, (err) => {
+                alert('Oops, telah terjadi kesalahan server\nMohon coba beberapa saat lagi')
+                console.log(err)
+                setLoadingConfFinishTreatment(false)
+            })
+        }
+    }
+
+    const updatePatientPresenceInCounter = (value, success, error) => {
+        const data = {
+            presence: value
+        }
+        API.APIPutPatientPresenceInCounter(findPatientInLoket?._id, data)
+            .then(res => success())
+            .catch(err => error(err))
     }
 
     const postToPatientFinishTreatment = (data, success, error) => {
@@ -1255,7 +1347,6 @@ function PersonalDataRegistration() {
                         changeInput={handleChangeEditPR}
                     />
                     <Input
-                        // {...propsInputEdit}
                         {...styleStarInputEdit}
                         styleTitle={{
                             display: 'flex'
@@ -1270,11 +1361,7 @@ function PersonalDataRegistration() {
                         selected={new Date(valueInputEdit.appointmentDate)}
                         filterDate={isWeekday}
                         changeCalendar={(date) => changeCalendar(date, 'appointmentDate')}
-                        // type='text'
-                        // nameInput='appointmentDate'
-                        // valueInput={valueInputEdit.appointmentDate}
                         title='Appointment Date'
-                        // changeInput={handleChangeEditPR}
                         errorMessage={errorMsgSubmit?.appointmentDate}
                     />
                     <Input
@@ -2118,6 +2205,14 @@ function PersonalDataRegistration() {
                                                         desc={findPatientInLoket.patientName}
                                                     />
                                                     <CardPatientRegisData
+                                                        title="Presence State"
+                                                        desc={findPatientInLoket.presence?.toUpperCase()}
+                                                        styleDesc={{
+                                                            color: '#f85084',
+                                                            fontWeight: 'bold'
+                                                        }}
+                                                    />
+                                                    <CardPatientRegisData
                                                         title="Doctor's Prescription"
                                                         desc={findPatientInLoket.message}
                                                     />
@@ -2247,17 +2342,46 @@ function PersonalDataRegistration() {
                                                             errorMessage={errSubmitConfFinishTreatment?.totalCost}
                                                         />
                                                     </CardPatientRegisData>
-                                                    <Button
-                                                        name="FINISHED TREATMENT"
-                                                        style={{
-                                                            widh: 'auto',
-                                                            margin: '0 auto'
-                                                        }}
-                                                        click={submitConfFinishTreatment}
-                                                        styleLoading={{
-                                                            display: loadingConfFinishTreatment ? 'flex' : 'none'
-                                                        }}
-                                                    />
+                                                    <div className="btn-finish-treatment" style={{
+                                                        width: '100%',
+                                                        justifyContent: !findCurrentPatientFinishTreatment?.id ? 'flex-start' : 'center'
+                                                    }}>
+                                                        <Button
+                                                            name="FINISHED TREATMENT"
+                                                            style={{
+                                                                widh: 'auto',
+                                                                margin: !findCurrentPatientFinishTreatment?.id ? 'auto 0' : 'auto'
+                                                            }}
+                                                            click={submitConfFinishTreatment}
+                                                            styleLoading={{
+                                                                display: loadingConfFinishTreatment ? 'flex' : 'none'
+                                                            }}
+                                                        />
+                                                    </div>
+                                                    {!findCurrentPatientFinishTreatment?.id && (
+                                                        <div className="btn-not-present" style={{
+                                                            display: 'flex',
+                                                            width: '100%',
+                                                            justifyContent: 'flex-end'
+                                                        }}>
+                                                            <Button
+                                                                name="PATIENT NOT PRESENT"
+                                                                classBtn="not-present-btn"
+                                                                style={{
+                                                                    widh: 'auto',
+                                                                    margin: '20px 0 0 0'
+                                                                }}
+                                                                click={clickPatientNotPresentInCounter}
+                                                                styleLoading={{
+                                                                    display: loadingConfFinishTreatment ? 'flex' : 'none',
+                                                                    backgroundColor: '#ff296d'
+                                                                }}
+                                                                styleLoadCircle={{
+                                                                    borderTopColor: '#ff296d'
+                                                                }}
+                                                            />
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </>
                                         )}

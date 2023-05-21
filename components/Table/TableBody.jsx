@@ -1,11 +1,12 @@
 import style from 'styles/TableBody.module.scss'
 
 function TableBody({
-    children
+  styleWrapp,
+  children
 }) {
   return (
-    <div className={style['body']}>
-        {children}
+    <div className={style['body']} style={styleWrapp}>
+      {children}
     </div>
   )
 }
