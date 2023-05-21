@@ -18,9 +18,14 @@
         color: $colorDefault;
     }
 
-    i {
-        font-size: 14px;
+    .icon{
+        display: flex;
+        width: 17px;
         margin-right: 14px;
+
+        i {
+            font-size: 14px;
+        }
     }
 
     .icon-drop {

@@ -1132,7 +1132,7 @@ function PersonalDataRegistration() {
         if (inputConfFinishTreatment.paymentMethod.toLowerCase().includes('bpjs') && !inputConfFinishTreatment.bpjsNumber.trim()) {
             err.bpjsNumber = 'Must be required!'
         }
-        if (!inputConfFinishTreatment.totalCost.trim()) {
+        if (!inputConfFinishTreatment.paymentMethod.toLowerCase().includes('bpjs') && !inputConfFinishTreatment.totalCost.trim()) {
             err.totalCost = 'Must be required!'
         }
 
@@ -1170,7 +1170,7 @@ function PersonalDataRegistration() {
             paymentInfo: {
                 paymentMethod,
                 bpjsNumber,
-                totalCost
+                totalCost: inputConfFinishTreatment.paymentMethod.toLowerCase().includes('bpjs') ? '-' : totalCost
             }
         }
 
@@ -2318,30 +2318,32 @@ function PersonalDataRegistration() {
                                                             />
                                                         </CardPatientRegisData>
                                                     )}
-                                                    <CardPatientRegisData
-                                                        styleTitle={{
-                                                            display: 'none',
-                                                        }}
-                                                        styleWrappDesc={{
-                                                            display: 'none'
-                                                        }}
-                                                        styleWrapp={{
-                                                            width: inputConfFinishTreatment.paymentMethod.toLowerCase().includes('bpjs') ? '100%' : '45%',
-                                                            margin: '20px 10px 0 10px'
-                                                        }}
-                                                    >
-                                                        <Input
-                                                            {...propsInputEdit}
-                                                            {...propsErrMsg}
-                                                            type='number'
-                                                            nameInput='totalCost'
-                                                            placeholder='Total Cost...'
-                                                            valueInput={inputConfFinishTreatment.totalCost}
-                                                            title='Total Cost'
-                                                            changeInput={onChangeFormConfFinishTreatment}
-                                                            errorMessage={errSubmitConfFinishTreatment?.totalCost}
-                                                        />
-                                                    </CardPatientRegisData>
+                                                    {!inputConfFinishTreatment.paymentMethod.toLowerCase().includes('bpjs') && (
+                                                        <CardPatientRegisData
+                                                            styleTitle={{
+                                                                display: 'none',
+                                                            }}
+                                                            styleWrappDesc={{
+                                                                display: 'none'
+                                                            }}
+                                                            styleWrapp={{
+                                                                width: inputConfFinishTreatment.paymentMethod.toLowerCase().includes('bpjs') ? '100%' : '45%',
+                                                                margin: '20px 10px 0 10px'
+                                                            }}
+                                                        >
+                                                            <Input
+                                                                {...propsInputEdit}
+                                                                {...propsErrMsg}
+                                                                type='number'
+                                                                nameInput='totalCost'
+                                                                placeholder='Total Cost...'
+                                                                valueInput={inputConfFinishTreatment.totalCost}
+                                                                title='Total Cost'
+                                                                changeInput={onChangeFormConfFinishTreatment}
+                                                                errorMessage={errSubmitConfFinishTreatment?.totalCost}
+                                                            />
+                                                        </CardPatientRegisData>
+                                                    )}
                                                     <div className="btn-finish-treatment" style={{
                                                         width: '100%',
                                                         justifyContent: !findCurrentPatientFinishTreatment?.id ? 'flex-start' : 'center'
@@ -2433,10 +2435,12 @@ function PersonalDataRegistration() {
                                                             display: findPatientInLoket?.isConfirm?.paymentInfo?.paymentMethod?.toLowerCase()?.includes('bpjs') ? 'flex' : 'none'
                                                         }}
                                                     />
-                                                    <CardPatientRegisData
-                                                        title="Total Cost"
-                                                        desc={`Rp${findPatientInLoket?.isConfirm?.paymentInfo?.totalCost}`}
-                                                    />
+                                                    {!findPatientInLoket?.isConfirm?.paymentInfo?.paymentMethod?.toLowerCase()?.includes('bpjs') && (
+                                                        <CardPatientRegisData
+                                                            title="Total Cost"
+                                                            desc={`Rp${findPatientInLoket?.isConfirm?.paymentInfo?.totalCost}`}
+                                                        />
+                                                    )}
                                                 </div>
 
                                                 <h1 className={`${style['title']} ${style['confirm-admin-information']} ${style['title-confirm-loket']}`}>

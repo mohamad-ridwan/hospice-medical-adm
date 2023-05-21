@@ -14,7 +14,7 @@
   padding: 120px 20px 40px 270px;
   // color: $fontColor1;
   min-height: 100vh;
-  // width: 100vw;
+  width: 100vw;
   background-color: $backgroundPage2;
   transition: 0.2s ease-in-out;
 
@@ -25,14 +25,20 @@
   .container{
     display: flex;
     justify-content: center;
+    width: 100%;
 
     .content{
       display: flex;
       flex-direction: column;
       width: 1300px;
+      overflow-x: auto;
   
       .title {
         color: $fontColor1;
+      }
+
+      .trafic-presence{
+        height: 700px;
       }
     }
   }

@@ -20,16 +20,18 @@ function MenuNavLeft({
     const router = useRouter()
     const { route } = router
 
-    const {handleOnNavLeft} = useContext(NotFoundRedirectCtx)
+    const { handleOnNavLeft } = useContext(NotFoundRedirectCtx)
 
     return (
         <>
             {data?.children ? (
                 <li className={`${style['wrapp']} ${style['wrapp-menu-drop']}`} style={styleMenuChild}
-                onClick={handleOnMenuChild}
+                    onClick={handleOnMenuChild}
                 >
                     <div className={style['container']}>
-                        <i className={icon}></i>
+                        <div className={style['icon']}>
+                            <i className={icon}></i>
+                        </div>
                         <span className={style['name']} style={styleNameMenu}>{name}</span>
                         <i className={`${iconDropChild} ${style['icon-drop']}`} style={styleIconMenuChild}></i>
                     </div>
@@ -43,7 +45,9 @@ function MenuNavLeft({
             ) : (
                 <Link href={data?.path}>
                     <li className={data?.path === route ? `${style['wrapp']} ${style['active']}` : style['wrapp']}>
-                        <i className={icon}></i>
+                        <div className={style['icon']}>
+                            <i className={icon}></i>
+                        </div>
                         <span className={style['name']} style={styleNameMenu}>{name}</span>
                     </li>
                 </Link>
