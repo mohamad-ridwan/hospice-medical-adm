@@ -33,12 +33,47 @@
       width: 1300px;
       overflow-x: auto;
   
+      // patient treatment
       .title {
         color: $fontColor1;
       }
 
+      // btn filter year
+      .filter-years{
+        display: flex;
+        width: 100%;
+        justify-content: flex-end;
+      }
+
       .trafic-presence{
         height: 700px;
+      }
+
+      // payment information
+      .payment-information{
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        margin-top: 20px;
+        padding: 10px;
+
+        .payment-info-group{
+          display: flex;
+          background-color: #fff;
+          box-shadow: 0 2px 3px -1px rgba(0,0,0,0.3);
+          border-radius: 5px;
+          padding: 10px;
+        }
+
+        .right{
+          max-height: 500px;
+          width: 35%;
+        }
+
+        .left{
+          max-height: 500px;
+          width: 60%;
+        }
       }
     }
   }
