@@ -16,15 +16,50 @@ import { PolarArea } from 'react-chartjs-2'
 import styles from 'styles/Home.module.scss'
 import useSwr from 'lib/useFetch/useSwr'
 import endpoint from 'lib/api/endpoint'
+import { AuthContext } from 'lib/context/auth'
 import { NotFoundRedirectCtx } from 'lib/context/notFoundRedirect'
 import TableContainer from 'components/Table/TableContainer'
 import Button from 'components/Button'
+import OverviewCard from 'components/OverviewCard'
 
 export default function Home() {
   const [chooseYear, setChooseYear] = useState(`${new Date().getFullYear()}`)
   const [chooseYearPaymentInfo, setChooseYearPaymentInfo] = useState(`${new Date().getFullYear()}`)
+  const [overviewData, setOverviewData] = useState([
+    {
+      value: 'null',
+      title: 'Patient Treatment',
+      icon: 'fa-solid fa-hospital-user',
+      color: '#187bcd'
+    },
+    {
+      value: 'null',
+      title: 'Patient Present',
+      icon: 'fa-solid fa-person-circle-check',
+      color: '#7600bc'
+    },
+    {
+      value: 'null',
+      title: 'Cash Payment Method',
+      icon: 'fa-solid fa-coins',
+      color: '#f85084'
+    },
+    {
+      value: 'null',
+      title: 'BPJS Payment Method',
+      icon: 'fa-solid fa-id-card',
+      color: '#0ab110'
+    },
+    {
+      value: 'null',
+      title: 'Earning',
+      icon: 'fa-solid fa-chart-line',
+      color: '#ff296d'
+    }
+  ])
 
   // context
+  const { user, setUser } = useContext(AuthContext)
   const { onNavLeft } = useContext(NotFoundRedirectCtx)
 
   ChartJS.register(
@@ -54,6 +89,26 @@ export default function Home() {
   // rules treatment : patient-registration
   const getPatientRegisAtFinishTreatment = dataFinishTreatment?.data ? dataFinishTreatment?.data?.filter(item => item.rulesTreatment === 'patient-registration') : null
   const patientRegisAtFinishTreatment = getPatientRegisAtFinishTreatment?.length > 0 ? getPatientRegisAtFinishTreatment : null
+
+  useEffect(()=>{
+    if(user?.id && patientRegisAtFinishTreatment?.length > 0){
+      setOverviewData((current)=>{
+        const findIdxOne = current.filter((item, idx)=>idx !== 0)
+        return [
+          {
+            value: patientRegisAtFinishTreatment?.length,
+            title: 'Patient Treatment',
+            icon: 'fa-solid fa-hospital-user',
+            color: '#187bcd'
+          },
+          ...findIdxOne
+        ]
+      })
+    }
+  }, [user])
+
+  console.log(overviewData)
+
   const patientFinishTreatmentOnYears = (years) => {
     const checkPatientOnDate = patientRegisAtFinishTreatment?.length > 0 ? patientRegisAtFinishTreatment.filter(item => {
       const confirmedTime = item?.confirmedTime
@@ -468,8 +523,29 @@ export default function Home() {
       <div className={onNavLeft ? `${styles['wrapp']} ${styles['wrapp-active']}` : styles['wrapp']}>
         <div className={styles['container']}>
           <div className={styles['content']}>
+            {/* overview */}
+            <h1 className={styles['title']}>Overview</h1>
+
+            <div className={styles['container-overview']}>
+              {overviewData?.length > 0 ? overviewData.map((item, index) => (
+                <OverviewCard
+                  key={index}
+                  descValue={item.value}
+                  title={item.title}
+                  icon={item.icon}
+                  styleIcon={{
+                    backgroundColor: item.color
+                  }}
+                />
+              )) : (
+                <></>
+              )}
+            </div>
+
             {/* patient treatment */}
-            <h1 className={styles['title']}>Patient Treatment</h1>
+            <h1 className={styles['title']} style={{
+              marginTop: '50px'
+            }}>Patient Treatment</h1>
             <div className={styles['filter-years']}>
               <Button
                 name="Year in 2023"

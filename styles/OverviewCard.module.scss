@@ -1,0 +1,55 @@
+@import 'variables/color';
+@import 'variables/responsive';
+@import 'variables/font';
+
+@mixin mobile {
+    @media (max-width: 480px) {
+        @content;
+    }
+}
+
+.overview-card {
+    display: flex;
+    box-shadow: 0 2px 3px -1px rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
+    background: #fff;
+    padding: 15px 15px;
+    height: fit-content;
+    margin: 7px;
+
+    .icon {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 45px;
+        width: 45px;
+        border-radius: 5px;
+        margin-right: 20px;
+        background: $blue;
+
+        i {
+            font-size: 17px;
+            color: #fff;
+        }
+    }
+
+    .content-desc {
+        display: flex;
+        flex-direction: column;
+
+        .title {
+            display: flex;
+            text-align: start;
+            font-size: 14px;
+            color: $fontGrayYoung;
+        }
+
+        .desc-value {
+            display: flex;
+            text-align: start;
+            color: $blue;
+            font-size: 20px;
+            margin-top: 5px;
+        }
+    }
+}

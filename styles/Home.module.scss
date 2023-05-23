@@ -2,8 +2,38 @@
 @import 'variables/responsive';
 @import 'variables/font';
 
+@mixin smallPaymentInfoChart {
+  @media (max-width: 1080px) {
+    @content;
+  }
+}
+
 @mixin mobileWrappActive {
   @media (max-width: $sizeMobileOnNav) {
+    @content;
+  }
+}
+
+@mixin maxDesktopOverview {
+  @media (min-width:1230px) and (max-width: 1500px) {
+    @content;
+  }
+}
+
+@mixin desktopMdOverview {
+  @media (min-width:916px) and (max-width: 1230px) {
+    @content;
+  }
+}
+
+@mixin tabletMdOverview {
+  @media (min-width:580px) and (max-width: 916px) {
+    @content;
+  }
+}
+
+@mixin mobileOverview {
+  @media (max-width: 580px) {
     @content;
   }
 }
@@ -22,57 +52,99 @@
     padding: 120px 10px 40px 10px;
   }
 
-  .container{
+  .container {
     display: flex;
     justify-content: center;
     width: 100%;
 
-    .content{
+    .content {
       display: flex;
       flex-direction: column;
       width: 1300px;
       overflow-x: auto;
-  
+
       // patient treatment
       .title {
-        color: $fontColor1;
+        color: $fontColor3;
+      }
+
+      // container overview
+      .container-overview {
+        // display: flex;
+        // flex-wrap: wrap;
+        margin-top: 35px;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, (100%/4.5));
+        grid-gap: 5px;
+
+        @include maxDesktopOverview() {
+          grid-template-columns: repeat(auto-fit, (100%/3.5));
+        }
+
+        @include desktopMdOverview(){
+          grid-template-columns: repeat(auto-fit, (95%/2));
+        }
+
+        @include tabletMdOverview(){
+          grid-template-columns: repeat(auto-fit, (95%/2));
+        }
+
+        @include mobileOverview(){
+          grid-template-columns: repeat(auto-fit, (100%));
+        }
       }
 
       // btn filter year
-      .filter-years{
+      .filter-years {
         display: flex;
         width: 100%;
         justify-content: flex-end;
       }
 
-      .trafic-presence{
+      .trafic-presence {
         height: 700px;
       }
 
       // payment information
-      .payment-information{
+      .payment-information {
         display: flex;
         flex-wrap: wrap;
         justify-content: space-between;
         margin-top: 20px;
         padding: 10px;
 
-        .payment-info-group{
+        .payment-info-group {
           display: flex;
           background-color: #fff;
-          box-shadow: 0 2px 3px -1px rgba(0,0,0,0.3);
+          box-shadow: 0 2px 3px -1px rgba(0, 0, 0, 0.3);
           border-radius: 5px;
           padding: 10px;
+          justify-content: center;
+          align-items: center;
+
+          @include smallPaymentInfoChart() {
+            flex-direction: column;
+          }
         }
 
-        .right{
-          max-height: 500px;
+        .right {
+          max-height: 600px;
           width: 35%;
+
+          @include smallPaymentInfoChart() {
+            max-height: 350px;
+            width: 100%;
+          }
         }
 
-        .left{
-          max-height: 500px;
-          width: 60%;
+        .left {
+          max-height: 600px;
+          width: 63%;
+
+          @include smallPaymentInfoChart() {
+            width: 100%;
+            margin-top: 30px;
+          }
         }
       }
     }
