@@ -25,38 +25,7 @@ import OverviewCard from 'components/OverviewCard'
 export default function Home() {
   const [chooseYear, setChooseYear] = useState(`${new Date().getFullYear()}`)
   const [chooseYearPaymentInfo, setChooseYearPaymentInfo] = useState(`${new Date().getFullYear()}`)
-  const [overviewData, setOverviewData] = useState([
-    {
-      value: 'null',
-      title: 'Patient Treatment',
-      icon: 'fa-solid fa-hospital-user',
-      color: '#187bcd'
-    },
-    {
-      value: 'null',
-      title: 'Patient Present',
-      icon: 'fa-solid fa-person-circle-check',
-      color: '#7600bc'
-    },
-    {
-      value: 'null',
-      title: 'Cash Payment Method',
-      icon: 'fa-solid fa-coins',
-      color: '#f85084'
-    },
-    {
-      value: 'null',
-      title: 'BPJS Payment Method',
-      icon: 'fa-solid fa-id-card',
-      color: '#0ab110'
-    },
-    {
-      value: 'null',
-      title: 'Earning',
-      icon: 'fa-solid fa-chart-line',
-      color: '#ff296d'
-    }
-  ])
+  const [overviewData, setOverviewData] = useState([])
 
   // context
   const { user, setUser } = useContext(AuthContext)
@@ -90,24 +59,109 @@ export default function Home() {
   const getPatientRegisAtFinishTreatment = dataFinishTreatment?.data ? dataFinishTreatment?.data?.filter(item => item.rulesTreatment === 'patient-registration') : null
   const patientRegisAtFinishTreatment = getPatientRegisAtFinishTreatment?.length > 0 ? getPatientRegisAtFinishTreatment : null
 
-  useEffect(()=>{
-    if(user?.id && patientRegisAtFinishTreatment?.length > 0){
-      setOverviewData((current)=>{
-        const findIdxOne = current.filter((item, idx)=>idx !== 0)
-        return [
-          {
-            value: patientRegisAtFinishTreatment?.length,
-            title: 'Patient Treatment',
-            icon: 'fa-solid fa-hospital-user',
-            color: '#187bcd'
-          },
-          ...findIdxOne
-        ]
-      })
-    }
-  }, [user])
+  const checkPatientRegisDataInMonth = (item) => {
+    const findPatientInRegisData = userAppointmentData?.length > 0 ? userAppointmentData.find(patient => patient.id === item.patientId) : {}
 
-  console.log(overviewData)
+    return findPatientInRegisData?.isConfirm?.presence
+  }
+  const checkCurrentLoketInMonth = (item) => {
+    const getCurrentLoket = getPatientQueue?.length > 0 ? getPatientQueue?.find(data => data.patientId === item.patientId && data?.isConfirm?.confirmState) : {}
+
+    return getCurrentLoket?.presence
+  }
+
+  const getPaymentInCurrentInfo = (item) => {
+    const getCurrentLoket = getPatientQueue?.length > 0 ? getPatientQueue?.find(data => data.patientId === item.patientId && data?.isConfirm?.confirmState) : {}
+    const paymentInfo = getCurrentLoket?.isConfirm?.paymentInfo
+
+    return {
+      paymentInfo: {
+        paymentMethod: paymentInfo?.paymentMethod,
+        totalCost: paymentInfo?.totalCost
+      }
+    }
+  }
+
+  useEffect(() => {
+    if (user?.id && patientRegisAtFinishTreatment?.length > 0) {
+      const getTotalPatientPresence = patientRegisAtFinishTreatment?.length > 0 ? patientRegisAtFinishTreatment.map(item => ({
+        completionStage: checkPatientRegisDataInMonth(item) === 'hadir' ? checkCurrentLoketInMonth(item) : checkPatientRegisDataInMonth(item)
+      })) : []
+      const getPatientPresence = (presence) => {
+        return getTotalPatientPresence?.length > 0 ? getTotalPatientPresence.filter(item => item.completionStage === presence) : []
+      }
+
+      const getPMPatient = patientRegisAtFinishTreatment?.length > 0 ? patientRegisAtFinishTreatment.map(item => (getPaymentInCurrentInfo(item))) : []
+      const filterPMPatient = (paymentMethod) => {
+        return getPMPatient?.length > 0 ? getPMPatient.filter(item => item.paymentInfo.paymentMethod?.toLowerCase()?.includes(paymentMethod)) : []
+      }
+
+      const getTotalCost = () => {
+        let arrCost = []
+        let count = 0
+        let totalCost = null
+
+        if (filterPMPatient('cash')?.length > 0) {
+          for (let i = 0; i < filterPMPatient('cash').length; i++) {
+            count = count + 1
+            arrCost.push(parseInt(filterPMPatient('cash')[i].paymentInfo.totalCost))
+          }
+        }
+
+        if (count === filterPMPatient('cash')?.length) {
+          totalCost = eval(arrCost.join('+'))
+        }
+
+        return totalCost
+      }
+
+      const numberFormatIndo = (number)=>{
+        return new Intl.NumberFormat('id-ID', {
+          style: 'currency',
+          currency: 'IDR'
+        }).format(number)
+      }
+
+      setOverviewData([
+        {
+          value: patientRegisAtFinishTreatment?.length,
+          title: 'Patient Treatment',
+          icon: 'fa-solid fa-hospital-user',
+          color: '#187bcd'
+        },
+        {
+          value: getPatientPresence('hadir')?.length,
+          title: 'Patient Present',
+          icon: 'fa-solid fa-person-circle-check',
+          color: '#7600bc'
+        },
+        {
+          value: getPatientPresence('tidak hadir')?.length,
+          title: 'Patient Not Present',
+          icon: 'fa-solid fa-person-circle-xmark',
+          color: '#ffa500'
+        },
+        {
+          value: filterPMPatient('cash')?.length,
+          title: 'Cash Payment Method',
+          icon: 'fa-solid fa-coins',
+          color: '#f85084'
+        },
+        {
+          value: filterPMPatient('bpjs')?.length,
+          title: 'BPJS Payment Method',
+          icon: 'fa-solid fa-id-card',
+          color: '#0ab110'
+        },
+        {
+          value: getTotalCost() ? numberFormatIndo(getTotalCost()) : 0,
+          title: 'Earning',
+          icon: 'fa-solid fa-chart-line',
+          color: '#ff296d'
+        }
+      ])
+    }
+  }, [user, dataFinishTreatment])
 
   const patientFinishTreatmentOnYears = (years) => {
     const checkPatientOnDate = patientRegisAtFinishTreatment?.length > 0 ? patientRegisAtFinishTreatment.filter(item => {
@@ -183,18 +237,6 @@ export default function Home() {
     findPatientFTInMonthDec?.length,
   ]
 
-  // presence on years in every month
-  const checkPatientRegisDataInMonth = (item) => {
-    const findPatientInRegisData = userAppointmentData?.length > 0 ? userAppointmentData.find(patient => patient.id === item.patientId) : {}
-
-    return findPatientInRegisData?.isConfirm?.presence
-  }
-  const checkCurrentLoketInMonth = (item) => {
-    const getCurrentLoket = getPatientQueue?.length > 0 ? getPatientQueue?.find(data => data.patientId === item.patientId && data?.isConfirm?.confirmState) : {}
-
-    return getCurrentLoket?.presence
-  }
-
   const findPatientPresenceInMonthJan = findPatientFTInMonthJan?.length > 0 ? findPatientFTInMonthJan.map(item => ({
     completionStage: checkPatientRegisDataInMonth(item) === 'hadir' ? checkCurrentLoketInMonth(item) : checkPatientRegisDataInMonth(item)
   })) : []
@@ -268,20 +310,6 @@ export default function Home() {
     getPatientPresenceOnMonth(findPatientPresenceInMonthNov, 'tidak hadir')?.length,
     getPatientPresenceOnMonth(findPatientPresenceInMonthDec, 'tidak hadir')?.length,
   ]
-
-  // payment information chart
-  // this function for polar area chat and bar chat of payment information
-  const getPaymentInCurrentInfo = (item) => {
-    const getCurrentLoket = getPatientQueue?.length > 0 ? getPatientQueue?.find(data => data.patientId === item.patientId && data?.isConfirm?.confirmState) : {}
-    const paymentInfo = getCurrentLoket?.isConfirm?.paymentInfo
-
-    return {
-      paymentInfo: {
-        paymentMethod: paymentInfo?.paymentMethod,
-        totalCost: paymentInfo?.totalCost
-      }
-    }
-  }
 
   // polar area chart
   const getPaymentPatientOnYear = patientFinishTreatmentOnYears(chooseYearPaymentInfo)?.length > 0 ? patientFinishTreatmentOnYears(chooseYearPaymentInfo).map((item, idx) => (getPaymentInCurrentInfo(item))) : []

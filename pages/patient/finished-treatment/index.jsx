@@ -226,7 +226,7 @@ function FinishedTreatment() {
                                 />
 
                                 {newPatientRegistration?.length > 0 ? newPatientRegistration.map((item, index) => {
-                                    const jenisPenyakit = item.data[2].name?.replace('-', '')
+                                    const jenisPenyakit = item.data[3].name?.replace('-', '')
                                     const newJenisPenyakit = jenisPenyakit?.replace(/ /gi, '-')?.toLowerCase()
                                     const emailPatient = item.data[6].name
                                     const pathUrlToCounterStage = `/patient/patient-registration/personal-data/confirmed/${newJenisPenyakit}/${emailPatient}/${item.patientId}/counter/${item.dataPatientInCounter?.loketName}/${item.dataPatientInCounter?.confirmState ? 'confirmed' : 'not-yet-confirmed'}/${item.dataPatientInCounter?.queueNumber}`
