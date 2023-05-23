@@ -25,6 +25,7 @@ import OverviewCard from 'components/OverviewCard'
 export default function Home() {
   const [chooseYear, setChooseYear] = useState(`${new Date().getFullYear()}`)
   const [chooseYearPaymentInfo, setChooseYearPaymentInfo] = useState(`${new Date().getFullYear()}`)
+  const [chooseYearEarnings, setChooseYearEarnings] = useState(`${new Date().getFullYear()}`)
   const [overviewData, setOverviewData] = useState([])
 
   // context
@@ -82,6 +83,13 @@ export default function Home() {
     }
   }
 
+  const numberFormatIndo = (number) => {
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR'
+    }).format(number)
+  }
+
   useEffect(() => {
     if (user?.id && patientRegisAtFinishTreatment?.length > 0) {
       const getTotalPatientPresence = patientRegisAtFinishTreatment?.length > 0 ? patientRegisAtFinishTreatment.map(item => ({
@@ -113,13 +121,6 @@ export default function Home() {
         }
 
         return totalCost
-      }
-
-      const numberFormatIndo = (number)=>{
-        return new Intl.NumberFormat('id-ID', {
-          style: 'currency',
-          currency: 'IDR'
-        }).format(number)
       }
 
       setOverviewData([
@@ -422,6 +423,80 @@ export default function Home() {
     findPaymentMethodInEveryMonth(getPatientPaymentInMonthDec, 'bpjs')?.length,
   ]
 
+  // bar chart earnings in every month
+  const findPMPatientInJan = patientFinishTreatmentOnYears(chooseYearEarnings)?.length > 0 ? patientFinishTreatmentOnYears(chooseYearEarnings).filter((item, idx) => {
+    return checkDateConfFinishTreatment(item) === 1
+  }) : []
+  const findPMPatientInFeb = patientFinishTreatmentOnYears(chooseYearEarnings)?.length > 0 ? patientFinishTreatmentOnYears(chooseYearEarnings).filter((item, idx) => {
+    return checkDateConfFinishTreatment(item) === 2
+  }) : []
+  const findPMPatientInMar = patientFinishTreatmentOnYears(chooseYearEarnings)?.length > 0 ? patientFinishTreatmentOnYears(chooseYearEarnings).filter((item, idx) => {
+    return checkDateConfFinishTreatment(item) === 3
+  }) : []
+  const findPMPatientInApr = patientFinishTreatmentOnYears(chooseYearEarnings)?.length > 0 ? patientFinishTreatmentOnYears(chooseYearEarnings).filter((item, idx) => {
+    return checkDateConfFinishTreatment(item) === 4
+  }) : []
+  const findPMPatientInMay = patientFinishTreatmentOnYears(chooseYearEarnings)?.length > 0 ? patientFinishTreatmentOnYears(chooseYearEarnings).filter((item, idx) => {
+    return checkDateConfFinishTreatment(item) === 5
+  }) : []
+  const findPMPatientInJun = patientFinishTreatmentOnYears(chooseYearEarnings)?.length > 0 ? patientFinishTreatmentOnYears(chooseYearEarnings).filter((item, idx) => {
+    return checkDateConfFinishTreatment(item) === 6
+  }) : []
+  const findPMPatientInJul = patientFinishTreatmentOnYears(chooseYearEarnings)?.length > 0 ? patientFinishTreatmentOnYears(chooseYearEarnings).filter((item, idx) => {
+    return checkDateConfFinishTreatment(item) === 7
+  }) : []
+  const findPMPatientInAug = patientFinishTreatmentOnYears(chooseYearEarnings)?.length > 0 ? patientFinishTreatmentOnYears(chooseYearEarnings).filter((item, idx) => {
+    return checkDateConfFinishTreatment(item) === 8
+  }) : []
+  const findPMPatientInSep = patientFinishTreatmentOnYears(chooseYearEarnings)?.length > 0 ? patientFinishTreatmentOnYears(chooseYearEarnings).filter((item, idx) => {
+    return checkDateConfFinishTreatment(item) === 9
+  }) : []
+  const findPMPatientInOct = patientFinishTreatmentOnYears(chooseYearEarnings)?.length > 0 ? patientFinishTreatmentOnYears(chooseYearEarnings).filter((item, idx) => {
+    return checkDateConfFinishTreatment(item) === 10
+  }) : []
+  const findPMPatientInNov = patientFinishTreatmentOnYears(chooseYearEarnings)?.length > 0 ? patientFinishTreatmentOnYears(chooseYearEarnings).filter((item, idx) => {
+    return checkDateConfFinishTreatment(item) === 11
+  }) : []
+  const findPMPatientInDec = patientFinishTreatmentOnYears(chooseYearEarnings)?.length > 0 ? patientFinishTreatmentOnYears(chooseYearEarnings).filter((item, idx) => {
+    return checkDateConfFinishTreatment(item) === 12
+  }) : []
+
+  const getEarningOfPMInMonthJan = findPMPatientInJan?.length > 0 ? findPMPatientInJan.map(item => (getPaymentInCurrentInfo(item))) : []
+  const getEarningOfPMInMonthFeb = findPMPatientInFeb?.length > 0 ? findPMPatientInFeb.map(item => (getPaymentInCurrentInfo(item))) : []
+  const getEarningOfPMInMonthMar = findPMPatientInMar?.length > 0 ? findPMPatientInMar.map(item => (getPaymentInCurrentInfo(item))) : []
+  const getEarningOfPMInMonthApr = findPMPatientInApr?.length > 0 ? findPMPatientInApr.map(item => (getPaymentInCurrentInfo(item))) : []
+  const getEarningOfPMInMonthMay = findPMPatientInMay?.length > 0 ? findPMPatientInMay.map(item => (getPaymentInCurrentInfo(item))) : []
+  const getEarningOfPMInMonthJun = findPMPatientInJun?.length > 0 ? findPMPatientInJun.map(item => (getPaymentInCurrentInfo(item))) : []
+  const getEarningOfPMInMonthJul = findPMPatientInJul?.length > 0 ? findPMPatientInJul.map(item => (getPaymentInCurrentInfo(item))) : []
+  const getEarningOfPMInMonthAug = findPMPatientInAug?.length > 0 ? findPMPatientInAug.map(item => (getPaymentInCurrentInfo(item))) : []
+  const getEarningOfPMInMonthSep = findPMPatientInSep?.length > 0 ? findPMPatientInSep.map(item => (getPaymentInCurrentInfo(item))) : []
+  const getEarningOfPMInMonthOct = findPMPatientInOct?.length > 0 ? findPMPatientInOct.map(item => (getPaymentInCurrentInfo(item))) : []
+  const getEarningOfPMInMonthNov = findPMPatientInNov?.length > 0 ? findPMPatientInNov.map(item => (getPaymentInCurrentInfo(item))) : []
+  const getEarningOfPMInMonthDec = findPMPatientInDec?.length > 0 ? findPMPatientInDec.map(item => (getPaymentInCurrentInfo(item))) : []
+
+  // get total income / earnings from cash payment method in every month
+  const getTotalIncomeInEveryMonth = (getEarningInMonth) => {
+    const getCashPM = findPaymentMethodInEveryMonth(eval(getEarningInMonth), 'cash')
+    const totalIncome = getCashPM?.length > 0 ? getCashPM.map(item => item.paymentInfo.totalCost) : []
+
+    return totalIncome?.length > 0 ? eval(totalIncome.join('+')) : 0
+  }
+
+  const dataEarningOfBarChart = [
+    getTotalIncomeInEveryMonth(getEarningOfPMInMonthJan),
+    getTotalIncomeInEveryMonth(getEarningOfPMInMonthFeb),
+    getTotalIncomeInEveryMonth(getEarningOfPMInMonthMar),
+    getTotalIncomeInEveryMonth(getEarningOfPMInMonthApr),
+    getTotalIncomeInEveryMonth(getEarningOfPMInMonthMay),
+    getTotalIncomeInEveryMonth(getEarningOfPMInMonthJun),
+    getTotalIncomeInEveryMonth(getEarningOfPMInMonthJul),
+    getTotalIncomeInEveryMonth(getEarningOfPMInMonthAug),
+    getTotalIncomeInEveryMonth(getEarningOfPMInMonthSep),
+    getTotalIncomeInEveryMonth(getEarningOfPMInMonthOct),
+    getTotalIncomeInEveryMonth(getEarningOfPMInMonthNov),
+    getTotalIncomeInEveryMonth(getEarningOfPMInMonthDec),
+  ]
+
   const labels = [
     "January",
     "February",
@@ -443,20 +518,21 @@ export default function Home() {
       {
         label: 'Patient treatment',
         data: dataActivityChart,
-        backgroundColor: [
-          '#f85084',
-          '#288bbc',
-          '#ffb347',
-          '#00ecfa',
-          '#be2ed6',
-          '#fa9c1b',
-          '#ff296d',
-          '#ced4da',
-          '#fffdd0',
-          '#01ffff',
-          '#7600bc',
-          '#ffa500'
-        ],
+        backgroundColor: '#187bcd'
+        // backgroundColor: [
+        //   '#f85084',
+        //   '#288bbc',
+        //   '#ffb347',
+        //   '#00ecfa',
+        //   '#be2ed6',
+        //   '#fa9c1b',
+        //   '#ff296d',
+        //   '#ced4da',
+        //   '#fffdd0',
+        //   '#01ffff',
+        //   '#7600bc',
+        //   '#ffa500'
+        // ],
         // borderColor: [
         //   'rgb(255, 99, 132)',
         //   'rgb(255, 159, 64)',
@@ -542,6 +618,43 @@ export default function Home() {
     },
   }
 
+  const optionsEarningsBarChart = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'top',
+      },
+      title: {
+        display: true,
+        text: 'Earning this year (2023)',
+      },
+    },
+  };
+
+  const dataEarningsBarChart = {
+    labels: labels,
+    datasets: [
+      {
+        label: 'Earning',
+        data: dataEarningOfBarChart,
+        backgroundColor: [
+          '#f85084',
+          '#288bbc',
+          '#ffb347',
+          '#00ecfa',
+          '#be2ed6',
+          '#fa9c1b',
+          '#ff296d',
+          '#ced4da',
+          '#fffdd0',
+          '#01ffff',
+          '#7600bc',
+          '#ffa500'
+        ],
+      }
+    ]
+  }
+
   return (
     <>
       <Head>
@@ -572,7 +685,7 @@ export default function Home() {
 
             {/* patient treatment */}
             <h1 className={styles['title']} style={{
-              marginTop: '50px'
+              marginTop: '43px'
             }}>Patient Treatment</h1>
             <div className={styles['filter-years']}>
               <Button
@@ -632,6 +745,37 @@ export default function Home() {
                 />
               </div>
             </div>
+
+            <h1 className={styles['title']} style={{
+              marginTop: '40px'
+            }}>Earnings</h1>
+
+            <div className={styles['filter-years']}>
+              <Button
+                name="Year in 2023"
+                style={{
+                  backgroundColor: '#fff',
+                  border: '1px solid #ddd',
+                  color: '#444',
+                  borderRadius: '5px',
+                  marginTop: '20px',
+                  padding: '10px 13px'
+                }}
+              />
+            </div>
+
+            <TableContainer styleWrapp={{
+              width: 'auto',
+              margin: '20px 10px 10px 10px',
+              maxHeight: '600px',
+              alignItems: 'center'
+            }}>
+              <Bar
+                options={optionsEarningsBarChart}
+                data={dataEarningsBarChart}
+                className={styles['trafic-presence']}
+              />
+            </TableContainer>
           </div>
         </div>
       </div>
