@@ -135,7 +135,7 @@ function DetailCounter() {
         if (getLoket?.length > 0) {
             setTimeout(() => {
                 changeTableStyle()
-            }, 500);
+            }, 100);
         }
     }, [getLoket])
 

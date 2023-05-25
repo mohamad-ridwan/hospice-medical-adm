@@ -252,6 +252,31 @@ function PersonalDataRegistration() {
             .catch(err => console.log(err))
     }
 
+    // filter doctor in day of appointment date patient
+    const getDateOfAppointmentDatePatient = new Date(patientData?.appointmentDate)
+    const getDayOfADPatient = getDateOfAppointmentDatePatient ? getDateOfAppointmentDatePatient?.toString()?.split(' ') : null
+    const findIdxDayOfADPatient = getDayOfADPatient ? dayNamesEng.findIndex(day => day === getDayOfADPatient[0]?.toLowerCase()) : null
+    const dayNameOfADPatient = findIdxDayOfADPatient ? dayNamesInd[findIdxDayOfADPatient] : null
+
+    const getDoctorsInCurrentDate = findCurrentSpecialist?.length > 0 ? findCurrentSpecialist.filter(doctor => {
+        const findDay = doctor.jadwalDokter?.filter(day => day?.toLowerCase() === dayNameOfADPatient)
+
+        return findDay?.length > 0
+    }) : null
+    // load room one
+    const getDoctorsInCurrentRoom = getDoctorsInCurrentDate?.length > 0 ? getDoctorsInCurrentDate.filter(doctor => doctor.room === roomDiseaseType[0]?.title) : []
+    // load room > 0
+    const getDoctorsOtherFrom1 = getDoctorsInCurrentRoom?.length === 0 && getDoctorsInCurrentDate?.length > 0 ? getDoctorsInCurrentDate.filter(doctor => {
+        const checkRoom = roomDiseaseType?.length > 0 ? roomDiseaseType.filter(room => room.title === doctor.room) : []
+
+        return checkRoom?.length > 0
+    }) : []
+
+    const findOneDoctorOfFirstOne = getDoctorsInCurrentRoom?.length > 0 ? getDoctorsInCurrentRoom[0] : getDoctorsOtherFrom1[0]
+
+    const findCurrentRoom = roomDiseaseType?.length > 0 ? roomDiseaseType.find(room => room?.title === findOneDoctorOfFirstOne?.room) : {}
+    const findIdxCurrentRoom = roomDiseaseType?.length > 0 ? roomDiseaseType.findIndex(room => room?.title === findOneDoctorOfFirstOne?.room) : null
+
     useEffect(() => {
         if (user?.id && !loadService && patientData?.isNotif === false) {
             updateNotif()
@@ -309,6 +334,17 @@ function PersonalDataRegistration() {
                 },
                 presence
             })
+
+            const selectElDoctorUpdtConfInfo = document.getElementById('chooseDoctorsConfInfo')
+            const findCurrentDoctorUpdtConfInfo = getDoctorsInCurrentDate?.length > 0 ? getDoctorsInCurrentDate.find(doctor => doctor.title === doctorInfo?.nameDoctor) : null
+            if (selectElDoctorUpdtConfInfo) {
+                selectElDoctorUpdtConfInfo.value = findCurrentDoctorUpdtConfInfo?.id
+            }
+            const selectElRoomUpdtConfInfo = document.getElementById('chooseRoomUpdtConfInfo')
+            const findCurrentRoomUpdtConfInfo = roomDiseaseType?.length > 0 ? roomDiseaseType.find(room=>room.title === roomInfo?.roomName) : null
+            if(selectElRoomUpdtConfInfo){
+                selectElRoomUpdtConfInfo.value = findCurrentRoomUpdtConfInfo?.id
+            }
         }
     }, [user, patientData])
 
@@ -324,58 +360,61 @@ function PersonalDataRegistration() {
         }
     }, [loadService])
 
-    // filter doctor in day of appointment date patient
-    const getDateOfAppointmentDatePatient = new Date(patientData?.appointmentDate)
-    const getDayOfADPatient = getDateOfAppointmentDatePatient ? getDateOfAppointmentDatePatient?.toString()?.split(' ') : null
-    const findIdxDayOfADPatient = getDayOfADPatient ? dayNamesEng.findIndex(day => day === getDayOfADPatient[0]?.toLowerCase()) : null
-    const dayNameOfADPatient = findIdxDayOfADPatient ? dayNamesInd[findIdxDayOfADPatient] : null
-
-    const getDoctorsInCurrentDate = findCurrentSpecialist?.length > 0 ? findCurrentSpecialist.filter(doctor => {
-        const findDay = doctor.jadwalDokter?.filter(day => day?.toLowerCase() === dayNameOfADPatient)
-
-        return findDay?.length > 0
-    }) : null
-    // load room one
-    const getDoctorsInCurrentRoom = getDoctorsInCurrentDate?.length > 0 ? getDoctorsInCurrentDate.filter(doctor => doctor.room === roomDiseaseType[0]?.title) : []
-    // load room > 0
-    const getDoctorsOtherFrom1 = getDoctorsInCurrentRoom?.length === 0 && getDoctorsInCurrentDate?.length > 0 ? getDoctorsInCurrentDate.filter(doctor => {
-        const checkRoom = roomDiseaseType?.length > 0 ? roomDiseaseType.filter(room => room.title === doctor.room) : []
-
-        return checkRoom?.length > 0
-    }) : []
-
-    const findOneDoctorOfFirstOne = getDoctorsInCurrentRoom?.length > 0 ? getDoctorsInCurrentRoom[0] : getDoctorsOtherFrom1[0]
-
-    const findCurrentRoom = roomDiseaseType?.length > 0 ? roomDiseaseType.find(room => room?.title === findOneDoctorOfFirstOne?.room) : {}
-    const findIdxCurrentRoom = roomDiseaseType?.length > 0 ? roomDiseaseType.findIndex(room => room?.title === findOneDoctorOfFirstOne?.room) : null
-
     useEffect(() => {
         if (params?.length > 0 && dataDoctors?.data && findCurrentSpecialist?.length > 0) {
             const selectElDoctor = document.getElementById('chooseDoctors')
+            const selectElDoctorUpdtInfo = document.getElementById('chooseDoctorEditPatientInfo')
+            const selectElDayDoctorSchedule = document.getElementById('selectDayUpdtPatientInfo')
+
             if (selectElDoctor && findOneDoctorOfFirstOne?.id) {
                 selectElDoctor.value = findOneDoctorOfFirstOne.id
             }
 
             setChooseDoctor(findOneDoctorOfFirstOne)
-            setChooseDoctorUpdtInfoPatient(findOneDoctorOfFirstOne)
-            const selectElDoctorUpdtInfo = document.getElementById('chooseDoctorEditPatientInfo')
-            if (selectElDoctorUpdtInfo) {
-                selectElDoctorUpdtInfo.value = findOneDoctorOfFirstOne.id
-            }
 
-            const getDayDoctorSchedule = findOneDoctorOfFirstOne?.jadwalDokter ? findOneDoctorOfFirstOne.jadwalDokter.map((jadwal, idx) => ({
-                id: jadwal,
-                title: jadwal
-            })) : []
-            setDataDayOfDoctros(getDayDoctorSchedule)
-            const findIdxDayDoctorSchedule = getDayDoctorSchedule?.length > 0 ? getDayDoctorSchedule.findIndex(jadwal => jadwal.title?.toLowerCase() === dayNameOfADPatient) : null
-            setChooseDayOfDoctorOnUpdtInfoPatient(getDayDoctorSchedule[findIdxDayDoctorSchedule])
+            // jika pasien belum di konfirmasi
+            // form info pasien update
+            if (!patientData?.isConfirm?.id) {
+                setChooseDoctorUpdtInfoPatient(findOneDoctorOfFirstOne)
 
-            const selectElDayDoctorSchedule = document.getElementById('selectDayUpdtPatientInfo')
-            if (selectElDayDoctorSchedule) {
-                setTimeout(() => {
-                    selectElDayDoctorSchedule.value = getDayDoctorSchedule[findIdxDayDoctorSchedule]?.title
-                }, 1000);
+                if (selectElDoctorUpdtInfo) {
+                    selectElDoctorUpdtInfo.value = findOneDoctorOfFirstOne.id
+                }
+
+                const getDayDoctorSchedule = findOneDoctorOfFirstOne?.jadwalDokter ? findOneDoctorOfFirstOne.jadwalDokter.map((jadwal, idx) => ({
+                    id: jadwal,
+                    title: jadwal
+                })) : []
+                setDataDayOfDoctros(getDayDoctorSchedule)
+                const findIdxDayDoctorSchedule = getDayDoctorSchedule?.length > 0 ? getDayDoctorSchedule.findIndex(jadwal => jadwal.title?.toLowerCase() === dayNameOfADPatient) : null
+                setChooseDayOfDoctorOnUpdtInfoPatient(getDayDoctorSchedule[findIdxDayDoctorSchedule])
+
+                if (selectElDayDoctorSchedule) {
+                    setTimeout(() => {
+                        selectElDayDoctorSchedule.value = getDayDoctorSchedule[findIdxDayDoctorSchedule]?.title
+                    }, 1000);
+                }
+                // jika pasien sudah di konfirmasi
+                // form info pasien update
+            } else if (patientData?.isConfirm?.id) {
+                const findDoctorOnConfirm = getDoctorsInCurrentDate?.length > 0 ? getDoctorsInCurrentDate?.find(doctor => doctor.title === patientData?.isConfirm?.doctorInfo?.nameDoctor) : null
+                setChooseDoctorUpdtInfoPatient(findDoctorOnConfirm)
+                if (selectElDoctorUpdtInfo) {
+                    selectElDoctorUpdtInfo.value = findDoctorOnConfirm.id
+                }
+                const getDayDoctorSchedule = findDoctorOnConfirm?.jadwalDokter ? findDoctorOnConfirm.jadwalDokter.map((jadwal, idx) => ({
+                    id: jadwal,
+                    title: jadwal
+                })) : []
+                setDataDayOfDoctros(getDayDoctorSchedule)
+                const findIdxDayDoctorSchedule = getDayDoctorSchedule?.length > 0 ? getDayDoctorSchedule.findIndex(jadwal => jadwal.title?.toLowerCase() === dayNameOfADPatient) : null
+                setChooseDayOfDoctorOnUpdtInfoPatient(getDayDoctorSchedule[findIdxDayDoctorSchedule])
+
+                if (selectElDayDoctorSchedule) {
+                    setTimeout(() => {
+                        selectElDayDoctorSchedule.value = getDayDoctorSchedule[findIdxDayDoctorSchedule]?.title
+                    }, 1000);
+                }
             }
 
             if (params?.length > 0 && dataService?.data && roomDiseaseType?.length > 0) {
@@ -473,12 +512,13 @@ function PersonalDataRegistration() {
                             if (window.confirm(`update patient data from ${patientData?.patientName}?`)) {
                                 setLoadingSubmit(true)
                                 if (valueInputEdit.appointmentDate !== patientData?.appointmentDate && patientData?.isConfirm?.id) {
+                                    // update data konfirmasi pasien jika sudah dikonfirmasi
                                     // for queue number of patient
                                     const currentPatient = userAppointmentData && patientData ? userAppointmentData.filter(patient =>
                                         patient.jenisPenyakit === patientData?.jenisPenyakit &&
                                         patient.appointmentDate === valueInputEdit.appointmentDate &&
                                         patient.isConfirm?.id &&
-                                        patient.isConfirm?.roomInfo?.roomName === patientData?.isConfirm?.roomInfo?.roomName
+                                        patient.isConfirm?.roomInfo?.roomName === chooseDoctorUpdtInfoPatient?.room
                                     ) : null
 
                                     const { id, message, dateConfirm, confirmHour, treatmentHours, presence } = patientData?.isConfirm
@@ -492,12 +532,12 @@ function PersonalDataRegistration() {
                                         confirmHour: confirmHour,
                                         treatmentHours: treatmentHours,
                                         doctorInfo: {
-                                            nameDoctor: patientData?.isConfirm?.doctorInfo?.nameDoctor,
-                                            doctorSpecialist: patientData?.isConfirm?.doctorInfo?.doctorSpecialist
+                                            nameDoctor: chooseDoctorUpdtInfoPatient?.title,
+                                            doctorSpecialist: chooseDoctorUpdtInfoPatient?.spesialis
                                         },
                                         queueNumber: `${currentPatient?.length + 1}`,
                                         roomInfo: {
-                                            roomName: patientData?.isConfirm?.roomInfo?.roomName
+                                            roomName: chooseDoctorUpdtInfoPatient?.room
                                         },
                                         presence: presence
                                     }
@@ -510,6 +550,7 @@ function PersonalDataRegistration() {
                                         console.log(err)
                                     })
                                 } else {
+                                    // update data informasi pasien jika belum dikonfirmasi
                                     updatePersonalDataPatient()
                                 }
                             }
@@ -660,7 +701,7 @@ function PersonalDataRegistration() {
         const selectEl = document.getElementById('chooseDoctors')
         const id = selectEl.options[selectEl.selectedIndex].value
         if (id) {
-            const findDoctorInCurrentDate = getDoctorsInCurrentDate?.length > 0 ? getDoctorsInCurrentDate.find(doctor => doctor.id === id) : []
+            const findDoctorInCurrentDate = getDoctorsInCurrentDate?.length > 0 ? getDoctorsInCurrentDate.find(doctor => doctor.id === id) : {}
 
             if (findDoctorInCurrentDate?.id) {
                 // const findDoctor = findCurrentSpecialist.find(doc => doc.id === id)
@@ -693,19 +734,45 @@ function PersonalDataRegistration() {
         const selectEl = document.getElementById('chooseDoctorsConfInfo')
         const id = selectEl.options[selectEl.selectedIndex].value
         if (id) {
-            const findDoctor = findCurrentSpecialist.find(doc => doc.id === id)
-            setInputUpdtConfirmInfo({
-                ...inputUpdtConfirmInfo,
-                doctorInfo: {
-                    nameDoctor: findDoctor?.title,
-                    doctorSpecialist: findDoctor?.spesialis
+            const findDoctorInCurrentDate = getDoctorsInCurrentDate?.length > 0 ? getDoctorsInCurrentDate.find(doctor => doctor.id === id) : {}
+            if (findDoctorInCurrentDate?.id) {
+                const currentPatient = userAppointmentData && patientData ? userAppointmentData.filter(patient =>
+                    patient.jenisPenyakit === patientData?.jenisPenyakit &&
+                    patient.appointmentDate === patientData?.appointmentDate &&
+                    patient.isConfirm?.id &&
+                    patient.isConfirm?.roomInfo?.roomName === findDoctorInCurrentDate?.room &&
+                    patient.id !== patientData?.id
+                ) : null
+
+                setInputUpdtConfirmInfo({
+                    ...inputUpdtConfirmInfo,
+                    doctorInfo: {
+                        nameDoctor: findDoctorInCurrentDate?.title,
+                        doctorSpecialist: findDoctorInCurrentDate?.spesialis
+                    },
+                    roomInfo: {
+                        roomName: findDoctorInCurrentDate?.room
+                    },
+                    queueNumber: `${currentPatient?.length + 1}`
+                })
+                setErrMsgInputUpdtConfirmInfo({
+                    ...errMsgInputUpdtConfirmInfo,
+                    nameDoctor: '',
+                    doctorSpecialist: '',
+                    roomName: '',
+                    totalQueue: ''
+                })
+
+                const findCurrentRoom = roomDiseaseType?.length > 0 ? roomDiseaseType.find(room => room.title === findDoctorInCurrentDate?.room) : {}
+                const selectElRoomUpdtConfInfo = document.getElementById('chooseRoomUpdtConfInfo')
+                if (selectElRoomUpdtConfInfo) {
+                    selectElRoomUpdtConfInfo.value = findCurrentRoom?.id
                 }
-            })
-            setErrMsgInputUpdtConfirmInfo({
-                ...errMsgInputUpdtConfirmInfo,
-                nameDoctor: '',
-                doctorSpecialist: ''
-            })
+            } else {
+                alert(`The doctor is not on the patient's schedule`)
+                const findPrevDoctor = getDoctorsInCurrentDate?.length > 0 ? getDoctorsInCurrentDate.find(doctor => doctor.title === inputUpdtConfirmInfo?.doctorInfo?.nameDoctor) : {}
+                selectEl.value = findPrevDoctor?.id
+            }
         }
     }
 
@@ -767,26 +834,44 @@ function PersonalDataRegistration() {
         const id = selectEl.options[selectEl.selectedIndex].value
         if (id) {
             const findRoom = roomDiseaseType.find(doc => doc.id === id)
-            const currentPatient = userAppointmentData && patientData ? userAppointmentData.filter(patient =>
-                patient.jenisPenyakit === patientData?.jenisPenyakit &&
-                patient.appointmentDate === patientData?.appointmentDate &&
-                patient.isConfirm?.id &&
-                patient.isConfirm?.roomInfo?.roomName === findRoom?.title &&
-                patient.id !== patientData?.id
-            ) : null
+            const filterDoctorInCurrentDate = getDoctorsInCurrentDate?.length > 0 ? getDoctorsInCurrentDate.filter(doctor => doctor.room === findRoom?.title) : []
+            if (filterDoctorInCurrentDate?.length > 0) {
+                const currentPatient = userAppointmentData && patientData ? userAppointmentData.filter(patient =>
+                    patient.jenisPenyakit === patientData?.jenisPenyakit &&
+                    patient.appointmentDate === patientData?.appointmentDate &&
+                    patient.isConfirm?.id &&
+                    patient.isConfirm?.roomInfo?.roomName === findRoom?.title &&
+                    patient.id !== patientData?.id
+                ) : null
 
-            setInputUpdtConfirmInfo({
-                ...inputUpdtConfirmInfo,
-                roomInfo: {
-                    roomName: findRoom?.title
-                },
-                queueNumber: `${currentPatient?.length + 1}`
-            })
-            setErrMsgInputUpdtConfirmInfo({
-                ...errMsgInputUpdtConfirmInfo,
-                roomName: '',
-                totalQueue: ''
-            })
+                setInputUpdtConfirmInfo({
+                    ...inputUpdtConfirmInfo,
+                    doctorInfo: {
+                        doctorSpecialist: filterDoctorInCurrentDate[0]?.spesialis,
+                        nameDoctor: filterDoctorInCurrentDate[0]?.title
+                    },
+                    roomInfo: {
+                        roomName: findRoom?.title
+                    },
+                    queueNumber: `${currentPatient?.length + 1}`
+                })
+                setErrMsgInputUpdtConfirmInfo({
+                    ...errMsgInputUpdtConfirmInfo,
+                    roomName: '',
+                    totalQueue: '',
+                    nameDoctor: '',
+                    doctorSpecialist: '',
+                })
+
+                const seletElDoctorOnConfirmInfo = document.getElementById('chooseDoctorsConfInfo')
+                if (seletElDoctorOnConfirmInfo) {
+                    seletElDoctorOnConfirmInfo.value = filterDoctorInCurrentDate[0]?.id
+                }
+            } else {
+                alert(`Doctor there is no doctor's schedule available in this room`)
+                const findPrevRoom = roomDiseaseType?.length > 0 ? roomDiseaseType.find(room => room.title === inputUpdtConfirmInfo?.roomInfo?.roomName) : {}
+                selectEl.value = findPrevRoom?.id
+            }
         }
     }
 
