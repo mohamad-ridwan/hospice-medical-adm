@@ -11,6 +11,7 @@ function MenuNotif({
     message,
     styleAppointmentDate,
     styleCalendar,
+    styleEmail,
     click
 }) {
     return (
@@ -27,9 +28,9 @@ function MenuNotif({
             </div>
 
             <h6 className={style['jenis-penyakit']}>{jenisPenyakit}</h6>
-            <span className={style['email']}>Pasien : {pasien}</span>
-            <span className={style['email']}>email : {email}</span>
-            <p className={style['message']}>{message}</p>
+            <span className={style['email']}>Patient: {pasien}</span>
+            <span className={style['email']} style={styleEmail}>email : {email}</span>
+            <p className={style['message']}>Message: {message}</p>
         </li>
     )
 }

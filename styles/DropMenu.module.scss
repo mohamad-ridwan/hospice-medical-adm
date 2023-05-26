@@ -8,25 +8,26 @@
     }
 }
 
-.wrapp{
+
+.wrapp {
     display: flex;
     flex-direction: column;
     background-color: #fff;
     position: absolute;
     min-width: 120px;
-    box-shadow: 0 2px 3px -1px rgba(0,0,0,0.3);
+    box-shadow: 0 2px 3px -1px rgba(0, 0, 0, 0.3);
     margin-top: 150px;
     margin-left: -30px;
     border-radius: 5px;
     transition: 0.2s ease-in-out;
     overflow: hidden;
 
-    .container-scroll{
+    .container-scroll {
         display: flex;
         flex-direction: column;
     }
 
-    .menu{
+    .menu {
         display: flex;
         font-size: 13px;
         color: $fontColor3;
@@ -34,17 +35,18 @@
         padding: 10px 20px;
         transition: 0.2s ease-in-out;
         font-family: 'Mulish', sans-serif;
-        &:hover{
+
+        &:hover {
             background-color: $colorDefault;
             color: #fff;
         }
     }
 }
 
-.wrapp-notif{
+.wrapp-notif {
     width: 300px;
 
-    @include mobileNameNav(){
+    @include mobileNameNav() {
         width: 260px;
     }
 }
@@ -57,5 +59,6 @@
     bottom: 0;
     top: 0;
     z-index: 9999999999999999;
-    background: rgba(0,0,0,0.6);
+    // background: rgba(0,0,0,0.6);
+    background: transparent;
 }

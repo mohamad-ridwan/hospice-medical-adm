@@ -180,9 +180,12 @@ function Navbar() {
                                                     // timeText={timeText}
                                                     date={submissionDate}
                                                     pasien={user.patientName?.length > 35 ? `${user.patientName.substr(0, 35)}...` : user.patientName}
-                                                    email={user.emailAddress}
+                                                    // email={user.emailAddress}
                                                     jenisPenyakit={user.jenisPenyakit}
                                                     message={user.message?.length > 110 ? `${user.message.substr(0, 110)}...` : user.message}
+                                                    styleEmail={{
+                                                        display: 'none'
+                                                    }}
                                                     styleTimeText={{
                                                         display: 'none'
                                                     }}
