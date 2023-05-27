@@ -312,6 +312,20 @@ export default function Home() {
     getPatientPresenceOnMonth(findPatientPresenceInMonthDec, 'tidak hadir')?.length,
   ]
 
+  // total data patient treated in this year (polar chart)
+  const totalPatientTreatmentOnYear = patientFinishTreatmentOnYears(chooseYear)?.length > 0 ? patientFinishTreatmentOnYears(chooseYear) : []
+  const totalPatientPresenceOnYear = patientFinishTreatmentOnYears(chooseYear)?.length > 0 ? patientFinishTreatmentOnYears(chooseYear).map(item => ({
+    completionStage: checkPatientRegisDataInMonth(item) === 'hadir' ? checkCurrentLoketInMonth(item) : checkPatientRegisDataInMonth(item)
+  })) : []
+  const totalPatientPresentOnYear = totalPatientPresenceOnYear?.length > 0 ? totalPatientPresenceOnYear.filter(patient => patient.completionStage?.toLowerCase() === 'hadir') : []
+  const totalPatientNotPresentOnYear = totalPatientPresenceOnYear?.length > 0 ? totalPatientPresenceOnYear.filter(patient => patient.completionStage?.toLowerCase() === 'tidak hadir') : []
+
+  const dataTotalPatientTreatmentOnThisYear = [
+    totalPatientTreatmentOnYear?.length,
+    totalPatientPresentOnYear?.length,
+    totalPatientNotPresentOnYear?.length
+  ]
+
   // polar area chart
   const getPaymentPatientOnYear = patientFinishTreatmentOnYears(chooseYearPaymentInfo)?.length > 0 ? patientFinishTreatmentOnYears(chooseYearPaymentInfo).map((item, idx) => (getPaymentInCurrentInfo(item))) : []
 
@@ -322,19 +336,6 @@ export default function Home() {
     getCashPaymentMethod?.length,
     getBPJSPaymentMethod?.length
   ]
-
-  const options = {
-    responsive: true,
-    plugins: {
-      legend: {
-        position: 'top',
-      },
-      title: {
-        display: true,
-        text: 'Patient treated this year (2023)',
-      },
-    },
-  };
 
   // bar chart payment information in every month
   const findPatientFTOfPMInJan = patientFinishTreatmentOnYears(chooseYearPaymentInfo)?.length > 0 ? patientFinishTreatmentOnYears(chooseYearPaymentInfo).filter((item, idx) => {
@@ -497,6 +498,8 @@ export default function Home() {
     getTotalIncomeInEveryMonth(getEarningOfPMInMonthDec),
   ]
 
+  const getTotalIncomeOnYear = eval(dataEarningOfBarChart.join('+'))
+
   const labels = [
     "January",
     "February",
@@ -511,6 +514,19 @@ export default function Home() {
     "November",
     "December",
   ];
+
+  const options = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'top',
+      },
+      title: {
+        display: true,
+        text: 'Patient treated this year (2023)',
+      },
+    },
+  };
 
   const data = {
     labels: labels,
@@ -547,19 +563,44 @@ export default function Home() {
       {
         label: 'Present',
         data: dataPresentInEveryMonth,
-        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-        borderColor: 'rgb(75, 192, 192)',
-        borderWidth: 1
+        backgroundColor: '#7600bc',
       },
       {
         label: 'Not present',
         data: dataNotPresentInEveryMonth,
-        backgroundColor: 'rgba(255, 99, 132, 0.2)',
-        borderColor: 'rgb(255, 99, 132)',
-        borderWidth: 1
+        backgroundColor: '#ffa500',
       }
     ]
   }
+
+  const optionsPatientTreatedPolarChart = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'top',
+      },
+      title: {
+        display: true,
+        text: 'Total number of patients treated this year (2023)',
+      },
+    },
+  }
+
+  const dataPatientTreatedPolarChart = {
+    labels: ['Patient treatment', 'Present', 'Not present'],
+    datasets: [
+      {
+        label: 'Total',
+        data: dataTotalPatientTreatmentOnThisYear,
+        backgroundColor: [
+          '#187bcd',
+          '#7600bc',
+          '#ffa500'
+        ],
+        borderWidth: 1
+      },
+    ],
+  };
 
   const optionsPaymentInfoPolarChart = {
     responsive: true,
@@ -701,6 +742,17 @@ export default function Home() {
               />
             </div>
 
+            <TableContainer
+              classWrapp='total-patient-treatment-on-year'
+              styleWrapp={{
+                width: 'auto',
+                margin: '20px 10px 0 10px',
+                // maxHeight: '600px',
+                alignItems: 'center'
+              }}>
+              <PolarArea data={dataPatientTreatedPolarChart} options={optionsPatientTreatedPolarChart} />
+            </TableContainer>
+
             <TableContainer styleWrapp={{
               width: 'auto',
               margin: '20px 10px 0 10px',
@@ -733,11 +785,11 @@ export default function Home() {
             </div>
 
             {/* payment information */}
-            <div className={styles['payment-information']}>
-              <div className={`${styles['right']} ${styles['payment-info-group']}`}>
+            <div className={`${styles['chart-information']} payment-information`}>
+              <div className={`${styles['right']} ${styles['chart-info-group']}`}>
                 <PolarArea data={dataPaymentInfo} options={optionsPaymentInfoPolarChart} />
               </div>
-              <div className={`${styles['left']} ${styles['payment-info-group']}`}>
+              <div className={`${styles['left']} ${styles['chart-info-group']}`}>
                 <Bar
                   options={optionsPMPatientBarChart}
                   data={dataPMPatientBarChart}
@@ -764,18 +816,32 @@ export default function Home() {
               />
             </div>
 
-            <TableContainer styleWrapp={{
-              width: 'auto',
-              margin: '20px 10px 10px 10px',
-              maxHeight: '600px',
-              alignItems: 'center'
-            }}>
-              <Bar
-                options={optionsEarningsBarChart}
-                data={dataEarningsBarChart}
-                className={styles['trafic-presence']}
-              />
-            </TableContainer>
+            {/* Earnings */}
+            <div className={`${styles['chart-information']} ${styles['earnings-information']}`}>
+              <div className={`${styles['right']} ${styles['chart-info-group']}`}>
+                <h1 className={styles['total-earnings']}>
+                  {numberFormatIndo(getTotalIncomeOnYear)}
+                </h1>
+
+                <p className={styles['title']}>
+                  Total earnings for the year ({chooseYearEarnings})
+                </p>
+
+                <p className={styles['desc-earnings']}>
+                  Income is only calculated from the total patient payment methods in cash.
+                </p>
+                <p className={styles['notes']}>
+                  <strong>Notes : BPJS does not include income calculations.</strong>
+                </p>
+              </div>
+              <div className={`${styles['left']} ${styles['chart-info-group']}`}>
+                <Bar
+                  options={optionsEarningsBarChart}
+                  data={dataEarningsBarChart}
+                  className={styles['trafic-presence']}
+                />
+              </div>
+            </div>
           </div>
         </div>
       </div>

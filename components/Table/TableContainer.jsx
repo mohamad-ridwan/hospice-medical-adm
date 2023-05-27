@@ -2,10 +2,11 @@ import style from 'styles/TableContainer.module.scss'
 
 function TableContainer({
     children,
-    styleWrapp
+    styleWrapp,
+    classWrapp
 }) {
   return (
-    <div className={style['wrapp']} style={styleWrapp}>
+    <div className={`${style['wrapp']} ${style[classWrapp]}`} style={styleWrapp}>
         {children}
     </div>
   )

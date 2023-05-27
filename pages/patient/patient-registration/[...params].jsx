@@ -256,10 +256,10 @@ function PersonalDataRegistration() {
     const getDateOfAppointmentDatePatient = new Date(patientData?.appointmentDate)
     const getDayOfADPatient = getDateOfAppointmentDatePatient ? getDateOfAppointmentDatePatient?.toString()?.split(' ') : null
     const findIdxDayOfADPatient = getDayOfADPatient ? dayNamesEng.findIndex(day => day === getDayOfADPatient[0]?.toLowerCase()) : null
-    const dayNameOfADPatient = findIdxDayOfADPatient ? dayNamesInd[findIdxDayOfADPatient] : null
+    const dayNameOfADPatient = findIdxDayOfADPatient !== null ? dayNamesInd[findIdxDayOfADPatient] : null
 
     const getDoctorsInCurrentDate = findCurrentSpecialist?.length > 0 ? findCurrentSpecialist.filter(doctor => {
-        const findDay = doctor.jadwalDokter?.filter(day => day?.toLowerCase() === dayNameOfADPatient)
+        const findDay = doctor?.jadwalDokter?.filter(day => day.toLowerCase() === dayNameOfADPatient)
 
         return findDay?.length > 0
     }) : null
@@ -378,7 +378,7 @@ function PersonalDataRegistration() {
                 setChooseDoctorUpdtInfoPatient(findOneDoctorOfFirstOne)
 
                 if (selectElDoctorUpdtInfo) {
-                    selectElDoctorUpdtInfo.value = findOneDoctorOfFirstOne.id
+                    selectElDoctorUpdtInfo.value = findOneDoctorOfFirstOne?.id
                 }
 
                 const getDayDoctorSchedule = findOneDoctorOfFirstOne?.jadwalDokter ? findOneDoctorOfFirstOne.jadwalDokter.map((jadwal, idx) => ({

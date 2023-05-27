@@ -106,14 +106,14 @@
       }
 
       // payment information
-      .payment-information {
+      .chart-information {
         display: flex;
         flex-wrap: wrap;
         justify-content: space-between;
         margin-top: 20px;
         padding: 10px;
 
-        .payment-info-group {
+        .chart-info-group {
           display: flex;
           background-color: #fff;
           box-shadow: 0 2px 3px -1px rgba(0, 0, 0, 0.3);
@@ -145,6 +145,69 @@
             width: 100%;
             margin-top: 30px;
           }
+        }
+      }
+
+      .earnings-information{
+        .right{
+          display: flex;
+          flex-direction: column;
+          justify-content: flex-start;
+          align-items: start;
+          width: 30%;
+          padding: 40px 30px;
+          overflow-y: auto;
+
+          @include smallPaymentInfoChart() {
+            max-height: 350px;
+            width: 100%;
+          }
+
+          .total-earnings{
+            display: flex;
+            text-align: start;
+            font-size: 28px;
+            color: $pinkOld;
+
+            @include mobileOverview(){
+              font-size: 20px;
+            }
+          }
+
+          .title{
+            display: flex;
+            text-align: start;
+            font-size: 16px;
+            margin-top: 10px;
+          }
+
+          .desc-earnings{
+            display: flex;
+            text-align: start;
+            margin-top: 40px;
+            color: $fontColor3;
+            font-size: 14px;
+          }
+
+          .notes{
+            display: flex;
+            text-align: start;
+            color: $pink;
+            font-size: 14px;
+            margin-top: 10px;
+          }
+        }
+        .left{
+          width: 68%;
+
+          @include smallPaymentInfoChart() {
+            width: 100%;
+            margin-top: 30px;
+          }
+        }
+
+        @include smallPaymentInfoChart() {
+          flex-direction: column;
         }
       }
     }
