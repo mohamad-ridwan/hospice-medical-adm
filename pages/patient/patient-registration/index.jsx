@@ -16,6 +16,10 @@ import endpoint from 'lib/api/endpoint'
 import { AuthContext } from 'lib/context/auth'
 import ShineLoading from 'components/ShineLoading'
 import API from 'lib/api'
+import { dayNamesEng } from 'lib/namesOfCalendar/dayNamesEng'
+import { dayNamesInd } from 'lib/namesOfCalendar/dayNamesInd'
+import { monthNames } from 'lib/namesOfCalendar/monthNames'
+import monthNamesInd from 'lib/namesOfCalendar/monthNameInd'
 
 function PatientRegistration() {
     const [head] = useState([
@@ -112,9 +116,11 @@ function PatientRegistration() {
                 elementTHead = document.getElementById(`tHead0`)
                 elementTHead.style.width = 'calc(100%/7)'
                 elementTHead = document.getElementById(`tHead1`)
-                elementTHead.style.width = 'calc(100%/8)'
+                elementTHead.style.width = 'calc(100%/7)'
                 elementTHead = document.getElementById(`tHead2`)
                 elementTHead.style.width = 'calc(100%/8)'
+                elementTHead = document.getElementById(`tHead4`)
+                elementTHead.style.width = 'calc(100%/6)'
                 elementTHead = document.getElementById(`tHead5`)
                 elementTHead.style.width = 'calc(100%/10)'
             }
@@ -123,9 +129,11 @@ function PatientRegistration() {
                     elementTData = document.getElementById(`tData${i}0`)
                     elementTData.style.width = 'calc(100%/7)'
                     elementTData = document.getElementById(`tData${i}1`)
-                    elementTData.style.width = 'calc(100%/8)'
+                    elementTData.style.width = 'calc(100%/7)'
                     elementTData = document.getElementById(`tData${i}2`)
                     elementTData.style.width = 'calc(100%/8)'
+                    elementTData = document.getElementById(`tData${i}4`)
+                    elementTData.style.width = 'calc(100%/6)'
                     elementTData = document.getElementById(`tData${i}5`)
                     elementTData.style.width = 'calc(100%/10)'
                 }
@@ -141,6 +149,19 @@ function PatientRegistration() {
                 const newData = []
                 const getDataColumns = () => {
                     findRegistration.forEach(item => {
+                        // make a normal date
+                        const makeNormalDate = (date, dateOfBirth) => {
+                            const getDate = `${new Date(date)}`
+                            const findIdxDayNameOfAD = dayNamesEng.findIndex(day => day === getDate.split(' ')[0]?.toLowerCase())
+                            const getNameOfAD = `${dayNamesInd[findIdxDayNameOfAD]?.substr(0, 1)?.toUpperCase()}${dayNamesInd[findIdxDayNameOfAD]?.substr(1, dayNamesInd[findIdxDayNameOfAD]?.length - 1)}`
+                            const findIdxMonthOfAD = monthNames.findIndex(month => month.toLowerCase() === getDate.split(' ')[1]?.toLowerCase())
+                            const getMonthOfAD = monthNamesInd[findIdxMonthOfAD]
+                            const getDateOfAD = date?.split('/')[1]
+                            const getYearOfAD = date?.split('/')[2]
+
+                            return !dateOfBirth ? `${getMonthOfAD} ${getDateOfAD} ${getYearOfAD}, ${getNameOfAD}` : `${getMonthOfAD} ${getDateOfAD} ${getYearOfAD}`
+                        }
+
                         const dataRegis = {
                             id: item.id,
                             isNotif: item.isNotif,
@@ -149,9 +170,19 @@ function PatientRegistration() {
                                     name: item.jenisPenyakit
                                 },
                                 {
-                                    name: item.appointmentDate
+                                    firstDesc: makeNormalDate(item.appointmentDate),
+                                    color: '#ff296d',
+                                    colorName: '#777',
+                                    marginBottom: '4.5px',
+                                    fontSize: '12px',
+                                    name: item.appointmentDate,
                                 },
                                 {
+                                    firstDesc: makeNormalDate(item.submissionDate),
+                                    color: '#7600bc',
+                                    colorName: '#777',
+                                    marginBottom: '4.5px',
+                                    fontSize: '12px',
                                     name: item.submissionDate
                                 },
                                 {
@@ -161,6 +192,11 @@ function PatientRegistration() {
                                     name: item.emailAddress
                                 },
                                 {
+                                    firstDesc: makeNormalDate(item.dateOfBirth, true),
+                                    color: '#187bcd',
+                                    colorName: '#777',
+                                    marginBottom: '4.5px',
+                                    fontSize: '12px',
                                     name: item.dateOfBirth
                                 },
                                 {
@@ -173,7 +209,7 @@ function PatientRegistration() {
                 }
 
                 getDataColumns()
-                if(newData.length === findRegistration?.length){
+                if (newData.length === findRegistration?.length) {
                     setDataColumns(newData)
                     setTimeout(() => {
                         setLoadConditionTableScreen(false)
@@ -182,7 +218,7 @@ function PatientRegistration() {
                         }, 100);
                     }, 1500)
                 }
-            }else{
+            } else {
                 setLoadConditionTableScreen(false)
             }
         }
@@ -510,12 +546,14 @@ function PatientRegistration() {
                         <TableContainer styleWrapp={{
                             margin: '50px 0 0 0'
                         }}>
-                            <TableBody>
+                            <TableBody styleWrapp={{
+                                width: '1300px'
+                            }}>
                                 <TableHead
                                     id='tHead'
                                     data={head}
                                 />
-                                {!loadingAuth && user?.id && !loadConditionTableScreen? (
+                                {!loadingAuth && user?.id && !loadConditionTableScreen ? (
                                     <>
                                         {dataColumns?.length > 0 ? dataColumns.map((item, index) => {
                                             const jenisPenyakit = item.data[0].name.replace('-', '')
@@ -553,9 +591,18 @@ function PatientRegistration() {
                                                                 <TableData
                                                                     key={idx}
                                                                     id={`tData${index}${idx}`}
+                                                                    firstDesc={data?.firstDesc}
                                                                     name={data.name}
                                                                     styleWrapp={{
                                                                         cursor: 'pointer'
+                                                                    }}
+                                                                    styleFirstDesc={{
+                                                                        color: data?.color,
+                                                                        marginBottom: data?.marginBottom
+                                                                    }}
+                                                                    styleName={{
+                                                                        fontSize: data?.fontSize,
+                                                                        color: data?.colorName
                                                                     }}
                                                                 />
                                                             )

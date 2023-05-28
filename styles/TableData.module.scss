@@ -11,8 +11,18 @@
     // overflow: hidden;
     overflow-x: auto;
 
-    .name{
+
+    .container-name{
         display: flex;
-        text-align: start;
+        flex-direction: column;
+
+        .first-description{
+            text-align: start;
+        }
+
+        .name{
+            display: flex;
+            text-align: start;
+        }
     }
 }

@@ -2,6 +2,8 @@ import style from 'styles/TableData.module.scss'
 
 function TableData({
     id,
+    firstDesc,
+    styleFirstDesc,
     name,
     children,
     styleWrapp,
@@ -13,9 +15,14 @@ function TableData({
             onClick={click}
         >
             {name === undefined ? children : (
-                <p className={style['name']} style={styleName}>
-                    {name}
-                </p>
+                <div className={style['container-name']}>
+                    <p className={style['first-description']} style={styleFirstDesc}>
+                        {firstDesc}
+                    </p>
+                    <p className={style['name']} style={styleName}>
+                        {name}
+                    </p>
+                </div>
             )}
         </div>
     )

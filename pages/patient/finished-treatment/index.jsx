@@ -12,6 +12,9 @@ import endpoint from 'lib/api/endpoint'
 import TableColumns from 'components/Table/TableColumns'
 import TableData from 'components/Table/TableData'
 import { monthNames } from 'lib/namesOfCalendar/monthNames'
+import { dayNamesEng } from 'lib/namesOfCalendar/dayNamesEng'
+import { dayNamesInd } from 'lib/namesOfCalendar/dayNamesInd'
+import monthNamesInd from 'lib/namesOfCalendar/monthNameInd'
 
 function FinishedTreatment() {
     const [head] = useState([
@@ -69,6 +72,19 @@ function FinishedTreatment() {
         const findPatientInRegisData = userAppointmentData?.length > 0 ? userAppointmentData.find(patient => patient.id === item.patientId) : {}
         const getCurrentLoket = findLoketPatientQueue?.length > 0 ? findLoketPatientQueue.find(data => data.patientId === item.patientId && data?.isConfirm?.confirmState) : null
 
+        // make a normal date
+        const makeNormalDate = (date, dateOfBirth) => {
+            const getDate = `${new Date(date)}`
+            const findIdxDayNameOfAD = dayNamesEng.findIndex(day => day === getDate.split(' ')[0]?.toLowerCase())
+            const getNameOfAD = `${dayNamesInd[findIdxDayNameOfAD]?.substr(0, 1)?.toUpperCase()}${dayNamesInd[findIdxDayNameOfAD]?.substr(1, dayNamesInd[findIdxDayNameOfAD]?.length - 1)}`
+            const findIdxMonthOfAD = monthNames.findIndex(month => month.toLowerCase() === getDate.split(' ')[1]?.toLowerCase())
+            const getMonthOfAD = monthNamesInd[findIdxMonthOfAD]
+            const getDateOfAD = date?.split('/')[1]
+            const getYearOfAD = date?.split('/')[2]
+
+            return !dateOfBirth ? `${getMonthOfAD} ${getDateOfAD} ${getYearOfAD}, ${getNameOfAD}` : `${getMonthOfAD} ${getDateOfAD} ${getYearOfAD}`
+        }
+
         return {
             _id: item._id,
             id: item.id,
@@ -86,9 +102,13 @@ function FinishedTreatment() {
             completionStage: getCurrentLoket?.presence === 'tidak hadir' || getCurrentLoket?.presence === 'hadir' ? 'counter' : 'room',
             data: [
                 {
-                    name: findPatientInRegisData?.isConfirm?.presence === 'hadir' ? getCurrentLoket?.presence?.toUpperCase() : findPatientInRegisData?.isConfirm?.presence?.toUpperCase()
+                    fontSize: '11px',
+                    colorName: '#fff',
+                    name: findPatientInRegisData?.isConfirm?.presence === 'hadir' ? getCurrentLoket?.presence?.toUpperCase() : findPatientInRegisData?.isConfirm?.presence?.toUpperCase(),
                 },
                 {
+                    fontWeight: 'bold',
+                    colorName: findPatientInRegisData?.isConfirm?.presence === 'hadir' ? getCurrentLoket?.presence === 'hadir' ? '#288bbc' : '#be2ed6' : '#ff296d',
                     name: findPatientInRegisData?.isConfirm?.presence === 'hadir' ? getCurrentLoket?.presence === 'hadir' ? 'Finished until taking Medicine' : 'Not at the Counter' : 'Not in the Treatment Room'
                 },
                 {
@@ -98,6 +118,11 @@ function FinishedTreatment() {
                     name: findPatientInRegisData?.jenisPenyakit
                 },
                 {
+                    firstDesc: makeNormalDate(item?.confirmedTime?.dateConfirm),
+                    color: '#ff296d',
+                    colorName: '#777',
+                    marginBottom: '4.5px',
+                    fontSize: '12px',
                     name: item?.confirmedTime?.dateConfirm
                 },
                 {
@@ -107,6 +132,11 @@ function FinishedTreatment() {
                     name: item.patientEmail
                 },
                 {
+                    firstDesc: makeNormalDate(findPatientInRegisData?.dateOfBirth, true),
+                    color: '#187bcd',
+                    colorName: '#777',
+                    marginBottom: '4.5px',
+                    fontSize: '12px',
                     name: findPatientInRegisData?.dateOfBirth
                 },
                 {
@@ -193,7 +223,7 @@ function FinishedTreatment() {
         }
     }, [newPatientRegistration])
 
-    const toPage = (path)=>{
+    const toPage = (path) => {
         router.push(path)
     }
 
@@ -233,7 +263,7 @@ function FinishedTreatment() {
                                     const pathUrlToRoomStage = `/patient/patient-registration/personal-data/confirmed/${newJenisPenyakit}/${emailPatient}/${item.patientId}`
 
                                     return (
-                                        <button key={index} className={style['columns-data']} onClick={()=>toPage(item.completionStage === 'room' ? pathUrlToRoomStage : pathUrlToCounterStage)}>
+                                        <button key={index} className={style['columns-data']} onClick={() => toPage(item.completionStage === 'room' ? pathUrlToRoomStage : pathUrlToCounterStage)}>
                                             <TableColumns
                                                 styleEdit={{
                                                     display: 'none'
@@ -247,17 +277,22 @@ function FinishedTreatment() {
                                                         <TableData
                                                             key={idx}
                                                             id={`tData${index}${idx}`}
+                                                            firstDesc={data?.firstDesc}
                                                             name={data?.name}
                                                             styleWrapp={{
                                                                 cursor: 'pointer'
                                                             }}
                                                             styleName={{
-                                                                fontSize: idx === 0 ? '12px' : '14px',
-                                                                fontWeight: idx === 1 ? 'bold' : 'normal',
-                                                                color: idx === 0 ? '#fff' : idx === 1 ? data?.name === 'Not in the Treatment Room' ? '#ff296d' : data?.name === 'Not at the Counter' ? '#be2ed6' : '#288bbc' : '#000',
-                                                                padding: idx === 0 ? '6px 10px' : '',
+                                                                fontSize: data?.fontSize,
+                                                                fontWeight: data?.fontWeight,
+                                                                color: data?.colorName,
+                                                                padding: idx === 0 ? '5.5px 8px' : '',
                                                                 borderRadius: idx === 0 ? '3px' : '0',
                                                                 background: idx === 0 ? data?.name?.toLowerCase() === 'hadir' ? '#288bbc' : '#ff296d' : 'transparent'
+                                                            }}
+                                                            styleFirstDesc={{
+                                                                color: data?.color,
+                                                                marginBottom: data?.marginBottom
                                                             }}
                                                         />
                                                     )

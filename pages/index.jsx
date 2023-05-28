@@ -1,5 +1,9 @@
 import { useContext, useEffect, useState } from 'react'
 import Head from 'next/head'
+import "react-datepicker/dist/react-datepicker.css";
+import 'react-datepicker/dist/react-datepicker-cssmodules.css';
+import { range } from 'lodash'
+import getYear from 'date-fns/getYear'
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -21,9 +25,11 @@ import { NotFoundRedirectCtx } from 'lib/context/notFoundRedirect'
 import TableContainer from 'components/Table/TableContainer'
 import Button from 'components/Button'
 import OverviewCard from 'components/OverviewCard'
+import SelectCategory from 'components/SelectCategory';
 
 export default function Home() {
   const [chooseYear, setChooseYear] = useState(`${new Date().getFullYear()}`)
+  const [startYearPatientTreatment, setStartYearPatientTreatment] = useState(new Date())
   const [chooseYearPaymentInfo, setChooseYearPaymentInfo] = useState(`${new Date().getFullYear()}`)
   const [chooseYearEarnings, setChooseYearEarnings] = useState(`${new Date().getFullYear()}`)
   const [overviewData, setOverviewData] = useState([])
@@ -500,6 +506,10 @@ export default function Home() {
 
   const getTotalIncomeOnYear = eval(dataEarningOfBarChart.join('+'))
 
+  // select options on year patient treatment
+  const getYearPTOfSelectOptions = range(1900, getYear(new Date()) + 1, 1)
+  const yearPTOfSelectOptions = getYearPTOfSelectOptions?.length > 0 ? getYearPTOfSelectOptions.map(year => ({ id: year, title: year })) : []
+
   const labels = [
     "January",
     "February",
@@ -523,7 +533,7 @@ export default function Home() {
       },
       title: {
         display: true,
-        text: 'Patient treated this year (2023)',
+        text: `Patient treated this year (${chooseYear})`,
       },
     },
   };
@@ -581,7 +591,7 @@ export default function Home() {
       },
       title: {
         display: true,
-        text: 'Total number of patients treated this year (2023)',
+        text: `Total number of patients treated this year (${chooseYear})`,
       },
     },
   }
@@ -610,7 +620,7 @@ export default function Home() {
       },
       title: {
         display: true,
-        text: 'Payment method this year (2023)',
+        text: `Payment method this year (${chooseYearPaymentInfo})`,
       },
     },
   }
@@ -654,7 +664,7 @@ export default function Home() {
       },
       title: {
         display: true,
-        text: 'Payment method this year (2023)',
+        text: `Payment method this year (${chooseYearPaymentInfo})`,
       },
     },
   }
@@ -667,7 +677,7 @@ export default function Home() {
       },
       title: {
         display: true,
-        text: 'Earning this year (2023)',
+        text: `Earning this year (${chooseYearEarnings})`,
       },
     },
   };
@@ -694,6 +704,35 @@ export default function Home() {
         ],
       }
     ]
+  }
+
+  useEffect(() => {
+    const selectEl = document.getElementById('selectYearPT')
+    const selectElPI = document.getElementById('selectYearPI')
+    const selectElEarnings = document.getElementById('selectYearEarnings')
+    if (selectEl) {
+      selectEl.value = `${new Date().getFullYear()}`
+    }
+    if (selectElPI) {
+      selectElPI.value = `${new Date().getFullYear()}`
+    }
+    if (selectElEarnings){
+      selectElEarnings.value = `${new Date().getFullYear()}`
+    }
+  }, [])
+
+  const changeYearPatientTreatment = (yearOn) => {
+    const selectEl = document.getElementById(yearOn)
+    const id = selectEl.options[selectEl.selectedIndex].value
+    if (yearOn === 'selectYearPT' && id) {
+      setChooseYear(id)
+    }
+    if (yearOn === 'selectYearPI' && id) {
+      setChooseYearPaymentInfo(id)
+    }
+    if(yearOn === 'selectYearEarnings' && id){
+      setChooseYearEarnings(id)
+    }
   }
 
   return (
@@ -729,15 +768,17 @@ export default function Home() {
               marginTop: '43px'
             }}>Patient Treatment</h1>
             <div className={styles['filter-years']}>
-              <Button
-                name="Year in 2023"
-                style={{
-                  backgroundColor: '#fff',
-                  border: '1px solid #ddd',
-                  color: '#444',
-                  borderRadius: '5px',
-                  marginTop: '20px',
-                  padding: '10px 13px'
+              <SelectCategory
+                idSelect='selectYearPT'
+                titleCtg="Year in"
+                dataBlogCategory={yearPTOfSelectOptions}
+                classSelect='select-year-pt'
+                handleCategory={() => changeYearPatientTreatment('selectYearPT')}
+                styleWrapp={{
+                  margin: '0'
+                }}
+                styleCategory={{
+                  margin: '10px'
                 }}
               />
             </div>
@@ -771,15 +812,17 @@ export default function Home() {
             }}>Payment Information</h1>
 
             <div className={styles['filter-years']}>
-              <Button
-                name="Year in 2023"
-                style={{
-                  backgroundColor: '#fff',
-                  border: '1px solid #ddd',
-                  color: '#444',
-                  borderRadius: '5px',
-                  marginTop: '20px',
-                  padding: '10px 13px'
+              <SelectCategory
+                idSelect='selectYearPI'
+                titleCtg="Year in"
+                dataBlogCategory={yearPTOfSelectOptions}
+                classSelect='select-year-pt'
+                handleCategory={() => changeYearPatientTreatment('selectYearPI')}
+                styleWrapp={{
+                  margin: '0'
+                }}
+                styleCategory={{
+                  margin: '10px'
                 }}
               />
             </div>
@@ -803,15 +846,17 @@ export default function Home() {
             }}>Earnings</h1>
 
             <div className={styles['filter-years']}>
-              <Button
-                name="Year in 2023"
-                style={{
-                  backgroundColor: '#fff',
-                  border: '1px solid #ddd',
-                  color: '#444',
-                  borderRadius: '5px',
-                  marginTop: '20px',
-                  padding: '10px 13px'
+              <SelectCategory
+                idSelect='selectYearEarnings'
+                titleCtg="Year in"
+                dataBlogCategory={yearPTOfSelectOptions}
+                classSelect='select-year-pt'
+                handleCategory={() => changeYearPatientTreatment('selectYearEarnings')}
+                styleWrapp={{
+                  margin: '0'
+                }}
+                styleCategory={{
+                  margin: '10px'
                 }}
               />
             </div>

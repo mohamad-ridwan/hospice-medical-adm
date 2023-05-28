@@ -21,6 +21,7 @@ import SelectCategory from 'components/SelectCategory'
 import { monthNames } from 'lib/namesOfCalendar/monthNames'
 import { dayNamesEng } from 'lib/namesOfCalendar/dayNamesEng'
 import { dayNamesInd } from 'lib/namesOfCalendar/dayNamesInd'
+import monthNamesInd from 'lib/namesOfCalendar/monthNameInd'
 
 function PersonalDataRegistration() {
     const [onPopupEdit, setOnPopupEdit] = useState(false)
@@ -122,6 +123,19 @@ function PersonalDataRegistration() {
     const userAppointmentData = bookAnAppointment ? bookAnAppointment.userAppointmentData : null
     const findPersonalData = userAppointmentData ? userAppointmentData.find(regis => regis?.id === params[4]) : {}
     const patientData = findPersonalData
+    // make a normal date on patient info
+    const makeNormalDateOnPatientInfo = (date, dateOfBirth) => {
+        const getDate = `${new Date(date)}`
+        const findIdxDayNameOfAD = dayNamesEng.findIndex(day => day === getDate.split(' ')[0]?.toLowerCase())
+        const getNameOfAD = `${dayNamesInd[findIdxDayNameOfAD]?.substr(0, 1)?.toUpperCase()}${dayNamesInd[findIdxDayNameOfAD]?.substr(1, dayNamesInd[findIdxDayNameOfAD]?.length - 1)}`
+        const findIdxMonthOfAD = monthNames.findIndex(month => month.toLowerCase() === getDate.split(' ')[1]?.toLowerCase())
+        const getMonthOfAD = monthNamesInd[findIdxMonthOfAD]
+        const getDateOfAD = date?.split('/')[1]
+        const getYearOfAD = date?.split('/')[2]
+
+        return !dateOfBirth ? `${getMonthOfAD} ${getDateOfAD} ${getYearOfAD}, ${getNameOfAD}` : `${getMonthOfAD} ${getDateOfAD} ${getYearOfAD}`
+    }
+
     // room disease type
     const diseaseType = bookAnAppointment ? bookAnAppointment.diseaseType : null
     const findCurrentDiseaseType = diseaseType?.length > 0 ? diseaseType.filter(item => item.jenis.toLowerCase() !== 'disease type') : null
@@ -1949,11 +1963,31 @@ function PersonalDataRegistration() {
                                                 {...propsIconDataInfo}
                                                 title="Appointment Date"
                                                 icon="fa-solid fa-calendar-days"
+                                                firstDesc={makeNormalDateOnPatientInfo(patientData.appointmentDate)}
                                                 desc={patientData.appointmentDate}
+                                                styleFirstDesc={{
+                                                    marginBottom: '5px',
+                                                    fontSize: '14px',
+                                                    fontWeight: 'bold',
+                                                    color: '#f85084'
+                                                }}
+                                                styleDesc={{
+                                                    fontSize: '12px'
+                                                }}
                                             />
                                             <CardPatientRegisData
                                                 title="Submission Date"
+                                                firstDesc={makeNormalDateOnPatientInfo(patientData.submissionDate)}
                                                 desc={patientData.submissionDate}
+                                                styleFirstDesc={{
+                                                    marginBottom: '5px',
+                                                    fontSize: '14px',
+                                                    fontWeight: 'bold',
+                                                    color: '#7600bc'
+                                                }}
+                                                styleDesc={{
+                                                    fontSize: '12px'
+                                                }}
                                             />
                                             <CardPatientRegisData
                                                 {...propsIconDataInfo}
@@ -1974,7 +2008,17 @@ function PersonalDataRegistration() {
                                             />
                                             <CardPatientRegisData
                                                 title="Date of Birth"
+                                                firstDesc={makeNormalDateOnPatientInfo(patientData.dateOfBirth)}
                                                 desc={patientData.dateOfBirth}
+                                                styleFirstDesc={{
+                                                    marginBottom: '5px',
+                                                    fontSize: '14px',
+                                                    fontWeight: 'bold',
+                                                    color: '#288bbc'
+                                                }}
+                                                styleDesc={{
+                                                    fontSize: '12px'
+                                                }}
                                             />
                                             <CardPatientRegisData
                                                 title="Phone"
@@ -2095,12 +2139,25 @@ function PersonalDataRegistration() {
                                                         styleWrapp={{
                                                             margin: '20px 0'
                                                         }}
+                                                        styleDesc={{
+                                                            color: '#006400'
+                                                        }}
                                                     />
                                                     <CardPatientRegisData
                                                         {...propsIconDataInfo}
                                                         icon="fa-solid fa-calendar-days"
                                                         title="Confirmed Date"
+                                                        firstDesc={makeNormalDateOnPatientInfo(patientData?.isConfirm?.dateConfirm)}
                                                         desc={patientData?.isConfirm?.dateConfirm}
+                                                        styleFirstDesc={{
+                                                            marginBottom: '5px',
+                                                            fontSize: '14px',
+                                                            fontWeight: 'bold',
+                                                            color: '#006400'
+                                                        }}
+                                                        styleDesc={{
+                                                            fontSize: '12px'
+                                                        }}
                                                     />
                                                     <h1 className={style['title']} style={{
                                                         marginTop: '30px'
@@ -2651,18 +2708,25 @@ function PersonalDataRegistration() {
                                                         }}
                                                         icon='fa-solid fa-clock'
                                                         styleDesc={{
-                                                            color: '#f85084',
+                                                            color: '#ffa500',
                                                         }}
                                                     />
                                                     <CardPatientRegisData
                                                         title="Confirmed Date"
                                                         icon="fa-solid fa-calendar-days"
+                                                        firstDesc={makeNormalDateOnPatientInfo(findPatientInLoket?.isConfirm?.dateConfirm)}
                                                         desc={findPatientInLoket?.isConfirm?.dateConfirm}
+                                                        styleFirstDesc={{
+                                                            marginBottom: '5px',
+                                                            fontSize: '14px',
+                                                            fontWeight: 'bold',
+                                                            color: '#ffa500'
+                                                        }}
                                                         styleIcon={{
                                                             display: 'flex'
                                                         }}
                                                         styleDesc={{
-                                                            color: '#288bbc',
+                                                            fontSize: '12px',
                                                         }}
                                                     />
                                                 </div>

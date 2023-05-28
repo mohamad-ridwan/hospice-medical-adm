@@ -15,6 +15,10 @@ import API from 'lib/api'
 import WrappEditPR from 'components/Popup/WrappEditPR'
 import Input from 'components/Input'
 import Button from 'components/Button'
+import { dayNamesEng } from 'lib/namesOfCalendar/dayNamesEng'
+import { dayNamesInd } from 'lib/namesOfCalendar/dayNamesInd'
+import { monthNames } from 'lib/namesOfCalendar/monthNames'
+import monthNamesInd from 'lib/namesOfCalendar/monthNameInd'
 
 function ConfirmationPatient() {
   const [head] = useState([
@@ -89,6 +93,8 @@ function ConfirmationPatient() {
         elementTHead.style.width = 'calc(100%/8)'
         elementTHead = document.getElementById(`tHead2`)
         elementTHead.style.width = 'calc(100%/8)'
+        elementTHead = document.getElementById(`tHead4`)
+        elementTHead.style.width = 'calc(100%/6)'
         elementTHead = document.getElementById(`tHead5`)
         elementTHead.style.width = 'calc(100%/10)'
       }
@@ -100,6 +106,8 @@ function ConfirmationPatient() {
           elementTData.style.width = 'calc(100%/8)'
           elementTData = document.getElementById(`tData${i}2`)
           elementTData.style.width = 'calc(100%/8)'
+          elementTData = document.getElementById(`tData${i}4`)
+          elementTData.style.width = 'calc(100%/6)'
           elementTData = document.getElementById(`tData${i}5`)
           elementTData.style.width = 'calc(100%/10)'
         }
@@ -115,6 +123,19 @@ function ConfirmationPatient() {
         const newData = []
         const getDataColumns = () => {
           findRegistration.forEach(item => {
+            // make a normal date
+            const makeNormalDate = (date, dateOfBirth) => {
+              const getDate = `${new Date(date)}`
+              const findIdxDayNameOfAD = dayNamesEng.findIndex(day => day === getDate.split(' ')[0]?.toLowerCase())
+              const getNameOfAD = `${dayNamesInd[findIdxDayNameOfAD]?.substr(0, 1)?.toUpperCase()}${dayNamesInd[findIdxDayNameOfAD]?.substr(1, dayNamesInd[findIdxDayNameOfAD]?.length - 1)}`
+              const findIdxMonthOfAD = monthNames.findIndex(month => month.toLowerCase() === getDate.split(' ')[1]?.toLowerCase())
+              const getMonthOfAD = monthNamesInd[findIdxMonthOfAD]
+              const getDateOfAD = date?.split('/')[1]
+              const getYearOfAD = date?.split('/')[2]
+
+              return !dateOfBirth ? `${getMonthOfAD} ${getDateOfAD} ${getYearOfAD}, ${getNameOfAD}` : `${getMonthOfAD} ${getDateOfAD} ${getYearOfAD}`
+            }
+
             const dataRegis = {
               id: item.id,
               isNotif: item.isNotif,
@@ -123,9 +144,19 @@ function ConfirmationPatient() {
                   name: item.jenisPenyakit
                 },
                 {
+                  firstDesc: makeNormalDate(item.appointmentDate),
+                  color: '#ff296d',
+                  colorName: '#777',
+                  marginBottom: '4.5px',
+                  fontSize: '12px',
                   name: item.appointmentDate
                 },
                 {
+                  firstDesc: makeNormalDate(item?.isConfirm?.dateConfirm),
+                  color: '#006400',
+                  colorName: '#777',
+                  marginBottom: '4.5px',
+                  fontSize: '12px',
                   name: item?.isConfirm?.dateConfirm
                 },
                 {
@@ -135,6 +166,11 @@ function ConfirmationPatient() {
                   name: item.emailAddress
                 },
                 {
+                  firstDesc: makeNormalDate(item.dateOfBirth, true),
+                  color: '#187bcd',
+                  colorName: '#777',
+                  marginBottom: '4.5px',
+                  fontSize: '12px',
                   name: item.dateOfBirth
                 },
                 {
@@ -481,7 +517,9 @@ function ConfirmationPatient() {
             <TableContainer styleWrapp={{
               margin: '50px 0 0 0'
             }}>
-              <TableBody>
+              <TableBody styleWrapp={{
+                width: '1300px'
+              }}>
                 <TableHead
                   id='tHead'
                   data={head}
@@ -525,9 +563,18 @@ function ConfirmationPatient() {
                             <TableData
                               key={idx}
                               id={`tData${index}${idx}`}
+                              firstDesc={data?.firstDesc}
                               name={data.name}
                               styleWrapp={{
                                 cursor: 'pointer'
+                              }}
+                              styleFirstDesc={{
+                                color: data?.color,
+                                marginBottom: data?.marginBottom
+                              }}
+                              styleName={{
+                                fontSize: data?.fontSize,
+                                color: data?.colorName
                               }}
                             />
                           )

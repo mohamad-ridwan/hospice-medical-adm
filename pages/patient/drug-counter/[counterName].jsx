@@ -12,6 +12,10 @@ import TableHead from 'components/Table/TableHead'
 import TableColumns from 'components/Table/TableColumns'
 import TableData from 'components/Table/TableData'
 import API from 'lib/api'
+import { dayNamesEng } from 'lib/namesOfCalendar/dayNamesEng'
+import { dayNamesInd } from 'lib/namesOfCalendar/dayNamesInd'
+import { monthNames } from 'lib/namesOfCalendar/monthNames'
+import monthNamesInd from 'lib/namesOfCalendar/monthNameInd'
 
 function DetailCounter() {
     const [head] = useState([
@@ -57,6 +61,19 @@ function DetailCounter() {
     const getLoket = getCurrentLoket?.length > 0 ? getCurrentLoket.map((item) => {
         const getEveryDetailPatient = userAppointmentData.filter(patient => patient.id === item.patientId)
 
+        // make a normal date
+        const makeNormalDate = (date, dateOfBirth) => {
+            const getDate = `${new Date(date)}`
+            const findIdxDayNameOfAD = dayNamesEng.findIndex(day => day === getDate.split(' ')[0]?.toLowerCase())
+            const getNameOfAD = `${dayNamesInd[findIdxDayNameOfAD]?.substr(0, 1)?.toUpperCase()}${dayNamesInd[findIdxDayNameOfAD]?.substr(1, dayNamesInd[findIdxDayNameOfAD]?.length - 1)}`
+            const findIdxMonthOfAD = monthNames.findIndex(month => month.toLowerCase() === getDate.split(' ')[1]?.toLowerCase())
+            const getMonthOfAD = monthNamesInd[findIdxMonthOfAD]
+            const getDateOfAD = date?.split('/')[1]
+            const getYearOfAD = date?.split('/')[2]
+
+            return !dateOfBirth ? `${getMonthOfAD} ${getDateOfAD} ${getYearOfAD}, ${getNameOfAD}` : `${getMonthOfAD} ${getDateOfAD} ${getYearOfAD}`
+        }
+
         return {
             _id: item._id,
             id: item.id,
@@ -80,6 +97,11 @@ function DetailCounter() {
                     name: getEveryDetailPatient[0]?.phone
                 },
                 {
+                    firstDesc: makeNormalDate(getEveryDetailPatient[0]?.dateOfBirth, true),
+                    color: '#187bcd',
+                    colorName: '#777',
+                    marginBottom: '4.5px',
+                    fontSize: '12px',
                     name: getEveryDetailPatient[0]?.dateOfBirth
                 },
                 {
@@ -144,9 +166,9 @@ function DetailCounter() {
     }
 
     const clickDeletePersonalDataInCounter = (_id) => {
-        if(idDataRegisForUpdt !== null){
+        if (idDataRegisForUpdt !== null) {
             alert('There is a process running\nPlease wait a moment')
-        }else {
+        } else {
             if (loadingSubmit === false && window.confirm('Delete this data?')) {
                 setIdDataRegisForUpdt(_id)
                 setLoadingSubmit(true)
@@ -229,9 +251,18 @@ function DetailCounter() {
                                                         <TableData
                                                             key={idx}
                                                             id={`tData${index}${idx}`}
+                                                            firstDesc={data?.firstDesc}
                                                             name={data.name}
                                                             styleWrapp={{
                                                                 cursor: 'pointer'
+                                                            }}
+                                                            styleFirstDesc={{
+                                                                color: data?.color,
+                                                                marginBottom: data?.marginBottom
+                                                            }}
+                                                            styleName={{
+                                                                fontSize: data?.fontSize,
+                                                                color: data?.colorName
                                                             }}
                                                         />
                                                     )
