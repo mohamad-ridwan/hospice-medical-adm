@@ -165,31 +165,42 @@ function DetailCounter() {
         router.push(path)
     }
 
-    const clickDeletePersonalDataInCounter = (_id) => {
+    const clickDeletePersonalDataInCounter = (_id, patientId) => {
         if (idDataRegisForUpdt !== null) {
             alert('There is a process running\nPlease wait a moment')
-        } else {
-            if (loadingSubmit === false && window.confirm('Delete this data?')) {
-                setIdDataRegisForUpdt(_id)
-                setLoadingSubmit(true)
-                deletePersonalDataInCounter(_id)
-            }
+        } else if (loadingSubmit === false && window.confirm('Delete this data?')) {
+            setIdDataRegisForUpdt(_id)
+            setLoadingSubmit(true)
+            deletePersonalDataInCounter(_id, patientId)
         }
     }
 
-    const deletePersonalDataInCounter = (_id) => {
+    const deletePersonalDataInCounter = (_id, patientId) => {
         API.APIDeleteLoket(_id)
             .then(res => {
-                setIdDataRegisForUpdt(null)
-                setLoadingSubmit(false)
-                setTimeout(() => {
-                    alert('Deleted successfully')
-                }, 0)
+                deleteDataPersonalPatientRegis(patientId, () => {
+                    setIdDataRegisForUpdt(null)
+                    setLoadingSubmit(false)
+                    setTimeout(() => {
+                        alert('Deleted successfully')
+                    }, 0)
+                }, (err) => {
+                    alert('Oops, telah terjadi kesalahan server\nMohon coba beberapa saat lagi')
+                    setLoadingSubmit(false)
+                    console.log(err)
+                })
             })
             .catch(err => {
                 alert('Oops, telah terjadi kesalahan server\nMohon coba beberapa saat lagi')
                 setLoadingSubmit(false)
+                console.log(err)
             })
+    }
+
+    const deleteDataPersonalPatientRegis = (id, success, error) => {
+        API.APIDeletePatientRegistration(bookAnAppointment._id, id)
+            .then(res => success())
+            .catch(err => error(err))
     }
 
     return (
@@ -243,7 +254,7 @@ function DetailCounter() {
                                                 }}
                                                 clickDelete={(e) => {
                                                     e.stopPropagation()
-                                                    clickDeletePersonalDataInCounter(item._id)
+                                                    clickDeletePersonalDataInCounter(item._id, item.patientId)
                                                 }}
                                             >
                                                 {item.data.map((data, idx) => {

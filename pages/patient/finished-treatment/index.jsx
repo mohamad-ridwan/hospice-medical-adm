@@ -15,8 +15,11 @@ import { monthNames } from 'lib/namesOfCalendar/monthNames'
 import { dayNamesEng } from 'lib/namesOfCalendar/dayNamesEng'
 import { dayNamesInd } from 'lib/namesOfCalendar/dayNamesInd'
 import monthNamesInd from 'lib/namesOfCalendar/monthNameInd'
+import API from 'lib/api'
 
 function FinishedTreatment() {
+    const [idDeleteDataRegis, setIdDeleteDataRegis] = useState(null)
+    const [loadingDelete, setLoadingDelete] = useState(false)
     const [head] = useState([
         {
             name: 'Presence'
@@ -227,6 +230,63 @@ function FinishedTreatment() {
         router.push(path)
     }
 
+    const deleteFTPatientData = (_id, patientId) => {
+        if (idDeleteDataRegis !== null) {
+            alert('There is a process running\nPlease wait a moment')
+        } else if (loadingDelete === false && window.confirm('Delete this data?')) {
+            setIdDeleteDataRegis(_id)
+            API.APIDeleteFinishedTreatment(_id)
+                .then(res => {
+                    deletePersonalDataInCounter(patientId)
+                })
+                .catch(err => {
+                    alert('Oops, telah terjadi kesalahan server\nMohon coba beberapa saat lagi')
+                    setLoadingDelete(false)
+                    setIdDeleteDataRegis(null)
+                    console.log(err)
+                })
+        }
+    }
+
+    const deletePersonalDataInCounter = (patientId) => {
+        const findPatientInCounter = findLoketPatientQueue?.find(patient => patient.patientId === patientId)
+
+        if (findPatientInCounter?._id) {
+            API.APIDeleteLoket(findPatientInCounter?._id)
+                .then(res => {
+                    deleteDataPersonalPatientRegis(patientId, () => {
+                        setIdDeleteDataRegis(null)
+                        setLoadingDelete(false)
+                        setTimeout(() => {
+                            alert('Deleted successfully')
+                        }, 0)
+                    }, (err) => {
+                        alert('Oops, telah terjadi kesalahan server\nMohon coba beberapa saat lagi')
+                        setLoadingDelete(false)
+                        setIdDeleteDataRegis(null)
+                        console.log(err)
+                    })
+                })
+                .catch(err => {
+                    alert('Oops, telah terjadi kesalahan server\nMohon coba beberapa saat lagi')
+                    setLoadingDelete(false)
+                    setIdDeleteDataRegis(null)
+                    console.log(err)
+                })
+        } else {
+            alert('Oops, telah terjadi kesalahan server\nMohon coba beberapa saat lagi')
+            setLoadingDelete(false)
+            setIdDeleteDataRegis(null)
+            console.log(err)
+        }
+    }
+
+    const deleteDataPersonalPatientRegis = (id, success, error) => {
+        API.APIDeletePatientRegistration(bookAnAppointment._id, id)
+            .then(res => success())
+            .catch(err => error(err))
+    }
+
     return (
         <>
             <Head>
@@ -268,8 +328,15 @@ function FinishedTreatment() {
                                                 styleEdit={{
                                                     display: 'none'
                                                 }}
+                                                styleLoadingCircle={{
+                                                    display: idDeleteDataRegis === item._id && loadingDelete ? 'flex' : 'none'
+                                                }}
+                                                styleIconDelete={{
+                                                    display: idDeleteDataRegis === item._id && loadingDelete ? 'none' : 'flex'
+                                                }}
                                                 clickDelete={(e) => {
                                                     e.stopPropagation()
+                                                    deleteFTPatientData(item._id, item.patientId)
                                                 }}
                                             >
                                                 {item.data.map((data, idx) => {

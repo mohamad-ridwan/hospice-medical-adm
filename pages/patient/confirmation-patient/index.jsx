@@ -391,6 +391,7 @@ function ConfirmationPatient() {
       .catch(err => {
         alert('Oops, telah terjadi kesalahan server\nMohon coba beberapa saat lagi')
         setLoadingSubmit(false)
+        console.log(err)
       })
   }
 

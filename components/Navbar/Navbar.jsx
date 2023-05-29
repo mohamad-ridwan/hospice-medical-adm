@@ -106,7 +106,8 @@ function Navbar() {
                         }}
                         styleWrapp={{
                             height: '35px',
-                            width: '35px'
+                            width: '35px',
+                            display: 'none'
                         }}
                         styleIcon={{
                             display: 'flex'

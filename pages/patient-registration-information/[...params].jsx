@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
 import Head from 'next/head'
+import Image from 'next/image'
 import { useRouter } from 'next/router'
 import { jsPDF } from 'jspdf'
+import logoWeb from 'images/logoweb2.png'
 import style from 'styles/PatientRegisInfo.module.scss'
 import useSwr from 'lib/useFetch/useSwr'
 import endpoint from 'lib/api/endpoint'
@@ -14,7 +16,7 @@ import { monthNames } from 'lib/namesOfCalendar/monthNames'
 import Loading from 'components/Loading'
 
 function PatientRegisInfo() {
-    const [loading, setLoading] = useState(true)
+    const [loading, setLoading] = useState(false)
     const router = useRouter()
     const { params = [] } = router.query
 
@@ -60,19 +62,14 @@ function PatientRegisInfo() {
             setTimeout(() => {
                 doc.html(element, {
                     callback: function (doc) {
-                        doc.save('konfirmasi-pendaftaran-pasien.pdf');
-                        router.push('/patient-registration-information')
+                        doc.save(`konfirmasi-pendaftaran-pasien-${patientData?.patientName}.pdf`);
+                        router.push(`/patient-registration-information/${patientData?.patientName}`)
                     }
                 });
             }, 500);
         }
     }, [params, dataService])
 
-    const propsIconDataInfo = {
-        styleIcon: {
-            display: 'flex'
-        }
-    }
     const propsFontDataInfo = {
         styleTitle: {
             fontSize: '4.5px',
@@ -116,9 +113,22 @@ function PatientRegisInfo() {
                         width: '40px',
                     }}
                 />
-
                 <div className={style['wrapp']} id='pdfPatientSchedule'>
                     <div className={style['content']}>
+                        <div className={style['head-confirm']}>
+                            <Image
+                                className={style['logo-hospice-medical']}
+                                src={logoWeb}
+                                alt={'hospice-medical'}
+                                width={20}
+                                height={20}
+                            // style={styleImg}
+                            />
+                            <h1 className={style['hospice-medical']}>
+                                Hospice Medical
+                            </h1>
+                        </div>
+
                         {patientData?.isConfirm?.id && (
                             <>
                                 <HeadConfirmInfo
@@ -131,6 +141,7 @@ function PatientRegisInfo() {
                                         marginTop: '0px',
                                         paddingBottom: '3px',
                                         // borderBottom: '0.2px solid #000',
+                                        letterSpacing: '0',
                                         fontSize: '8px'
                                     }}
                                     desc="Confirmed"
@@ -166,7 +177,8 @@ function PatientRegisInfo() {
                                 icon="fa-solid fa-calendar-days"
                                 firstDesc={makeNormalDateOnPatientInfo(patientData.appointmentDate)}
                                 styleTitle={{
-                                    fontSize: '4.5px'
+                                    fontSize: '4.5px',
+                                    letterSpacing: '0'
                                 }}
                                 styleFirstDesc={{
                                     marginBottom: '0px',
@@ -188,7 +200,8 @@ function PatientRegisInfo() {
                                 title="Submission Date"
                                 firstDesc={makeNormalDateOnPatientInfo(patientData.submissionDate)}
                                 styleTitle={{
-                                    fontSize: '4.5px'
+                                    fontSize: '4.5px',
+                                    letterSpacing: '0'
                                 }}
                                 styleFirstDesc={{
                                     marginBottom: '0px',
@@ -232,7 +245,8 @@ function PatientRegisInfo() {
                                 title="Date of Birth"
                                 firstDesc={makeNormalDateOnPatientInfo(patientData.dateOfBirth, true)}
                                 styleTitle={{
-                                    fontSize: '4.5px'
+                                    fontSize: '4.5px',
+                                    letterSpacing: '0'
                                 }}
                                 styleFirstDesc={{
                                     marginBottom: '0px',
@@ -329,13 +343,15 @@ function PatientRegisInfo() {
                                 title="Confirmed Date"
                                 firstDesc={makeNormalDateOnPatientInfo(patientData?.isConfirm?.dateConfirm)}
                                 styleTitle={{
-                                    fontSize: '4.5px'
+                                    fontSize: '4.5px',
+                                    letterSpacing: '0'
                                 }}
                                 styleFirstDesc={{
                                     marginBottom: '0px',
                                     fontSize: '3.5px',
                                     fontWeight: 'bold',
-                                    color: '#006400'
+                                    color: '#006400',
+                                    letterSpacing: '0'
                                 }}
                                 styleWrappDesc={{
                                     margin: '0px 0 0 0'

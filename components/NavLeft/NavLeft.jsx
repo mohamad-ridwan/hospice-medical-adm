@@ -47,18 +47,18 @@ function NavLeft() {
                 }
             ]
         },
-        {
-            name: 'Blog',
-            path: null,
-            icon: 'fa-solid fa-newspaper',
-            children: [
-                {
-                    name: 'Edit Blog',
-                    path: '/edit-article',
-                    icon: 'fa-solid fa-file-pen'
-                }
-            ]
-        }
+        // {
+        //     name: 'Blog',
+        //     path: null,
+        //     icon: 'fa-solid fa-newspaper',
+        //     children: [
+        //         {
+        //             name: 'Edit Blog',
+        //             path: '/edit-article',
+        //             icon: 'fa-solid fa-file-pen'
+        //         }
+        //     ]
+        // }
     ])
     const [onListMenu, setOnListMenu] = useState([])
     const [totalLoadListMenu] = useState([1, 2, 3, 4, 5, 6])

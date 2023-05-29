@@ -17,7 +17,8 @@ function AuthWrapper({
       if (user === null &&
         loadingAuth === false &&
         !pathname.includes('forgot-password') &&
-        !pathname.includes('register')
+        !pathname.includes('register') &&
+        !pathname.includes('patient-registration-information')
       ) {
         router.push('/login')
 

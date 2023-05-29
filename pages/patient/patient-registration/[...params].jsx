@@ -1,6 +1,7 @@
 import { useState, useEffect, useContext } from 'react'
 import { useRouter } from 'next/router'
 import Head from 'next/head'
+import emailjs from '@emailjs/browser'
 import addMonths from 'addmonths'
 import { range } from 'lodash'
 import getYear from 'date-fns/getYear'
@@ -34,6 +35,7 @@ function PersonalDataRegistration() {
         dateOfBirth: null,
         phone: ''
     })
+    const [urlOrigin, setUrlOrigin] = useState(null)
     const [chooseDoctor, setChooseDoctor] = useState({})
     const [chooseRoom, setChooseRoom] = useState({})
     const [presenceState, setPresenceState] = useState('MENUNGGU')
@@ -292,6 +294,11 @@ function PersonalDataRegistration() {
     const findIdxCurrentRoom = roomDiseaseType?.length > 0 ? roomDiseaseType.findIndex(room => room?.title === findOneDoctorOfFirstOne?.room) : null
 
     useEffect(() => {
+        const urlOrigin = window.location.origin
+        setUrlOrigin(urlOrigin)
+    }, [])
+
+    useEffect(() => {
         if (user?.id && !loadService && patientData?.isNotif === false) {
             updateNotif()
         }
@@ -355,8 +362,8 @@ function PersonalDataRegistration() {
                 selectElDoctorUpdtConfInfo.value = findCurrentDoctorUpdtConfInfo?.id
             }
             const selectElRoomUpdtConfInfo = document.getElementById('chooseRoomUpdtConfInfo')
-            const findCurrentRoomUpdtConfInfo = roomDiseaseType?.length > 0 ? roomDiseaseType.find(room=>room.title === roomInfo?.roomName) : null
-            if(selectElRoomUpdtConfInfo){
+            const findCurrentRoomUpdtConfInfo = roomDiseaseType?.length > 0 ? roomDiseaseType.find(room => room.title === roomInfo?.roomName) : null
+            if (selectElRoomUpdtConfInfo) {
                 selectElRoomUpdtConfInfo.value = findCurrentRoomUpdtConfInfo?.id
             }
         }
@@ -969,13 +976,40 @@ function PersonalDataRegistration() {
                 .then(res => {
                     if (window.confirm('Konfirmasikan patient?')) {
                         setLoadingSubmitConfPatient(true)
-                        pushToConfirmPatient(postData)
+                        pushToEmailPatient()
+                            .then(res => {
+                                pushToConfirmPatient(postData)
+                            })
+                            .catch(err => {
+                                alert('Oops, telah terjadi kesalahan server!\nMohon coba beberapa saat lagi!')
+                                setLoadingSubmitConfPatient(false)
+                                console.log(err)
+                            })
                     }
                 })
                 .catch(err => {
                     console.log(err)
                 })
         }
+    }
+
+    const pushToEmailPatient = async () => {
+        const serviceId = process.env.NEXT_PUBLIC_SERVICE_ID_ADM
+        const templateId = process.env.NEXT_PUBLIC_TEMPLATE_ID_KONFIRMASI_JP
+        const publicKey = process.env.NEXT_PUBLIC_PUBLIC_KEY_ADM
+
+        const dataSend = {
+            pdf_link_patient_treatment: `${urlOrigin}/patient-registration-information/${patientData?.id}/${patientData?.patientName}/pdf`,
+            to_email: patientData?.emailAddress,
+            patient_name: patientData?.patientName,
+        }
+
+        return await new Promise((resolve, reject) => {
+            emailjs.send(serviceId, templateId, dataSend, publicKey)
+                .then(result => {
+                    resolve(result)
+                }, (error) => reject(error))
+        })
     }
 
     const pushToConfirmPatient = (data) => {
@@ -1526,6 +1560,22 @@ function PersonalDataRegistration() {
             .catch(err => error(err))
     }
 
+    const clickResendConfirmation = () => {
+        if (loadingSubmitConfPatient === false && window.confirm('Send confirmation again?')) {
+            setLoadingSubmitConfPatient(true)
+            pushToEmailPatient()
+                .then(res => {
+                    alert('Reconfirmation was successful!')
+                    setLoadingSubmitConfPatient(false)
+                })
+                .catch(err => {
+                    alert('Oops, telah terjadi kesalahan server\nMohon coba beberapa saat lagi')
+                    console.log(err)
+                    setLoadingSubmitConfPatient(false)
+                })
+        }
+    }
+
     if (params.length === 5 || params.length === 9) {
         return (
             <>
@@ -2033,6 +2083,21 @@ function PersonalDataRegistration() {
                                                 desc={patientData.message}
                                             />
                                         </div>
+
+                                        {/* Button re confirmation */}
+                                        {patientData?.isConfirm?.id && !findPatientInLoket?.patientId && !findCurrentPatientFinishTreatment?.patientId && (
+                                            <Button
+                                                name="RESEND CONFIRMATION"
+                                                style={{
+                                                    widh: 'auto',
+                                                    margin: '15px auto'
+                                                }}
+                                                click={clickResendConfirmation}
+                                                styleLoading={{
+                                                    display: loadingSubmitConfPatient ? 'flex' : 'none'
+                                                }}
+                                            />
+                                        )}
 
                                         {/* data confirmations */}
                                         {patientData?.isConfirm?.id && (

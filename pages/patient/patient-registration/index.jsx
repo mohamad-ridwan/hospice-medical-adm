@@ -584,7 +584,8 @@ function PatientRegistration() {
                                                         }}
                                                     >
                                                         <i className={`fa-solid fa-circle ${style['icon-no-read']}`} style={{
-                                                            color: item.isNotif ? 'transparent' : '#ff296d'
+                                                            // color: item.isNotif ? 'transparent' : '#ff296d'
+                                                            color: item.isNotif ? 'transparent' : 'transparent'
                                                         }}></i>
                                                         {item.data.map((data, idx) => {
                                                             return (
