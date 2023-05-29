@@ -19,8 +19,8 @@ export default function App({ Component, pageProps }) {
     <WrappContextProvider>
       <AuthWrapper>
         <Navbar />
-        <NavLeft/>
-        <NavLeftMobile/>
+        <NavLeft />
+        <NavLeftMobile />
         <Component {...pageProps} />
       </AuthWrapper>
     </WrappContextProvider>

@@ -11,6 +11,7 @@ function CardPatientRegisData({
     styleTitle,
     styleWrappDesc,
     styleFirstDesc,
+    styleTxtDesc,
     children
 }) {
     return (
@@ -24,7 +25,7 @@ function CardPatientRegisData({
                 </p>
                 <p className={style['desc']} style={styleDesc}>
                     <i className={icon} style={styleIcon}></i>
-                    <span className="txt-desc">
+                    <span className="txt-desc" style={styleTxtDesc}>
                         {desc}
                     </span>
                 </p>
