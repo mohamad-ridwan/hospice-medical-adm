@@ -235,6 +235,7 @@ function FinishedTreatment() {
             alert('There is a process running\nPlease wait a moment')
         } else if (loadingDelete === false && window.confirm('Delete this data?')) {
             setIdDeleteDataRegis(_id)
+            setLoadingDelete(true)
             API.APIDeleteFinishedTreatment(_id)
                 .then(res => {
                     deletePersonalDataInCounter(patientId)
@@ -273,11 +274,6 @@ function FinishedTreatment() {
                     setIdDeleteDataRegis(null)
                     console.log(err)
                 })
-        } else {
-            alert('Oops, telah terjadi kesalahan server\nMohon coba beberapa saat lagi')
-            setLoadingDelete(false)
-            setIdDeleteDataRegis(null)
-            console.log(err)
         }
     }
 

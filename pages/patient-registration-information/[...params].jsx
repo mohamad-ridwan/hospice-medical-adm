@@ -66,7 +66,7 @@ function PatientRegisInfo() {
                         router.push(`/patient-registration-information/${patientData?.patientName}`)
                     }
                 });
-            }, 500);
+            }, 100);
         }
     }, [params, dataService])
 

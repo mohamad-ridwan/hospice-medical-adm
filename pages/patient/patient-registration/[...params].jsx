@@ -46,7 +46,7 @@ function PersonalDataRegistration() {
     const [chooseDayOfDoctorOnUpdtInfoPatient, setChooseDayOfDoctorOnUpdtInfoPatient] = useState({})
     const [inputConfirm, setInputConfirm] = useState({
         id: '',
-        message: 'Selamat siang bapak ridwan, saya dari admin hospice medical ingin mengkonfirmasikan pendaftaran Anda pada ketentuan berikut :',
+        message: 'Konfirmasi jadwal berobat pasien',
         emailAdmin: '',
         dateConfirm: '',
         confirmHour: '',
@@ -1450,6 +1450,7 @@ function PersonalDataRegistration() {
 
                         setTimeout(() => {
                             router.push(`/patient/patient-registration/${p1}/${p2}/${p3}/${p4}/${p5}/${p6}/${p7}/confirmed/${p9}`)
+                            window.open(`${urlOrigin}/patient-receipt/${patientData?.patientName}/${patientData?.id}/pdf/download`)
                         }, 0);
                     }, (err) => {
                         alert('Oops, telah terjadi kesalahan server!\nMohon coba beberapa saat lagi')
@@ -2471,28 +2472,6 @@ function PersonalDataRegistration() {
                                                             errorMessage={errSubmitConfPatient?.treatmentHours}
                                                         />
                                                     </div>
-                                                    <div className={style['input']} style={{
-                                                        width: '100%'
-                                                    }}>
-                                                        <Input
-                                                            styleTitle={{
-                                                                display: 'flex'
-                                                            }}
-                                                            styleInputText={{
-                                                                display: 'none'
-                                                            }}
-                                                            styleTxtArea={{
-                                                                display: 'flex'
-                                                            }}
-                                                            {...propsErrMsg}
-                                                            valueTxtArea={inputConfirm.message}
-                                                            title='Message'
-                                                            nameTxtArea="message"
-                                                            placeholderTxtArea="Message..."
-                                                            changeTxtArea={handleChangeInputConfirm}
-                                                            errorMessage={errSubmitConfPatient?.message}
-                                                        />
-                                                    </div>
                                                     <Button
                                                         name="CONFIRM PATIENT"
                                                         style={{
@@ -2600,7 +2579,7 @@ function PersonalDataRegistration() {
                                             <></>
                                         )}
 
-                                        {/* form confirm patient in the counter */}
+                                        {/* form confirm patient finished treatment */}
                                         {!findPatientInLoket?.isConfirm?.confirmState && (
                                             <>
                                                 <div className={`${style['form-conf-take-medic']} ${style['confirm-data-group']}`} style={{
