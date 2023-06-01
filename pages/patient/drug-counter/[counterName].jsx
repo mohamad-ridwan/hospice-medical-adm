@@ -26,7 +26,7 @@ function DetailCounter() {
             name: 'Patient Name'
         },
         {
-            name: 'Disease Type'
+            name: 'Counter Name'
         },
         {
             name: 'Email'
@@ -88,7 +88,7 @@ function DetailCounter() {
                     name: item.patientName
                 },
                 {
-                    name: item.jenisPenyakit
+                    name: item.loketName
                 },
                 {
                     name: getEveryDetailPatient[0]?.emailAddress
@@ -235,10 +235,7 @@ function DetailCounter() {
                                 />
 
                                 {getLoket.length > 0 ? getLoket.map((item, index) => {
-                                    const jenisPenyakit = item.data[2].name.replace('-', '')
-                                    const newJenisPenyakit = jenisPenyakit.replace(/ /gi, '-').toLowerCase()
-                                    const emailPatient = item.data[3].name
-                                    const pathUrlToDataDetail = `/patient/patient-registration/personal-data/confirmed/${newJenisPenyakit}/${emailPatient}/${item.patientId}/counter/${counterName}/${item.confirmState ? 'confirmed' : 'not-yet-confirmed'}/${item.data[0]?.name}`
+                                    const pathUrlToDataDetail = `/patient/patient-registration/personal-data/confirmed/${item.data[1]?.name}/${item.patientId}/counter/${counterName}/${item.confirmState ? 'confirmed' : 'not-yet-confirmed'}/${item.data[0]?.name}`
 
                                     return (
                                         <button key={index} className={style['columns-data']} onClick={() => toPage(pathUrlToDataDetail)}>

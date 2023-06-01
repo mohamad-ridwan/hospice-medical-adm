@@ -23,9 +23,9 @@ import monthNamesInd from 'lib/namesOfCalendar/monthNameInd'
 
 function PatientRegistration() {
     const [head] = useState([
-        {
-            name: 'Disease Type'
-        },
+        // {
+        //     name: 'Disease Type'
+        // },
         {
             name: 'Appointment Date'
         },
@@ -119,8 +119,8 @@ function PatientRegistration() {
                 elementTHead.style.width = 'calc(100%/7)'
                 elementTHead = document.getElementById(`tHead2`)
                 elementTHead.style.width = 'calc(100%/8)'
-                elementTHead = document.getElementById(`tHead4`)
-                elementTHead.style.width = 'calc(100%/6)'
+                elementTHead = document.getElementById(`tHead3`)
+                elementTHead.style.width = 'calc(100%/5)'
                 elementTHead = document.getElementById(`tHead5`)
                 elementTHead.style.width = 'calc(100%/10)'
             }
@@ -132,8 +132,8 @@ function PatientRegistration() {
                     elementTData.style.width = 'calc(100%/7)'
                     elementTData = document.getElementById(`tData${i}2`)
                     elementTData.style.width = 'calc(100%/8)'
-                    elementTData = document.getElementById(`tData${i}4`)
-                    elementTData.style.width = 'calc(100%/6)'
+                    elementTData = document.getElementById(`tData${i}3`)
+                    elementTData.style.width = 'calc(100%/5)'
                     elementTData = document.getElementById(`tData${i}5`)
                     elementTData.style.width = 'calc(100%/10)'
                 }
@@ -166,9 +166,9 @@ function PatientRegistration() {
                             id: item.id,
                             isNotif: item.isNotif,
                             data: [
-                                {
-                                    name: item.jenisPenyakit
-                                },
+                                // {
+                                //     name: item.jenisPenyakit
+                                // },
                                 {
                                     firstDesc: makeNormalDate(item.appointmentDate),
                                     color: '#ff296d',
@@ -559,7 +559,7 @@ function PatientRegistration() {
                                             const jenisPenyakit = item.data[0].name.replace('-', '')
                                             const newJenisPenyakit = jenisPenyakit.replace(/ /gi, '-').toLowerCase()
                                             const emailPatient = item.data[4].name
-                                            const pathUrlToDataDetail = `patient-registration/personal-data/not-yet-confirmed/${newJenisPenyakit}/${emailPatient}/${item.id}`
+                                            const pathUrlToDataDetail = `patient-registration/personal-data/not-yet-confirmed/${item.data[2]?.name}/${item.id}`
 
                                             return (
                                                 <button key={index} className={style['columns-data']} onClick={() => toPage(pathUrlToDataDetail)}>

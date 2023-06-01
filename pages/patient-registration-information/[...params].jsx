@@ -164,12 +164,12 @@ function PatientRegisInfo() {
 
                         {/* data info */}
                         <div className={style['data-information']}>
-                            <CardPatientRegisData
+                            {/* <CardPatientRegisData
                                 {...propsFontDataInfo}
                                 {...styleWidthDataInfo}
                                 title="Disease Type"
                                 desc={patientData.jenisPenyakit}
-                            />
+                            /> */}
                             <CardPatientRegisData
                                 {...styleWidthDataInfo}
                                 // {...propsIconDataInfo}

@@ -130,10 +130,10 @@ function PatientReceipt() {
                     <h1 className={style['title']} style={{
                         marginBottom: '1px'
                     }}>
-                        <span className={style['patient-of']}>Patient of</span>
-                        <span className={style['name']}>
+                        <span className={style['patient-of']}>Treatment Results</span>
+                        {/* <span className={style['name']}>
                             {patientData?.patientName}
-                        </span>
+                        </span> */}
                     </h1>
 
                     <h1 className={style['title-info']}>
@@ -160,12 +160,12 @@ function PatientReceipt() {
                             title="Patient Email"
                             desc={patientData.emailAddress}
                         />
-                        <CardPatientRegisData
+                        {/* <CardPatientRegisData
                             {...propsFontDataInfo}
                             {...styleWidthDataInfo}
                             title="Disease Type"
                             desc={patientData.jenisPenyakit}
-                        />
+                        /> */}
                         <CardPatientRegisData
                             {...propsFontDataInfo}
                             {...styleWidthDataInfo}
@@ -226,7 +226,7 @@ function PatientReceipt() {
                             <CardPatientRegisData
                                 {...propsFontDataInfo}
                                 {...styleWidthDataInfo}
-                                title="BPJS Kesehatan Number"
+                                title="BPJS Number"
                                 desc={findPatientInLoket?.isConfirm?.paymentInfo?.bpjsNumber}
                             />
                         )}
@@ -234,7 +234,7 @@ function PatientReceipt() {
                             {...propsFontDataInfo}
                             {...styleWidthDataInfo}
                             title="Total Cost"
-                            desc={numberFormatIndo(findPatientInLoket?.isConfirm?.paymentInfo?.totalCost)}
+                            desc={findPatientInLoket?.isConfirm?.paymentInfo?.paymentMethod?.toLowerCase()?.includes('bpjs') ? 'Rp -' : numberFormatIndo(findPatientInLoket?.isConfirm?.paymentInfo?.totalCost)}
                             styleDesc={{
                                 color: '#ff296d',
                                 fontSize: '3.5px',

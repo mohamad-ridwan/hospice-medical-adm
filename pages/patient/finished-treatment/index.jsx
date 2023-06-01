@@ -22,16 +22,13 @@ function FinishedTreatment() {
     const [loadingDelete, setLoadingDelete] = useState(false)
     const [head] = useState([
         {
+            name: 'Patient Name'
+        },
+        {
             name: 'Presence'
         },
         {
             name: 'Attendance Record'
-        },
-        {
-            name: 'Patient Name'
-        },
-        {
-            name: 'Disease Type'
         },
         {
             name: 'Confirmation Date'
@@ -105,6 +102,9 @@ function FinishedTreatment() {
             completionStage: getCurrentLoket?.presence === 'tidak hadir' || getCurrentLoket?.presence === 'hadir' ? 'counter' : 'room',
             data: [
                 {
+                    name: item.patientName
+                },
+                {
                     fontSize: '11px',
                     colorName: '#fff',
                     name: findPatientInRegisData?.isConfirm?.presence === 'hadir' ? getCurrentLoket?.presence?.toUpperCase() : findPatientInRegisData?.isConfirm?.presence?.toUpperCase(),
@@ -113,12 +113,6 @@ function FinishedTreatment() {
                     fontWeight: 'bold',
                     colorName: findPatientInRegisData?.isConfirm?.presence === 'hadir' ? getCurrentLoket?.presence === 'hadir' ? '#288bbc' : '#be2ed6' : '#ff296d',
                     name: findPatientInRegisData?.isConfirm?.presence === 'hadir' ? getCurrentLoket?.presence === 'hadir' ? 'Finished until taking Medicine' : 'Not at the Counter' : 'Not in the Treatment Room'
-                },
-                {
-                    name: item.patientName
-                },
-                {
-                    name: findPatientInRegisData?.jenisPenyakit
                 },
                 {
                     firstDesc: makeNormalDate(item?.confirmedTime?.dateConfirm),
@@ -176,11 +170,11 @@ function FinishedTreatment() {
 
         if (newPatientRegistration?.length > 0 && elementTHead) {
             elementTHead = document.getElementById(`tHead0`)
-            elementTHead.style.width = 'calc(100%/10)'
+            elementTHead.style.width = 'calc(100%/7)'
             elementTHead = document.getElementById(`tHead1`)
-            elementTHead.style.width = 'calc(100%/7)'
+            elementTHead.style.width = 'calc(100%/12)'
             elementTHead = document.getElementById(`tHead2`)
-            elementTHead.style.width = 'calc(100%/7)'
+            elementTHead.style.width = 'calc(100%/6)'
             elementTHead = document.getElementById(`tHead3`)
             elementTHead.style.width = 'calc(100%/8)'
             elementTHead = document.getElementById(`tHead4`)
@@ -188,20 +182,18 @@ function FinishedTreatment() {
             elementTHead = document.getElementById(`tHead5`)
             elementTHead.style.width = 'calc(100%/7)'
             elementTHead = document.getElementById(`tHead6`)
-            elementTHead.style.width = 'calc(100%/6)'
-            elementTHead = document.getElementById(`tHead7`)
             elementTHead.style.width = 'calc(100%/10)'
-            elementTHead = document.getElementById(`tHead8`)
-            elementTHead.style.width = 'calc(100%/6)'
+            elementTHead = document.getElementById(`tHead7`)
+            elementTHead.style.width = 'calc(100%/7)'
         }
         if (newPatientRegistration?.length > 0 && elementTData) {
             for (let i = 0; i < newPatientRegistration?.length; i++) {
                 elementTData = document.getElementById(`tData${i}0`)
-                elementTData.style.width = 'calc(100%/10)'
+                elementTData.style.width = 'calc(100%/7)'
                 elementTData = document.getElementById(`tData${i}1`)
-                elementTData.style.width = 'calc(100%/7)'
+                elementTData.style.width = 'calc(100%/12)'
                 elementTData = document.getElementById(`tData${i}2`)
-                elementTData.style.width = 'calc(100%/7)'
+                elementTData.style.width = 'calc(100%/6)'
                 elementTData = document.getElementById(`tData${i}3`)
                 elementTData.style.width = 'calc(100%/8)'
                 elementTData = document.getElementById(`tData${i}4`)
@@ -209,11 +201,9 @@ function FinishedTreatment() {
                 elementTData = document.getElementById(`tData${i}5`)
                 elementTData.style.width = 'calc(100%/7)'
                 elementTData = document.getElementById(`tData${i}6`)
-                elementTData.style.width = 'calc(100%/6)'
-                elementTData = document.getElementById(`tData${i}7`)
                 elementTData.style.width = 'calc(100%/10)'
-                elementTData = document.getElementById(`tData${i}8`)
-                elementTData.style.width = 'calc(100%/6)'
+                elementTData = document.getElementById(`tData${i}7`)
+                elementTData.style.width = 'calc(100%/7)'
             }
         }
     }
@@ -315,7 +305,7 @@ function FinishedTreatment() {
                                     const jenisPenyakit = item.data[3].name?.replace('-', '')
                                     const newJenisPenyakit = jenisPenyakit?.replace(/ /gi, '-')?.toLowerCase()
                                     const emailPatient = item.data[6].name
-                                    const pathUrlToCounterStage = `/patient/patient-registration/personal-data/confirmed/${newJenisPenyakit}/${emailPatient}/${item.patientId}/counter/${item.dataPatientInCounter?.loketName}/${item.dataPatientInCounter?.confirmState ? 'confirmed' : 'not-yet-confirmed'}/${item.dataPatientInCounter?.queueNumber}`
+                                    const pathUrlToCounterStage = `/patient/patient-registration/personal-data/confirmed/${item.data[0]?.name}/${item.patientId}/counter/${item.dataPatientInCounter?.loketName}/${item.dataPatientInCounter?.confirmState ? 'confirmed' : 'not-yet-confirmed'}/${item.dataPatientInCounter?.queueNumber}`
                                     const pathUrlToRoomStage = `/patient/patient-registration/personal-data/confirmed/${newJenisPenyakit}/${emailPatient}/${item.patientId}`
 
                                     return (
@@ -349,9 +339,9 @@ function FinishedTreatment() {
                                                                 fontSize: data?.fontSize,
                                                                 fontWeight: data?.fontWeight,
                                                                 color: data?.colorName,
-                                                                padding: idx === 0 ? '5.5px 8px' : '',
-                                                                borderRadius: idx === 0 ? '3px' : '0',
-                                                                background: idx === 0 ? data?.name?.toLowerCase() === 'hadir' ? '#288bbc' : '#ff296d' : 'transparent'
+                                                                padding: idx === 1 ? '5.5px 8px' : '',
+                                                                borderRadius: idx === 1 ? '3px' : '0',
+                                                                background: idx === 1 ? data?.name?.toLowerCase() === 'hadir' ? '#288bbc' : '#ff296d' : 'transparent'
                                                             }}
                                                             styleFirstDesc={{
                                                                 color: data?.color,
