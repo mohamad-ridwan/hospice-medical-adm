@@ -219,6 +219,10 @@ function PersonalDataRegistration() {
     const findCurrentSpecialist = patientData?.id && getSpecialist?.length > 0 ? getSpecialist.filter(
         item => item.spesialis.includes('/') ? item.spesialis.split('/')[0].includes(patientData.jenisPenyakit.toLowerCase()) ? item.spesialis.split('/')[0].includes(patientData.jenisPenyakit.toLowerCase()) : item.spesialis.split('/')[1].includes(patientData.jenisPenyakit.toLowerCase()) : item.spesialis.includes(patientData.jenisPenyakit.toLowerCase())
     ) : []
+    // find practice hours doctor
+    const findPracticeHoursDoc = chooseDoctor?.id ? chooseDoctor?.jadwalDokter?.find(day=>day?.toLowerCase()?.includes(chooseDayConf?.title?.toLowerCase())) : null
+    const timePracticeHoursDoc = findPracticeHoursDoc ? findPracticeHoursDoc?.split(' ') : null
+    const practiceHoursDoc = timePracticeHoursDoc?.length > 0 ? `${timePracticeHoursDoc[1]} - ${timePracticeHoursDoc[3]}` : null
     // filter calendar
     const newDay = [
         'Minggu',
@@ -2643,9 +2647,20 @@ function PersonalDataRegistration() {
                                                             dataBlogCategory={roomDiseaseType}
                                                         />
                                                     </div> */}
-                                                    <div className={style['input']} style={{
-                                                        width: '100%'
-                                                    }}>
+                                                    <div className={style['input']}>
+                                                        <Input
+                                                            {...propsInputEdit}
+                                                            {...propsErrMsg}
+                                                            type='text'
+                                                            nameInput='practiceHours'
+                                                            placeholder='Practice Hours...'
+                                                            valueInput={practiceHoursDoc !== null ? practiceHoursDoc : ''}
+                                                            title='Practice Hours'
+                                                            readOnly={true}
+                                                            errorMessage={errSubmitConfPatient?.practiceHours}
+                                                        />
+                                                    </div>
+                                                    <div className={style['input']}>
                                                         <Input
                                                             {...propsInputEdit}
                                                             {...propsErrMsg}
@@ -2696,7 +2711,7 @@ function PersonalDataRegistration() {
                                                                     nameInput='treatmentHours'
                                                                     placeholder='Treatment hours...'
                                                                     valueInput={inputConfirm.treatmentHours}
-                                                                    title='Treatment Hours'
+                                                                    title={`Treatment Hours "Example" (08:00 - 10:00)`}
                                                                     changeInput={handleChangeInputConfirm}
                                                                     errorMessage={errSubmitConfPatient?.treatmentHours}
                                                                 />
