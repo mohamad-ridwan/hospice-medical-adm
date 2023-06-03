@@ -27,7 +27,7 @@ import monthNamesInd from 'lib/namesOfCalendar/monthNameInd'
 function PersonalDataRegistration() {
     const [onPopupEdit, setOnPopupEdit] = useState(false)
     const [valueInputEdit, setValueInputEdit] = useState({
-        jenisPenyakit: '',
+        patientComplaints: '',
         appointmentDate: null,
         submissionDate: '',
         patientName: '',
@@ -51,7 +51,7 @@ function PersonalDataRegistration() {
     const [errorMsgSubmit, setErrMsgSubmit] = useState({})
     const [chooseDoctorUpdtInfoPatient, setChooseDoctorUpdtInfoPatient] = useState({})
     const [dataDayOfDoctors, setDataDayOfDoctros] = useState([])
-    const [chooseDayOfDoctorOnUpdtInfoPatient, setChooseDayOfDoctorOnUpdtInfoPatient] = useState({})
+    const [chooseDayOfDoctorOnUpdtInfoPatient, setChooseDayOfDoctorOnUpdtInfoPatient] = useState({ id: 'Choose Day', title: 'Choose Day' })
     const [inputConfirm, setInputConfirm] = useState({
         message: 'Konfirmasi jadwal berobat pasien',
         treatmentHours: '',
@@ -68,23 +68,23 @@ function PersonalDataRegistration() {
     const [onPopupEditConfirm, setOnPopupEditConfirm] = useState(false)
     const [errMsgInputUpdtConfirmInfo, setErrMsgInputUpdtConfirmInfo] = useState({})
     const [loadingSubmitUpdtConfirmInfo, setLoadingSubmitUpdtConfirmInfo] = useState(false)
+    const [docSpecialistUpdtConf, setDocSpecialistUpdtConf] = useState({
+        id: 'Choose Specialist',
+        title: 'Choose Specialist'
+    })
+    const [dayDocScheduleUpdtConf, setDayDocScheduleUpdtConf] = useState({
+        id: 'Choose Day',
+        title: 'Choose Day'
+    })
+    const [listDocOnSpecialistUpdtConf, setListDocOnSpecialistUpdtConf] = useState([
+        {
+            id: 'Choose Doctor',
+            title: 'Choose Doctor'
+        }
+    ])
+    const [chooseDocUpdtConf, setChooseDocUpdtConf] = useState({})
     const [inputUpdtConfirmInfo, setInputUpdtConfirmInfo] = useState({
-        id: '',
-        message: '',
-        emailAdmin: '',
-        nameAdmin: '',
-        dateConfirm: '',
-        confirmHour: '',
         treatmentHours: '',
-        doctorInfo: {
-            nameDoctor: '',
-            doctorSpecialist: ''
-        },
-        queueNumber: '',
-        roomInfo: {
-            roomName: ''
-        },
-        presence: ''
     })
     const [paymentMethod] = useState([
         {
@@ -156,10 +156,9 @@ function PersonalDataRegistration() {
     const checkCurrentDSOnDayAppointment = dayOnAppointmentDate === chooseDayConf?.title?.toLowerCase()
     // for queue number of patient from update confirmation info
     const patientOfCurrentDiseaseTForUpdtConfInfo = userAppointmentData && patientData ? userAppointmentData.filter(patient =>
-        patient.jenisPenyakit === patientData?.jenisPenyakit &&
         patient.appointmentDate === patientData?.appointmentDate &&
         patient.isConfirm?.id &&
-        patient.isConfirm?.roomInfo?.roomName === inputUpdtConfirmInfo.roomInfo.roomName
+        patient.isConfirm?.roomInfo?.roomName === chooseDocUpdtConf?.room
     ) : null
     // day time service
     const getDateOfAppointmentDate = new Date(`${patientData?.appointmentDate}`)
@@ -220,9 +219,13 @@ function PersonalDataRegistration() {
         item => item.spesialis.includes('/') ? item.spesialis.split('/')[0].includes(patientData.jenisPenyakit.toLowerCase()) ? item.spesialis.split('/')[0].includes(patientData.jenisPenyakit.toLowerCase()) : item.spesialis.split('/')[1].includes(patientData.jenisPenyakit.toLowerCase()) : item.spesialis.includes(patientData.jenisPenyakit.toLowerCase())
     ) : []
     // find practice hours doctor
-    const findPracticeHoursDoc = chooseDoctor?.id ? chooseDoctor?.jadwalDokter?.find(day=>day?.toLowerCase()?.includes(chooseDayConf?.title?.toLowerCase())) : null
+    const findPracticeHoursDoc = chooseDoctor?.id ? chooseDoctor?.jadwalDokter?.find(day => day?.toLowerCase()?.includes(chooseDayConf?.title?.toLowerCase())) : null
     const timePracticeHoursDoc = findPracticeHoursDoc ? findPracticeHoursDoc?.split(' ') : null
     const practiceHoursDoc = timePracticeHoursDoc?.length > 0 ? `${timePracticeHoursDoc[1]} - ${timePracticeHoursDoc[3]}` : null
+    // find practice hours doctor on update conf
+    const findPracticeHoursDocUpdtConf = chooseDocUpdtConf?.id ? chooseDocUpdtConf?.jadwalDokter?.find(day => day?.toLowerCase()?.includes(dayDocScheduleUpdtConf?.title?.toLowerCase())) : null
+    const timePracticeHoursDocUpdtConf = findPracticeHoursDocUpdtConf ? findPracticeHoursDocUpdtConf?.split(' ') : null
+    const practiceHoursDocUpdtConf = timePracticeHoursDocUpdtConf?.length > 0 ? `${timePracticeHoursDocUpdtConf[1]} - ${timePracticeHoursDocUpdtConf[3]}` : null
     // filter calendar
     const newDay = [
         'Minggu',
@@ -234,12 +237,13 @@ function PersonalDataRegistration() {
         'Sabtu'
     ]
     const getJadwalDokter = chooseDoctor?.id ? chooseDoctor.jadwalDokter : null
-    const findDayIdx = getJadwalDokter?.length > 0 ? newDay.findIndex(day => day.toLowerCase() === chooseDayOfDoctorOnUpdtInfoPatient?.title?.toLowerCase()) : null
+    // const findDayIdx = getJadwalDokter?.length > 0 ? newDay.findIndex(day => day.toLowerCase() === chooseDayOfDoctorOnUpdtInfoPatient?.title?.toLowerCase()) : null
+    const findDayIdx = chooseDayOfDoctorOnUpdtInfoPatient?.title !== 'Choose Day' ? dayNamesInd.findIndex(day => day === chooseDayOfDoctorOnUpdtInfoPatient?.title?.toLowerCase()) + 1 : null
     // const idxOneIfDayIsTwo = getJadwalDokter?.length === 2 ? newDay.findIndex(day => day.toLowerCase() === getJadwalDokter[0]?.toLowerCase()) : null
     // const idxTwoIfDayIsTwo = getJadwalDokter?.length === 2 ? newDay.findIndex(day => day.toLowerCase() === getJadwalDokter[1]?.toLowerCase()) : null
     const isWeekday = (date) => {
         const day = getDay(date)
-        return day === findDayIdx
+        return findDayIdx !== null ? findDayIdx === 7 ? day === 0 : day === findDayIdx : null
     }
 
     // loket
@@ -329,7 +333,7 @@ function PersonalDataRegistration() {
         }
         if (user?.id && !loadService && patientData?.id) {
             const {
-                jenisPenyakit,
+                patientComplaints,
                 appointmentDate,
                 submissionDate,
                 patientName,
@@ -338,7 +342,7 @@ function PersonalDataRegistration() {
                 phone
             } = patientData
             setValueInputEdit({
-                jenisPenyakit: jenisPenyakit,
+                patientComplaints: patientComplaints,
                 appointmentDate: appointmentDate,
                 submissionDate: submissionDate,
                 patientName: patientName,
@@ -349,37 +353,75 @@ function PersonalDataRegistration() {
         }
         if (user?.id && !loadService && patientData?.id && patientData?.isConfirm?.id) {
             const {
-                id,
-                message,
-                emailAdmin,
-                nameAdmin,
-                dateConfirm,
-                confirmHour,
-                treatmentHours,
                 doctorInfo,
-                queueNumber,
                 roomInfo,
-                presence
+                presence,
             } = patientData?.isConfirm
 
-            setInputUpdtConfirmInfo({
-                id: id,
-                message,
-                emailAdmin,
-                nameAdmin,
-                dateConfirm,
-                confirmHour,
-                treatmentHours,
-                doctorInfo: {
-                    nameDoctor: doctorInfo?.nameDoctor,
-                    doctorSpecialist: doctorInfo?.doctorSpecialist
-                },
-                queueNumber,
-                roomInfo: {
-                    roomName: roomInfo?.roomName
-                },
-                presence
+            // presence state confirmation
+            setPresenceState(presence)
+
+            // specialist doctor
+            const elDocSpecialist = document.getElementById('chooseSpecialistDocUpdtConf')
+            if (elDocSpecialist) {
+                elDocSpecialist.value = doctorInfo?.doctorSpecialist
+            }
+            setDocSpecialistUpdtConf({
+                id: doctorInfo?.doctorSpecialist,
+                title: doctorInfo?.doctorSpecialist
             })
+
+            // day doctor
+            const getDay = makeNormalDateOnPatientInfo(patientData?.appointmentDate)
+            const day = getDay?.split(' ')[3]
+            setDayDocScheduleUpdtConf({
+                id: day,
+                title: day
+            })
+            const elDoctorSchedule = document.getElementById('chooseDoctorScheduleUpdtConf')
+            if (elDoctorSchedule) {
+                elDoctorSchedule.value = day
+            }
+
+            setTimeout(() => {
+                // choose doctor
+                const getCurrentDoctor = findOurDoctor?.data?.length > 0 ? findOurDoctor.data.find(doctor => doctor.name === doctorInfo?.nameDoctor) : null
+                setChooseDocUpdtConf(getCurrentDoctor)
+                // list choose doctor
+                const getCurrentSpecDoc = findOurDoctor?.data?.length > 0 ? findOurDoctor.data.filter(doctor => doctor.deskripsi === doctorInfo?.doctorSpecialist) : null
+                const getDocOnCurrentSchedule = getCurrentSpecDoc?.length > 0 ? getCurrentSpecDoc.filter(doctor => {
+                    const checkDay = doctor?.jadwalDokter?.find(days => days?.includes(day))
+
+                    return checkDay !== undefined && checkDay !== null
+                }) : null
+                if (getDocOnCurrentSchedule?.length > 0) {
+                    const newDoc = [{
+                        id: 'Choose Doctor',
+                        title: 'Choose Doctor'
+                    }]
+                    let count = 0
+
+                    for (let i = 0; i < getDocOnCurrentSchedule.length; i++) {
+                        newDoc.push({
+                            id: getDocOnCurrentSchedule[i]?.name,
+                            title: getDocOnCurrentSchedule[i]?.name
+                        })
+                        count = count + 1
+                    }
+
+                    if (count === getDocOnCurrentSchedule.length) {
+                        setListDocOnSpecialistUpdtConf(newDoc)
+                    }
+
+                    setTimeout(() => {
+                        const findCurrentDoc = getDocOnCurrentSchedule?.length > 0 ? getDocOnCurrentSchedule.find(doctor => doctor.name === doctorInfo?.nameDoctor) : null
+                        const elCurrentDoc = document.getElementById('chooseDoctorsConfInfo')
+                        if (elCurrentDoc) {
+                            elCurrentDoc.value = findCurrentDoc?.name
+                        }
+                    }, 0)
+                }
+            }, 0)
 
             const selectElDoctorUpdtConfInfo = document.getElementById('chooseDoctorsConfInfo')
             const findCurrentDoctorUpdtConfInfo = getDoctorsInCurrentDate?.length > 0 ? getDoctorsInCurrentDate.find(doctor => doctor.title === doctorInfo?.nameDoctor) : null
@@ -405,6 +447,24 @@ function PersonalDataRegistration() {
             console.log('error data servicing hours')
         }
     }, [loadService])
+
+    // get day of appointment date
+    // for data update patient information (not yet confirmed)
+    useEffect(() => {
+        if (params?.length > 0 && !loadService && patientData?.id) {
+            const getDay = makeNormalDateOnPatientInfo(patientData?.appointmentDate)
+            const day = getDay?.split(' ')
+            setChooseDayOfDoctorOnUpdtInfoPatient({
+                id: day[3],
+                title: day[3]
+            })
+
+            const elDay = document.getElementById('selectDayUpdtPatientInfo')
+            if (elDay) {
+                elDay.value = day[3]
+            }
+        }
+    }, [params, dataService])
 
     useEffect(() => {
         if (params?.length > 0 && dataDoctors?.data && findCurrentSpecialist?.length > 0) {
@@ -433,7 +493,7 @@ function PersonalDataRegistration() {
                 })) : []
                 setDataDayOfDoctros(getDayDoctorSchedule)
                 const findIdxDayDoctorSchedule = getDayDoctorSchedule?.length > 0 ? getDayDoctorSchedule.findIndex(jadwal => jadwal.title?.toLowerCase() === dayNameOfADPatient) : null
-                setChooseDayOfDoctorOnUpdtInfoPatient(getDayDoctorSchedule[findIdxDayDoctorSchedule])
+                // setChooseDayOfDoctorOnUpdtInfoPatient(getDayDoctorSchedule[findIdxDayDoctorSchedule])
 
                 if (selectElDayDoctorSchedule) {
                     setTimeout(() => {
@@ -454,7 +514,7 @@ function PersonalDataRegistration() {
                 })) : []
                 setDataDayOfDoctros(getDayDoctorSchedule)
                 const findIdxDayDoctorSchedule = getDayDoctorSchedule?.length > 0 ? getDayDoctorSchedule.findIndex(jadwal => jadwal.title?.toLowerCase() === dayNameOfADPatient) : null
-                setChooseDayOfDoctorOnUpdtInfoPatient(getDayDoctorSchedule[findIdxDayDoctorSchedule])
+                // setChooseDayOfDoctorOnUpdtInfoPatient(getDayDoctorSchedule[findIdxDayDoctorSchedule])
 
                 if (selectElDayDoctorSchedule) {
                     setTimeout(() => {
@@ -502,6 +562,13 @@ function PersonalDataRegistration() {
             })
         }
     }, [params, dataLoket])
+
+    const numberFormatIndo = (number) => {
+        return new Intl.NumberFormat('id-ID', {
+            style: 'currency',
+            currency: 'IDR'
+        }).format(number)
+    }
 
     const listChooseDay = [
         {
@@ -592,47 +659,93 @@ function PersonalDataRegistration() {
                         .then(res => {
                             if (window.confirm(`update patient data from ${patientData?.patientName}?`)) {
                                 setLoadingSubmit(true)
-                                if (valueInputEdit.appointmentDate !== patientData?.appointmentDate && patientData?.isConfirm?.id) {
+                                if (patientData?.isConfirm?.id) {
                                     // update data konfirmasi pasien jika sudah dikonfirmasi
-                                    // for queue number of patient
-                                    const currentPatient = userAppointmentData && patientData ? userAppointmentData.filter(patient =>
-                                        patient.jenisPenyakit === patientData?.jenisPenyakit &&
-                                        patient.appointmentDate === valueInputEdit.appointmentDate &&
-                                        patient.isConfirm?.id &&
-                                        patient.isConfirm?.roomInfo?.roomName === chooseDoctorUpdtInfoPatient?.room
-                                    ) : null
+                                    const nowHours = `${new Date().getHours().toString().length === 1 ? `0${new Date().getHours()}` : new Date().getHours()}`
+                                    const nowMinutes = `${new Date().getMinutes().toString().length === 1 ? `0${new Date().getMinutes()}` : new Date().getMinutes()}`
+                                    const nowDate = `${new Date()}`
+                                    const getDate = nowDate.split(' ')[2]
+                                    const getYear = nowDate.split(' ')[3]
+                                    const getMonth = nowDate.split(' ')[1]
+                                    const findMonth = monthNames.findIndex(item => item === getMonth) + 1
+                                    const nowMonth = findMonth.toString().length === 1 ? `0${findMonth}` : findMonth
+                                    const dateConfirm = `${nowMonth}/${getDate}/${getYear}`
+                                    const confirmHour = `${nowHours}:${nowMinutes}`
 
-                                    const { id, message, dateConfirm, confirmHour, treatmentHours, presence } = patientData?.isConfirm
-
-                                    const dataUpdateConfirm = {
-                                        id: id,
-                                        message: message,
-                                        emailAdmin: user?.email,
-                                        nameAdmin: user?.name,
-                                        dateConfirm: dateConfirm,
-                                        confirmHour: confirmHour,
-                                        treatmentHours: treatmentHours,
-                                        doctorInfo: {
-                                            nameDoctor: chooseDoctorUpdtInfoPatient?.title,
-                                            doctorSpecialist: chooseDoctorUpdtInfoPatient?.spesialis
-                                        },
-                                        queueNumber: `${currentPatient?.length + 1}`,
-                                        roomInfo: {
-                                            roomName: chooseDoctorUpdtInfoPatient?.room
-                                        },
-                                        presence: presence
+                                    const { patientComplaints, appointmentDate, patientName, emailAddress, dateOfBirth, phone } = valueInputEdit
+                                    const data = {
+                                        patientComplaints,
+                                        appointmentDate,
+                                        submissionDate: dateConfirm,
+                                        clock: confirmHour,
+                                        patientName,
+                                        emailAddress,
+                                        dateOfBirth,
+                                        phone
                                     }
 
-                                    updateIsConfirm(dataUpdateConfirm, () => {
-                                        updatePersonalDataPatient()
-                                    }, (err) => {
-                                        alert('Oops, telah terjadi kesalahan server\nMohon coba beberapa saat lagi')
-                                        setLoadingSubmit(false)
-                                        console.log(err)
-                                    })
+                                    updatePersonalDataPatient(data)
+                                    // const currentPatient = userAppointmentData && patientData ? userAppointmentData.filter(patient =>
+                                    //     patient.jenisPenyakit === patientData?.jenisPenyakit &&
+                                    //     patient.appointmentDate === valueInputEdit.appointmentDate &&
+                                    //     patient.isConfirm?.id &&
+                                    //     patient.isConfirm?.roomInfo?.roomName === chooseDoctorUpdtInfoPatient?.room
+                                    // ) : null
+
+                                    // const { id, message, dateConfirm, confirmHour, treatmentHours, presence } = patientData?.isConfirm
+
+                                    // const dataUpdateConfirm = {
+                                    //     id: id,
+                                    //     message: message,
+                                    //     emailAdmin: user?.email,
+                                    //     nameAdmin: user?.name,
+                                    //     dateConfirm: dateConfirm,
+                                    //     confirmHour: confirmHour,
+                                    //     treatmentHours: treatmentHours,
+                                    //     doctorInfo: {
+                                    //         nameDoctor: chooseDoctorUpdtInfoPatient?.title,
+                                    //         doctorSpecialist: chooseDoctorUpdtInfoPatient?.spesialis
+                                    //     },
+                                    //     queueNumber: `${currentPatient?.length + 1}`,
+                                    //     roomInfo: {
+                                    //         roomName: chooseDoctorUpdtInfoPatient?.room
+                                    //     },
+                                    //     presence: presence
+                                    // }
+
+                                    // updateIsConfirm(dataUpdateConfirm, () => {
+                                    //     updatePersonalDataPatient()
+                                    // }, (err) => {
+                                    //     alert('Oops, telah terjadi kesalahan server\nMohon coba beberapa saat lagi')
+                                    //     setLoadingSubmit(false)
+                                    //     console.log(err)
+                                    // })
                                 } else {
                                     // update data informasi pasien jika belum dikonfirmasi
-                                    updatePersonalDataPatient()
+                                    const nowHours = `${new Date().getHours().toString().length === 1 ? `0${new Date().getHours()}` : new Date().getHours()}`
+                                    const nowMinutes = `${new Date().getMinutes().toString().length === 1 ? `0${new Date().getMinutes()}` : new Date().getMinutes()}`
+                                    const nowDate = `${new Date()}`
+                                    const getDate = nowDate.split(' ')[2]
+                                    const getYear = nowDate.split(' ')[3]
+                                    const getMonth = nowDate.split(' ')[1]
+                                    const findMonth = monthNames.findIndex(item => item === getMonth) + 1
+                                    const nowMonth = findMonth.toString().length === 1 ? `0${findMonth}` : findMonth
+                                    const dateConfirm = `${nowMonth}/${getDate}/${getYear}`
+                                    const confirmHour = `${nowHours}:${nowMinutes}`
+
+                                    const { patientComplaints, appointmentDate, patientName, emailAddress, dateOfBirth, phone } = valueInputEdit
+                                    const data = {
+                                        patientComplaints,
+                                        appointmentDate,
+                                        submissionDate: dateConfirm,
+                                        clock: confirmHour,
+                                        patientName,
+                                        emailAddress,
+                                        dateOfBirth,
+                                        phone
+                                    }
+
+                                    updatePersonalDataPatient(data)
                                 }
                             }
                         })
@@ -647,12 +760,23 @@ function PersonalDataRegistration() {
 
         const message = 'this is the same'
 
-        if (valueInputEdit.appointmentDate === patientData?.appointmentDate) {
+        const checkDay = makeNormalDateOnPatientInfo(valueInputEdit.appointmentDate)
+        const getDay = checkDay?.split(' ')
+        const day = getDay[3]
+
+        if (valueInputEdit.patientComplaints === patientData?.patientComplaints) {
+            err.patientComplaints = message
+        }
+        if (chooseDayOfDoctorOnUpdtInfoPatient?.title === 'Choose Day') {
+            return null
+        } else if (chooseDayOfDoctorOnUpdtInfoPatient?.title !== day) {
+            return null
+        } else if (valueInputEdit.appointmentDate === patientData?.appointmentDate) {
             err.appointmentDate = message
         }
-        if (valueInputEdit.submissionDate === patientData?.submissionDate) {
-            err.submissionDate = message
-        }
+        // if (valueInputEdit.submissionDate === patientData?.submissionDate) {
+        //     err.submissionDate = message
+        // }
         if (valueInputEdit.patientName === patientData?.patientName) {
             err.patientName = message
         }
@@ -678,11 +802,19 @@ function PersonalDataRegistration() {
     const validateForm = async () => {
         let err = {}
 
-        if (!valueInputEdit.appointmentDate.trim()) {
-            err.appointmentDate = 'Must be required'
+        if (!valueInputEdit.patientComplaints.trim()) {
+            err.patientComplaints = 'Must be required'
         }
-        if (!valueInputEdit.submissionDate.trim()) {
-            err.submissionDate = 'Must be required'
+        if (chooseDayOfDoctorOnUpdtInfoPatient?.title === 'Choose Day') {
+            err.chooseDay = 'Must be required'
+        }
+        const checkDay = makeNormalDateOnPatientInfo(valueInputEdit.appointmentDate)
+        const getDay = checkDay?.split(' ')
+        const day = getDay[3]
+        if (day !== chooseDayOfDoctorOnUpdtInfoPatient?.title) {
+            err.appointmentDate = 'Date must be the same as the day'
+        } else if (!valueInputEdit.appointmentDate.trim()) {
+            err.appointmentDate = 'Must be required'
         }
         if (!valueInputEdit.patientName.trim()) {
             err.patientName = 'Must be required'
@@ -726,12 +858,12 @@ function PersonalDataRegistration() {
         }
     }
 
-    const updatePersonalDataPatient = () => {
+    const updatePersonalDataPatient = (data) => {
         if (bookAnAppointment?._id && patientData?.id) {
             API.APIPutPatientRegistration(
                 bookAnAppointment._id,
                 patientData.id,
-                valueInputEdit
+                data
             )
                 .then(res => {
                     setLoadingSubmit(false)
@@ -933,49 +1065,152 @@ function PersonalDataRegistration() {
         }
     }
 
+    const handleDocSpecialistUpdtConf = () => {
+        const selectEl = document.getElementById('chooseSpecialistDocUpdtConf')
+        const id = selectEl.options[selectEl.selectedIndex].value
+        if (id) {
+            setDocSpecialistUpdtConf({
+                id: id,
+                title: id
+            })
+
+            const elDayDocSchedule = document.getElementById('chooseDoctorScheduleUpdtConf')
+            if (elDayDocSchedule) {
+                elDayDocSchedule.value = 'Choose Day'
+            }
+            setDayDocScheduleUpdtConf({
+                id: 'Choose Day',
+                title: 'Choose Day'
+            })
+
+            const elChooseDocUpdtConf = document.getElementById('chooseDoctorsConfInfo')
+            if (elChooseDocUpdtConf) {
+                elChooseDocUpdtConf.value = 'Choose Doctor'
+            }
+
+            setChooseDocUpdtConf({})
+
+            setListDocOnSpecialistUpdtConf([{
+                id: 'Choose Doctor',
+                title: 'Choose Doctor'
+            }])
+        }
+    }
+
+    const handleDocScheduleUpdtConf = () => {
+        const selectEl = document.getElementById('chooseDoctorScheduleUpdtConf')
+        const id = selectEl.options[selectEl.selectedIndex].value
+        if (id) {
+            // back to choose doctor
+            const elChooseDocUpdtConf = document.getElementById('chooseDoctorsConfInfo')
+            if (elChooseDocUpdtConf) {
+                elChooseDocUpdtConf.value = 'Choose Doctor'
+            }
+            setChooseDocUpdtConf({})
+
+            setDayDocScheduleUpdtConf({
+                id: id,
+                title: id
+            })
+            if (id !== 'Choose Day') {
+                const getDocOnCurrentSpecialist = findOurDoctor?.data?.length > 0 ? findOurDoctor.data.filter(doctor => doctor.deskripsi === docSpecialistUpdtConf?.title) : null
+                if (getDocOnCurrentSpecialist?.length > 0) {
+                    const getDocOnCurrentSchedule = getDocOnCurrentSpecialist.filter(doctor => {
+                        const jadwalDokter = doctor?.jadwalDokter?.find(day => day?.toLowerCase()?.includes(id?.toLowerCase()))
+
+                        return jadwalDokter !== undefined && jadwalDokter !== null
+                    })
+
+                    if (getDocOnCurrentSchedule?.length > 0) {
+                        const newDataChooseDoc = [{
+                            id: 'Choose Doctor',
+                            title: 'Choose Doctor'
+                        }]
+                        let count = 0
+
+                        const pushDataDoctor = () => getDocOnCurrentSchedule.forEach(doctor => {
+                            count = count + 1
+                            newDataChooseDoc.push({
+                                id: doctor.name,
+                                title: doctor.name
+                            })
+                        })
+
+                        pushDataDoctor()
+                        if (count === getDocOnCurrentSchedule.length) {
+                            setListDocOnSpecialistUpdtConf(newDataChooseDoc)
+                        }
+                    } else {
+                        setListDocOnSpecialistUpdtConf([{
+                            id: 'Choose Doctor',
+                            title: 'Choose Doctor'
+                        }])
+                    }
+                } else {
+                    setListDocOnSpecialistUpdtConf([{
+                        id: 'Choose Doctor',
+                        title: 'Choose Doctor'
+                    }])
+                }
+            } else {
+                setChooseDocUpdtConf({})
+                setListDocOnSpecialistUpdtConf([{
+                    id: 'Choose Doctor',
+                    title: 'Choose Doctor'
+                }])
+            }
+        }
+    }
+
     const handleChooseDoctorsUpdtInfoConfirm = () => {
         const selectEl = document.getElementById('chooseDoctorsConfInfo')
         const id = selectEl.options[selectEl.selectedIndex].value
         if (id) {
-            const findDoctorInCurrentDate = getDoctorsInCurrentDate?.length > 0 ? getDoctorsInCurrentDate.find(doctor => doctor.id === id) : {}
-            if (findDoctorInCurrentDate?.id) {
-                const currentPatient = userAppointmentData && patientData ? userAppointmentData.filter(patient =>
-                    patient.jenisPenyakit === patientData?.jenisPenyakit &&
-                    patient.appointmentDate === patientData?.appointmentDate &&
-                    patient.isConfirm?.id &&
-                    patient.isConfirm?.roomInfo?.roomName === findDoctorInCurrentDate?.room &&
-                    patient.id !== patientData?.id
-                ) : null
-
-                setInputUpdtConfirmInfo({
-                    ...inputUpdtConfirmInfo,
-                    doctorInfo: {
-                        nameDoctor: findDoctorInCurrentDate?.title,
-                        doctorSpecialist: findDoctorInCurrentDate?.spesialis
-                    },
-                    roomInfo: {
-                        roomName: findDoctorInCurrentDate?.room
-                    },
-                    queueNumber: `${currentPatient?.length + 1}`
-                })
-                setErrMsgInputUpdtConfirmInfo({
-                    ...errMsgInputUpdtConfirmInfo,
-                    nameDoctor: '',
-                    doctorSpecialist: '',
-                    roomName: '',
-                    totalQueue: ''
-                })
-
-                const findCurrentRoom = roomDiseaseType?.length > 0 ? roomDiseaseType.find(room => room.title === findDoctorInCurrentDate?.room) : {}
-                const selectElRoomUpdtConfInfo = document.getElementById('chooseRoomUpdtConfInfo')
-                if (selectElRoomUpdtConfInfo) {
-                    selectElRoomUpdtConfInfo.value = findCurrentRoom?.id
-                }
+            if (id !== 'Choose Doctor') {
+                const findDocOnCurrentName = findOurDoctor?.data?.length > 0 ? findOurDoctor.data.find(doctor => doctor.name === id) : null
+                setChooseDocUpdtConf(findDocOnCurrentName)
             } else {
-                alert(`The doctor is not on the patient's schedule`)
-                const findPrevDoctor = getDoctorsInCurrentDate?.length > 0 ? getDoctorsInCurrentDate.find(doctor => doctor.title === inputUpdtConfirmInfo?.doctorInfo?.nameDoctor) : {}
-                selectEl.value = findPrevDoctor?.id
+                setChooseDocUpdtConf({})
             }
+            // const findDoctorInCurrentDate = getDoctorsInCurrentDate?.length > 0 ? getDoctorsInCurrentDate.find(doctor => doctor.id === id) : {}
+            // if (findDoctorInCurrentDate?.id) {
+            //     const currentPatient = userAppointmentData && patientData ? userAppointmentData.filter(patient =>
+            //         patient.jenisPenyakit === patientData?.jenisPenyakit &&
+            //         patient.appointmentDate === patientData?.appointmentDate &&
+            //         patient.isConfirm?.id &&
+            //         patient.isConfirm?.roomInfo?.roomName === findDoctorInCurrentDate?.room &&
+            //         patient.id !== patientData?.id
+            //     ) : null
+
+            //     setInputUpdtConfirmInfo({
+            //         ...inputUpdtConfirmInfo,
+            //         doctorInfo: {
+            //             nameDoctor: findDoctorInCurrentDate?.title,
+            //             doctorSpecialist: findDoctorInCurrentDate?.spesialis
+            //         },
+            //         roomInfo: {
+            //             roomName: findDoctorInCurrentDate?.room
+            //         },
+            //         queueNumber: `${currentPatient?.length + 1}`
+            //     })
+            //     setErrMsgInputUpdtConfirmInfo({
+            //         ...errMsgInputUpdtConfirmInfo,
+            //         nameDoctor: '',
+            //         doctorSpecialist: '',
+            //         roomName: '',
+            //         totalQueue: ''
+            //     })
+
+            //     const findCurrentRoom = roomDiseaseType?.length > 0 ? roomDiseaseType.find(room => room.title === findDoctorInCurrentDate?.room) : {}
+            //     const selectElRoomUpdtConfInfo = document.getElementById('chooseRoomUpdtConfInfo')
+            //     if (selectElRoomUpdtConfInfo) {
+            //         selectElRoomUpdtConfInfo.value = findCurrentRoom?.id
+            //     }
+            // } else {
+            //     alert(`The doctor is not on the patient's schedule`)
+            //     const findPrevDoctor = getDoctorsInCurrentDate?.length > 0 ? getDoctorsInCurrentDate.find(doctor => doctor.title === inputUpdtConfirmInfo?.doctorInfo?.nameDoctor) : {}
+            //     selectEl.value = findPrevDoctor?.id
+            // }
         }
     }
 
@@ -997,8 +1232,11 @@ function PersonalDataRegistration() {
         const selectEl = document.getElementById('selectDayUpdtPatientInfo')
         const id = selectEl.options[selectEl.selectedIndex].value
         if (id) {
-            const findDay = dataDayOfDoctors.find(day => day.id === id)
-            setChooseDayOfDoctorOnUpdtInfoPatient(findDay)
+            // const findDay = dataDayOfDoctors.find(day => day.id === id)
+            setChooseDayOfDoctorOnUpdtInfoPatient({
+                id: id,
+                title: id
+            })
         }
     }
 
@@ -1113,7 +1351,7 @@ function PersonalDataRegistration() {
         if (!inputConfirm.message.trim()) {
             err.message = 'Must be required!'
         }
-        if(checkCurrentDSOnDayAppointment === false){
+        if (checkCurrentDSOnDayAppointment === false) {
             err.noDoctor = 'No Doctor Schedule'
         }
 
@@ -1409,7 +1647,39 @@ function PersonalDataRegistration() {
                         .then(res => {
                             if (window.confirm('update confirmation information?')) {
                                 setLoadingSubmitUpdtConfirmInfo(true)
-                                updateIsConfirm(inputUpdtConfirmInfo, () => {
+                                const nowHours = `${new Date().getHours().toString().length === 1 ? `0${new Date().getHours()}` : new Date().getHours()}`
+                                const nowMinutes = `${new Date().getMinutes().toString().length === 1 ? `0${new Date().getMinutes()}` : new Date().getMinutes()}`
+                                const nowDate = `${new Date()}`
+                                const getDate = nowDate.split(' ')[2]
+                                const getYear = nowDate.split(' ')[3]
+                                const getMonth = nowDate.split(' ')[1]
+                                const findMonth = monthNames.findIndex(item => item === getMonth) + 1
+                                const nowMonth = findMonth.toString().length === 1 ? `0${findMonth}` : findMonth
+                                const dateConfirm = `${nowMonth}/${getDate}/${getYear}`
+                                const confirmHour = `${nowHours}:${nowMinutes}`
+
+                                const checkQueueNumber = patientOfCurrentDiseaseTForUpdtConfInfo?.length > 0 ? patientOfCurrentDiseaseTForUpdtConfInfo.filter(patient=>patient?.id !== patientData?.id) : []
+
+                                const { id, message, presence} = patientData?.isConfirm
+                                const data = {
+                                    id,
+                                    message,
+                                    emailAdmin: user?.email,
+                                    nameAdmin: user?.name,
+                                    dateConfirm,
+                                    confirmHour,
+                                    treatmentHours: inputUpdtConfirmInfo.treatmentHours,
+                                    doctorInfo:{
+                                        nameDoctor: chooseDocUpdtConf?.name,
+                                        doctorSpecialist: chooseDocUpdtConf?.deskripsi
+                                    },
+                                    queueNumber: checkQueueNumber?.length + 1,
+                                    roomInfo: {
+                                        roomName: chooseDocUpdtConf?.room
+                                    },
+                                    presence
+                                }
+                                updateIsConfirm(data, () => {
                                     alert('confirmation information updated successfully')
                                     setLoadingSubmitUpdtConfirmInfo(false)
                                 }, (err) => {
@@ -1428,20 +1698,23 @@ function PersonalDataRegistration() {
     const validateFormUpdtConfInfo = async () => {
         let err = {}
 
-        if (!inputUpdtConfirmInfo.treatmentHours.trim()) {
-            err.treatmentHours = 'Must be required!'
+        if (docSpecialistUpdtConf?.title === 'Choose Specialist') {
+            err.chooseSpecialist = 'Must be required!'
         }
-        if (!inputUpdtConfirmInfo.doctorInfo.nameDoctor.trim()) {
-            err.nameDoctor = 'Must be required!'
+        if (dayDocScheduleUpdtConf?.title === 'Choose Day') {
+            err.chooseDay = 'Must be required!'
         }
-        if (!inputUpdtConfirmInfo.doctorInfo.doctorSpecialist.trim()) {
-            err.doctorSpecialist = 'Must be required!'
+        if (!chooseDocUpdtConf?.name?.trim()) {
+            err.doctorName = 'Must be required!'
         }
-        if (!inputUpdtConfirmInfo.roomInfo.roomName.trim()) {
+        if (!chooseDocUpdtConf?.room?.trim()) {
             err.roomName = 'Must be required!'
         }
         if (patientOfCurrentDiseaseTForUpdtConfInfo === null) {
             err.totalQueue = 'Must be required!'
+        }
+        if (!inputUpdtConfirmInfo.treatmentHours?.trim()) {
+            err.treatmentHours = 'Must be required!'
         }
 
         return await new Promise((resolve, reject) => {
@@ -1457,17 +1730,23 @@ function PersonalDataRegistration() {
     const validateFormIsUpdtConfInfo = async () => {
         let err = {}
 
-        if (inputUpdtConfirmInfo.treatmentHours === patientData?.isConfirm?.treatmentHours) {
-            err.treatmentHours = 'it is the same'
+        const getDay = makeNormalDateOnPatientInfo(patientData?.appointmentDate)
+        const day = getDay?.split(' ')[3]
+
+        if(inputUpdtConfirmInfo.treatmentHours.length > 0){
+            return null
         }
-        if (inputUpdtConfirmInfo.doctorInfo.nameDoctor === patientData?.isConfirm?.doctorInfo?.nameDoctor) {
-            err.nameDoctor = 'it is the same'
-        }
-        if (inputUpdtConfirmInfo.doctorInfo.doctorSpecialist === patientData?.isConfirm?.doctorInfo?.doctorSpecialist) {
+        if (docSpecialistUpdtConf?.title === patientData?.isConfirm?.doctorInfo?.doctorSpecialist) {
             err.doctorSpecialist = 'it is the same'
         }
-        if (inputUpdtConfirmInfo.roomInfo.roomName === patientData?.isConfirm?.roomInfo?.roomName) {
-            err.roomName = 'it is the same'
+        if (dayDocScheduleUpdtConf?.title?.toLowerCase() === day?.toLowerCase()) {
+            err.doctorSchedule = 'it is the same'
+        }
+        if (chooseDocUpdtConf?.name === patientData?.isConfirm?.doctorInfo?.nameDoctor) {
+            err.nameDoctor = 'it is the same'
+        }
+        if (inputUpdtConfirmInfo.treatmentHours === patientData?.isConfirm?.treatmentHours) {
+            err.treatmentHours = 'it is the same'
         }
 
         return await new Promise((resolve, reject) => {
@@ -1789,7 +2068,67 @@ function PersonalDataRegistration() {
                             {patientData?.patientName}
                         </span>
                     </h1>
+                    {/* patient complaints */}
                     <Input
+                        {...propsInputEdit}
+                        {...propsErrMsg}
+                        nameTxtArea='patientComplaints'
+                        title='Patient Complaints'
+                        valueTxtArea={valueInputEdit.patientComplaints}
+                        changeTxtArea={handleChangeEditPR}
+                        errorMessage={errorMsgSubmit?.patientComplaints}
+                        styleInputText={{
+                            display: 'none'
+                        }}
+                        styleTxtArea={{
+                            display: 'flex'
+                        }}
+                    />
+                    {/* select day patient treatment */}
+                    <SelectCategory
+                        styleWrapp={{
+                            margin: '0px 0'
+                        }}
+                        styleTitle={{
+                            fontSize: '13px'
+                        }}
+                        titleCtg="Select Day"
+                        idSelect="selectDayUpdtPatientInfo"
+                        handleCategory={handleChooseDayOfDoctorSchedule}
+                        dataBlogCategory={listChooseDay}
+                    />
+                    <Input
+                        {...propsInputEdit}
+                        {...propsErrMsg}
+                        type='text'
+                        nameInput='dayPatientUpdt'
+                        valueInput={chooseDayOfDoctorOnUpdtInfoPatient?.title}
+                        title='Day'
+                        readOnly={true}
+                        changeInput={handleChangeEditPR}
+                        errorMessage={errorMsgSubmit?.chooseDay}
+                    />
+                    {chooseDayOfDoctorOnUpdtInfoPatient?.id !== 'Choose Day' && (
+                        <Input
+                            {...styleStarInputEdit}
+                            styleTitle={{
+                                display: 'flex'
+                            }}
+                            styleInputText={{
+                                display: 'none'
+                            }}
+                            {...propsErrMsg}
+                            onCalendar={true}
+                            minDate={new Date(`${servicingHours?.minDate}-${new Date().getDate()}`)}
+                            maxDate={addMonths(new Date(`${servicingHours?.maxDate}`), 0)}
+                            selected={new Date(valueInputEdit.appointmentDate)}
+                            filterDate={isWeekday}
+                            changeCalendar={(date) => changeCalendar(date, 'appointmentDate')}
+                            title='Appointment Date'
+                            errorMessage={errorMsgSubmit?.appointmentDate}
+                        />
+                    )}
+                    {/* <Input
                         {...propsInputEdit}
                         {...propsErrMsg}
                         type='text'
@@ -1798,9 +2137,9 @@ function PersonalDataRegistration() {
                         title='Jenis Penyakit'
                         readOnly={true}
                         changeInput={handleChangeEditPR}
-                    />
+                    /> */}
                     {/* select doctor */}
-                    <SelectCategory
+                    {/* <SelectCategory
                         styleWrapp={{
                             margin: '0px 0'
                         }}
@@ -1821,51 +2160,8 @@ function PersonalDataRegistration() {
                         title='Doctor Name'
                         readOnly={true}
                         changeInput={handleChangeEditPR}
-                    />
-                    {/* select day doctor schedule */}
-                    <SelectCategory
-                        styleWrapp={{
-                            margin: '0px 0'
-                        }}
-                        styleTitle={{
-                            fontSize: '13px'
-                        }}
-                        titleCtg="Select Day"
-                        idSelect="selectDayUpdtPatientInfo"
-                        handleCategory={handleChooseDayOfDoctorSchedule}
-                        dataBlogCategory={dataDayOfDoctors}
-                    />
-                    <Input
-                        {...propsInputEdit}
-                        {...propsErrMsg}
-                        type='text'
-                        nameInput='dayDoctor'
-                        valueInput={chooseDayOfDoctorOnUpdtInfoPatient?.title}
-                        title='Day'
-                        readOnly={true}
-                        changeInput={handleChangeEditPR}
-                    />
-                    {chooseDayOfDoctorOnUpdtInfoPatient?.id && (
-                        <Input
-                            {...styleStarInputEdit}
-                            styleTitle={{
-                                display: 'flex'
-                            }}
-                            styleInputText={{
-                                display: 'none'
-                            }}
-                            {...propsErrMsg}
-                            onCalendar={true}
-                            minDate={new Date(`${servicingHours?.minDate}-${new Date().getDate()}`)}
-                            maxDate={addMonths(new Date(`${servicingHours?.maxDate}`), 0)}
-                            selected={new Date(valueInputEdit.appointmentDate)}
-                            filterDate={isWeekday}
-                            changeCalendar={(date) => changeCalendar(date, 'appointmentDate')}
-                            title='Appointment Date'
-                            errorMessage={errorMsgSubmit?.appointmentDate}
-                        />
-                    )}
-                    <Input
+                    /> */}
+                    {/* <Input
                         {...propsInputEdit}
                         {...propsErrMsg}
                         type='text'
@@ -1875,7 +2171,7 @@ function PersonalDataRegistration() {
                         changeInput={handleChangeEditPR}
                         readOnly={true}
                         errorMessage={errorMsgSubmit?.submissionDate}
-                    />
+                    /> */}
                     <Input
                         {...styleStarInputEdit}
                         {...propsInputEdit}
@@ -1992,7 +2288,7 @@ function PersonalDataRegistration() {
                     />
                 </WrappEditPR>
 
-                {/* popup edit confirm admin info */}
+                {/* popup edit confirm info */}
                 <WrappEditPR
                     clickWrapp={handlePopupEditConfirmInfo}
                     clickClose={handlePopupEditConfirmInfo}
@@ -2007,16 +2303,57 @@ function PersonalDataRegistration() {
                             {patientData?.patientName}
                         </span>
                     </h1>
+                    {/* choose specialist doctor */}
+                    <SelectCategory
+                        styleWrapp={{
+                            margin: '0px 0'
+                        }}
+                        styleTitle={{
+                            fontSize: '13px'
+                        }}
+                        titleCtg="Doctor Specialist"
+                        idSelect="chooseSpecialistDocUpdtConf"
+                        handleCategory={handleDocSpecialistUpdtConf}
+                        dataBlogCategory={getAllDoctorSpecialist()}
+                    />
                     <Input
                         {...styleStarInputEdit}
                         {...propsInputEdit}
                         {...propsErrMsg}
                         type='text'
-                        nameInput='treatmentHours'
-                        valueInput={inputUpdtConfirmInfo.treatmentHours}
-                        title='Treatment Hours'
-                        changeInput={handleChangeUpdtConfirmInfo}
-                        errorMessage={errMsgInputUpdtConfirmInfo?.treatmentHours}
+                        nameInput='doctorSpecialist'
+                        placeholder='Doctor Specialist'
+                        valueInput={docSpecialistUpdtConf?.title}
+                        title='Doctor Specialist'
+                        // changeInput={handleChangeUpdtConfirmInfo}
+                        readOnly={true}
+                        errorMessage={errMsgInputUpdtConfirmInfo?.chooseSpecialist}
+                    />
+                    {/* choose doctor schedule */}
+                    <SelectCategory
+                        styleWrapp={{
+                            margin: '0px 0'
+                        }}
+                        styleTitle={{
+                            fontSize: '13px'
+                        }}
+                        titleCtg="Doctor Schedule"
+                        idSelect="chooseDoctorScheduleUpdtConf"
+                        handleCategory={handleDocScheduleUpdtConf}
+                        dataBlogCategory={listChooseDay}
+                    />
+                    <Input
+                        {...styleStarInputEdit}
+                        {...propsInputEdit}
+                        {...propsErrMsg}
+                        type='text'
+                        nameInput='doctorSchedule'
+                        placeholder='Day'
+                        valueInput={dayDocScheduleUpdtConf?.title}
+                        title='Day'
+                        // changeInput={handleChangeUpdtConfirmInfo}
+                        readOnly={true}
+                        errorMessage={errMsgInputUpdtConfirmInfo?.chooseDay}
                     />
                     {/* select doctor */}
                     <SelectCategory
@@ -2029,7 +2366,7 @@ function PersonalDataRegistration() {
                         titleCtg="Choose a Doctor"
                         idSelect="chooseDoctorsConfInfo"
                         handleCategory={handleChooseDoctorsUpdtInfoConfirm}
-                        dataBlogCategory={findCurrentSpecialist}
+                        dataBlogCategory={listDocOnSpecialistUpdtConf}
                     />
                     <Input
                         {...styleStarInputEdit}
@@ -2037,26 +2374,27 @@ function PersonalDataRegistration() {
                         {...propsErrMsg}
                         type='text'
                         nameInput='nameDoctor'
-                        valueInput={inputUpdtConfirmInfo.doctorInfo.nameDoctor}
+                        valueInput={chooseDocUpdtConf?.name ? chooseDocUpdtConf.name : ''}
                         title='Doctor Name'
-                        changeInput={handleChangeUpdtConfirmInfo}
+                        placeholder='Doctor Name'
+                        // changeInput={handleChangeUpdtConfirmInfo}
                         readOnly={true}
-                        errorMessage={errMsgInputUpdtConfirmInfo?.nameDoctor}
+                        errorMessage={errMsgInputUpdtConfirmInfo?.doctorName}
                     />
                     <Input
-                        {...styleStarInputEdit}
                         {...propsInputEdit}
                         {...propsErrMsg}
                         type='text'
-                        nameInput='doctorSpesialist'
-                        valueInput={inputUpdtConfirmInfo.doctorInfo.doctorSpecialist}
-                        title='Doctor Specialist'
-                        changeInput={handleChangeUpdtConfirmInfo}
+                        nameInput='practiceHours'
+                        valueInput={practiceHoursDocUpdtConf !== null ? practiceHoursDocUpdtConf : ''}
+                        title='Practice Hours'
+                        placeholder='Practice Hours'
+                        // changeInput={handleChangeUpdtConfirmInfo}
                         readOnly={true}
-                        errorMessage={errMsgInputUpdtConfirmInfo?.doctorSpecialist}
+                        errorMessage={errMsgInputUpdtConfirmInfo?.practiceHours}
                     />
                     {/* select room */}
-                    <SelectCategory
+                    {/* <SelectCategory
                         idSelect="chooseRoomUpdtConfInfo"
                         styleWrapp={{
                             margin: '0px 0'
@@ -2067,15 +2405,15 @@ function PersonalDataRegistration() {
                         titleCtg="Choose a Room"
                         handleCategory={handleChooseRoomUpdtConfInfo}
                         dataBlogCategory={roomDiseaseType}
-                    />
+                    /> */}
                     <Input
                         {...styleStarInputEdit}
                         {...propsInputEdit}
                         {...propsErrMsg}
                         type='text'
                         nameInput='roomName'
-                        placeholder='room name...'
-                        valueInput={inputUpdtConfirmInfo.roomInfo.roomName}
+                        placeholder='Room Name'
+                        valueInput={chooseDocUpdtConf?.room ? chooseDocUpdtConf.room : ''}
                         title='Room Name'
                         readOnly={true}
                         errorMessage={errMsgInputUpdtConfirmInfo?.roomName}
@@ -2086,11 +2424,23 @@ function PersonalDataRegistration() {
                         {...propsErrMsg}
                         type='text'
                         nameInput='totalPatients'
-                        placeholder='total patient...'
+                        placeholder='Total Number of Patients in this Room'
                         valueInput={patientOfCurrentDiseaseTForUpdtConfInfo?.length}
                         title='Total Number of Patients in this Room'
                         readOnly={true}
                         errorMessage={errMsgInputUpdtConfirmInfo?.totalQueue}
+                    />
+                    <Input
+                        {...styleStarInputEdit}
+                        {...propsInputEdit}
+                        {...propsErrMsg}
+                        type='text'
+                        nameInput='treatmentHours'
+                        valueInput={inputUpdtConfirmInfo.treatmentHours}
+                        title='Treatment Hours'
+                        placeholder='Treatment Hours (08:00 - 12:00)'
+                        changeInput={handleChangeUpdtConfirmInfo}
+                        errorMessage={errMsgInputUpdtConfirmInfo?.treatmentHours}
                     />
                     <Button
                         name='UPDATE'
@@ -2273,21 +2623,6 @@ function PersonalDataRegistration() {
                                             />
                                         </div>
 
-                                        {/* Button re confirmation */}
-                                        {patientData?.isConfirm?.id && !findPatientInLoket?.patientId && !findCurrentPatientFinishTreatment?.patientId && (
-                                            <Button
-                                                name="RESEND CONFIRMATION"
-                                                style={{
-                                                    widh: 'auto',
-                                                    margin: '15px auto'
-                                                }}
-                                                click={clickResendConfirmation}
-                                                styleLoading={{
-                                                    display: loadingSubmitConfPatient ? 'flex' : 'none'
-                                                }}
-                                            />
-                                        )}
-
                                         {/* data confirmations */}
                                         {patientData?.isConfirm?.id && (
                                             <>
@@ -2323,6 +2658,7 @@ function PersonalDataRegistration() {
                                                         }}
                                                         styleDesc={{
                                                             color: '#f85084',
+                                                            textTransform: 'uppercase',
                                                             fontWeight: 'bold'
                                                         }}
                                                     >
@@ -2433,6 +2769,21 @@ function PersonalDataRegistration() {
                                             </>
                                         )}
 
+                                        {/* Button re confirmation */}
+                                        {patientData?.isConfirm?.id && !findPatientInLoket?.patientId && !findCurrentPatientFinishTreatment?.patientId && (
+                                            <Button
+                                                name="RESEND CONFIRMATION"
+                                                style={{
+                                                    widh: 'auto',
+                                                    margin: '15px auto'
+                                                }}
+                                                click={clickResendConfirmation}
+                                                styleLoading={{
+                                                    display: loadingSubmitConfPatient ? 'flex' : 'none'
+                                                }}
+                                            />
+                                        )}
+
                                         {/* form confirm to take medicine */}
                                         {patientData?.isConfirm?.id && !findPatientInLoket?.id && (
                                             <>
@@ -2540,13 +2891,13 @@ function PersonalDataRegistration() {
                                             </>
                                         )}
 
+                                        {/* form confirm */}
                                         {!patientData?.isConfirm?.id && (
                                             <>
                                                 <h1 className={style['title-confirm']}>
                                                     Form Confirmation
                                                 </h1>
 
-                                                {/* form confirm */}
                                                 <div className={style['form-confirm']}>
                                                     <div className={style['input']}>
                                                         {/* select doctor */}
@@ -2688,7 +3039,7 @@ function PersonalDataRegistration() {
                                                         // errorMessage={errSubmitConfPatient?.roomName}
                                                         />
                                                     </div>
-                                                    {checkCurrentDSOnDayAppointment && chooseDoctor?.id &&(
+                                                    {checkCurrentDSOnDayAppointment && chooseDoctor?.id && (
                                                         <>
                                                             <div className={style['input']}>
                                                                 <Input
@@ -2718,17 +3069,43 @@ function PersonalDataRegistration() {
                                                             </div>
                                                         </>
                                                     )}
-                                                    <Button
-                                                        name="CONFIRM PATIENT"
-                                                        style={{
-                                                            widh: 'auto',
-                                                            margin: '0 auto'
-                                                        }}
-                                                        click={submitConfirmPatient}
-                                                        styleLoading={{
-                                                            display: loadingSubmitConfPatient ? 'flex' : 'none'
-                                                        }}
-                                                    />
+                                                    <div className={style['input']} style={{
+                                                        flexDirection: 'row',
+                                                        justifyContent: 'flex-start'
+                                                    }}>
+                                                        <Button
+                                                            name="CONFIRM PATIENT"
+                                                            style={{
+                                                                width: 'auto',
+                                                                margin: '0 0 10px 0'
+                                                            }}
+                                                            click={submitConfirmPatient}
+                                                            styleLoading={{
+                                                                display: loadingSubmitConfPatient ? 'flex' : 'none'
+                                                            }}
+                                                        />
+                                                    </div>
+                                                    <div className={style['input']} style={{
+                                                        flexDirection: 'row',
+                                                        justifyContent: 'flex-end'
+                                                    }}>
+                                                        <Button
+                                                            name="CANCEL REGISTRATION"
+                                                            style={{
+                                                                width: 'auto',
+                                                                margin: '0 0 10px 0'
+                                                            }}
+                                                            // click={submitConfirmPatient}
+                                                            styleLoading={{
+                                                                display: loadingSubmitConfPatient ? 'flex' : 'none',
+                                                                backgroundColor: '#ff296d'
+                                                            }}
+                                                            classBtn="not-present-btn"
+                                                            styleLoadCircle={{
+                                                                borderTopColor: '#ff296d'
+                                                            }}
+                                                        />
+                                                    </div>
                                                 </div>
                                             </>
                                         )}
@@ -2963,12 +3340,12 @@ function PersonalDataRegistration() {
                                                         }}>
                                                             <Button
                                                                 name="PATIENT NOT PRESENT"
-                                                                classBtn="not-present-btn"
                                                                 style={{
                                                                     widh: 'auto',
                                                                     margin: '20px 0 0 0'
                                                                 }}
                                                                 click={clickPatientNotPresentInCounter}
+                                                                classBtn="not-present-btn"
                                                                 styleLoading={{
                                                                     display: loadingConfFinishTreatment ? 'flex' : 'none',
                                                                     backgroundColor: '#ff296d'
@@ -3040,7 +3417,7 @@ function PersonalDataRegistration() {
                                                     {!findPatientInLoket?.isConfirm?.paymentInfo?.paymentMethod?.toLowerCase()?.includes('bpjs') && (
                                                         <CardPatientRegisData
                                                             title="Total Cost"
-                                                            desc={`Rp${findPatientInLoket?.isConfirm?.paymentInfo?.totalCost}`}
+                                                            desc={numberFormatIndo(findPatientInLoket?.isConfirm?.paymentInfo?.totalCost)}
                                                         />
                                                     )}
                                                 </div>

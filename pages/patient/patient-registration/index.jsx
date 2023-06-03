@@ -23,17 +23,14 @@ import monthNamesInd from 'lib/namesOfCalendar/monthNameInd'
 
 function PatientRegistration() {
     const [head] = useState([
-        // {
-        //     name: 'Disease Type'
-        // },
+        {
+            name: 'Patient Name'
+        },
         {
             name: 'Appointment Date'
         },
         {
             name: 'Submission Date'
-        },
-        {
-            name: 'Patient Name'
         },
         {
             name: 'Email'
@@ -166,9 +163,9 @@ function PatientRegistration() {
                             id: item.id,
                             isNotif: item.isNotif,
                             data: [
-                                // {
-                                //     name: item.jenisPenyakit
-                                // },
+                                {
+                                    name: item.patientName
+                                },
                                 {
                                     firstDesc: makeNormalDate(item.appointmentDate),
                                     color: '#ff296d',
@@ -184,9 +181,6 @@ function PatientRegistration() {
                                     marginBottom: '4.5px',
                                     fontSize: '12px',
                                     name: item.submissionDate
-                                },
-                                {
-                                    name: item.patientName
                                 },
                                 {
                                     name: item.emailAddress
@@ -556,10 +550,7 @@ function PatientRegistration() {
                                 {!loadingAuth && user?.id && !loadConditionTableScreen ? (
                                     <>
                                         {dataColumns?.length > 0 ? dataColumns.map((item, index) => {
-                                            const jenisPenyakit = item.data[0].name.replace('-', '')
-                                            const newJenisPenyakit = jenisPenyakit.replace(/ /gi, '-').toLowerCase()
-                                            const emailPatient = item.data[4].name
-                                            const pathUrlToDataDetail = `patient-registration/personal-data/not-yet-confirmed/${item.data[2]?.name}/${item.id}`
+                                            const pathUrlToDataDetail = `patient-registration/personal-data/not-yet-confirmed/${item.data[0]?.name}/${item.id}`
 
                                             return (
                                                 <button key={index} className={style['columns-data']} onClick={() => toPage(pathUrlToDataDetail)}>

@@ -273,6 +273,12 @@ function PatientRegisInfo() {
                             <CardPatientRegisData
                                 {...propsFontDataInfo}
                                 {...styleWidthDataInfo}
+                                title="Patient Complaints"
+                                desc={patientData.patientComplaints}
+                            />
+                            <CardPatientRegisData
+                                {...propsFontDataInfo}
+                                {...styleWidthDataInfo}
                                 title="Messages from Patient"
                                 desc={patientData.message}
                             />
