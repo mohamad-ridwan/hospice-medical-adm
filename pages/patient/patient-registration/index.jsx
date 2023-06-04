@@ -81,8 +81,14 @@ function PatientRegistration() {
         phone: ''
     })
 
+    // swr fetching data
+    // servicing hours
     const { data: dataService, error: errService, isLoading: loadService } = useSwr(endpoint.getServicingHours())
     const bookAnAppointment = dataService?.data?.find(item => item.id === 'book-an-appointment')
+
+    // finished treatment data
+    const { data: dataFinishTreatment, error: errDataFinishTreatment, isLoading: loadDataFinishTreatment } = useSwr(endpoint.getFinishedTreatment())
+    const getPatientRegis = dataFinishTreatment?.data ? dataFinishTreatment?.data?.filter(item => item.rulesTreatment === 'patient-registration') : null
 
     // context
     const { user, loadingAuth } = useContext(AuthContext)
@@ -141,7 +147,11 @@ function PatientRegistration() {
     const findDataRegistration = () => {
         if (bookAnAppointment) {
             const userAppointmentData = bookAnAppointment.userAppointmentData
-            const findRegistration = userAppointmentData?.length > 0 ? userAppointmentData.filter(regis => !regis.isConfirm?.id) : null
+            const findRegistration = userAppointmentData?.length > 0 ? userAppointmentData.filter(regis => {
+                const findPatientFT = getPatientRegis?.length > 0 ? getPatientRegis.find(patient=>patient?.patientId === regis.id) : {}
+
+                return !regis.isConfirm?.id && findPatientFT?.id === undefined
+            }) : null
             if (findRegistration) {
                 const newData = []
                 const getDataColumns = () => {
@@ -219,15 +229,17 @@ function PatientRegistration() {
     }
 
     useEffect(() => {
-        if (!loadService && dataService) {
+        if (!loadService && !loadDataFinishTreatment && dataService && dataFinishTreatment) {
             findDataRegistration()
-        } else if (loadService) {
-            console.log('loading data patient registration')
         } else if (!loadService && errService) {
-            console.log('no data service available')
+            console.log('error data servicing hours')
             console.log(errService)
         }
-    }, [dataService])
+        if(!loadDataFinishTreatment && errDataFinishTreatment){
+            console.log('error data finished treatment')
+            console.log(dataFinishTreatment)
+        }
+    }, [dataService, dataFinishTreatment])
 
     const propsInputEdit = {
         styleTitle: {

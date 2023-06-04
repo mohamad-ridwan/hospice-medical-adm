@@ -59,7 +59,6 @@ function FinishedTreatment() {
     const bookAnAppointment = dataService?.data?.find(item => item.id === 'book-an-appointment')
     const getUserAppointmentData = bookAnAppointment?.userAppointmentData
     const userAppointmentData = getUserAppointmentData?.length > 0 ? getUserAppointmentData : []
-    // console.log(userAppointmentData)
 
     // loket
     const { data: loketData, error: errLoketData, isLoading: loadLoketData } = useSwr(endpoint.getLoket())
@@ -69,7 +68,7 @@ function FinishedTreatment() {
     const { data: dataFinishTreatment, error: errDataFinishTreatment, isLoading: loadDataFinishTreatment } = useSwr(endpoint.getFinishedTreatment())
     const getPatientRegis = dataFinishTreatment?.data ? dataFinishTreatment?.data?.filter(item => item.rulesTreatment === 'patient-registration') : null
     const patientRegistration = getPatientRegis?.length > 0 ? getPatientRegis.map(item => {
-        const findPatientInRegisData = userAppointmentData?.length > 0 ? userAppointmentData.find(patient => patient.id === item.patientId) : {}
+        const findPatientRegisData = userAppointmentData?.length > 0 ? userAppointmentData.find(patient => patient.id === item.patientId) : {}
         const getCurrentLoket = findLoketPatientQueue?.length > 0 ? findLoketPatientQueue.find(data => data.patientId === item.patientId && data?.isConfirm?.confirmState) : null
 
         // make a normal date
@@ -99,7 +98,7 @@ function FinishedTreatment() {
                 loketName: getCurrentLoket?.loketName,
                 queueNumber: getCurrentLoket?.queueNumber
             },
-            completionStage: getCurrentLoket?.presence === 'tidak hadir' || getCurrentLoket?.presence === 'hadir' ? 'counter' : 'room',
+            completionStage: getCurrentLoket?.presence === 'tidak hadir' || getCurrentLoket?.presence === 'hadir' ? 'counter' : !findPatientRegisData?.isConfirm?.id ? 'cancelled' : 'room',
             data: [
                 {
                     name: item.patientName
@@ -107,12 +106,12 @@ function FinishedTreatment() {
                 {
                     fontSize: '11px',
                     colorName: '#fff',
-                    name: findPatientInRegisData?.isConfirm?.presence === 'hadir' ? getCurrentLoket?.presence?.toUpperCase() : findPatientInRegisData?.isConfirm?.presence?.toUpperCase(),
+                    name: !findPatientRegisData?.isConfirm?.id ? 'CANCELLED' : findPatientRegisData?.isConfirm?.presence === 'hadir' ? getCurrentLoket?.presence?.toUpperCase() : findPatientRegisData?.isConfirm?.presence?.toUpperCase(),
                 },
                 {
                     fontWeight: 'bold',
-                    colorName: findPatientInRegisData?.isConfirm?.presence === 'hadir' ? getCurrentLoket?.presence === 'hadir' ? '#288bbc' : '#be2ed6' : '#ff296d',
-                    name: findPatientInRegisData?.isConfirm?.presence === 'hadir' ? getCurrentLoket?.presence === 'hadir' ? 'Finished until taking Medicine' : 'Not at the Counter' : 'Not in the Treatment Room'
+                    colorName: !findPatientRegisData?.isConfirm?.id ? '#ff296d' : findPatientRegisData?.isConfirm?.presence === 'hadir' ? getCurrentLoket?.presence === 'hadir' ? '#288bbc' : '#be2ed6' : '#fa9c1b',
+                    name: !findPatientRegisData?.isConfirm?.id ? 'Registration Cancelled' : findPatientRegisData?.isConfirm?.presence === 'hadir' ? getCurrentLoket?.presence === 'hadir' ? 'Finished until taking Medicine' : 'Not at the Counter' : 'Not in the Treatment Room'
                 },
                 {
                     firstDesc: makeNormalDate(item?.confirmedTime?.dateConfirm),
@@ -129,12 +128,12 @@ function FinishedTreatment() {
                     name: item.patientEmail
                 },
                 {
-                    firstDesc: makeNormalDate(findPatientInRegisData?.dateOfBirth, true),
+                    firstDesc: makeNormalDate(findPatientRegisData?.dateOfBirth, true),
                     color: '#187bcd',
                     colorName: '#777',
                     marginBottom: '4.5px',
                     fontSize: '12px',
-                    name: findPatientInRegisData?.dateOfBirth
+                    name: makeNormalDate(findPatientRegisData?.dateOfBirth, true)
                 },
                 {
                     name: item.phone
@@ -302,14 +301,12 @@ function FinishedTreatment() {
                                 />
 
                                 {newPatientRegistration?.length > 0 ? newPatientRegistration.map((item, index) => {
-                                    const jenisPenyakit = item.data[3].name?.replace('-', '')
-                                    const newJenisPenyakit = jenisPenyakit?.replace(/ /gi, '-')?.toLowerCase()
-                                    const emailPatient = item.data[6].name
                                     const pathUrlToCounterStage = `/patient/patient-registration/personal-data/confirmed/${item.data[0]?.name}/${item.patientId}/counter/${item.dataPatientInCounter?.loketName}/${item.dataPatientInCounter?.confirmState ? 'confirmed' : 'not-yet-confirmed'}/${item.dataPatientInCounter?.queueNumber}`
-                                    const pathUrlToRoomStage = `/patient/patient-registration/personal-data/confirmed/${newJenisPenyakit}/${emailPatient}/${item.patientId}`
+                                    const pathUrlToRoomStage = `/patient/patient-registration/personal-data/confirmed/${item.data[0]?.name}/${item.patientId}`
+                                    const pathUrlToRoomStageCancelled = `/patient/patient-registration/personal-data/cancelled/${item.data[0]?.name}/${item.patientId}`
 
                                     return (
-                                        <button key={index} className={style['columns-data']} onClick={() => toPage(item.completionStage === 'room' ? pathUrlToRoomStage : pathUrlToCounterStage)}>
+                                        <button key={index} className={style['columns-data']} onClick={() => toPage(item.completionStage === 'room' ? pathUrlToRoomStage : item.completionStage === 'cancelled' ? pathUrlToRoomStageCancelled : pathUrlToCounterStage)}>
                                             <TableColumns
                                                 styleEdit={{
                                                     display: 'none'
@@ -341,7 +338,7 @@ function FinishedTreatment() {
                                                                 color: data?.colorName,
                                                                 padding: idx === 1 ? '5.5px 8px' : '',
                                                                 borderRadius: idx === 1 ? '3px' : '0',
-                                                                background: idx === 1 ? data?.name?.toLowerCase() === 'hadir' ? '#288bbc' : '#ff296d' : 'transparent'
+                                                                background: idx === 1 ? data?.name?.toLowerCase() === 'hadir' ? '#288bbc' : data?.name?.toLowerCase() === 'cancelled' ? '#ff296d' : '#464e51' : 'transparent'
                                                             }}
                                                             styleFirstDesc={{
                                                                 color: data?.color,

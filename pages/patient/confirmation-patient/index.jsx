@@ -26,6 +26,9 @@ function ConfirmationPatient() {
       name: 'Patient Name'
     },
     {
+      name: 'Room Name'
+    },
+    {
       name: 'Appointment Date'
     },
     {
@@ -87,26 +90,30 @@ function ConfirmationPatient() {
         elementTHead = document.getElementById(`tHead0`)
         elementTHead.style.width = 'calc(100%/7)'
         elementTHead = document.getElementById(`tHead1`)
-        elementTHead.style.width = 'calc(100%/7)'
+        elementTHead.style.width = 'calc(100%/10)'
         elementTHead = document.getElementById(`tHead2`)
         elementTHead.style.width = 'calc(100%/7)'
         elementTHead = document.getElementById(`tHead3`)
-        elementTHead.style.width = 'calc(100%/5.5)'
+        elementTHead.style.width = 'calc(100%/7)'
         elementTHead = document.getElementById(`tHead4`)
-        elementTHead.style.width = 'calc(100%/10)'
+        elementTHead.style.width = 'calc(100%/5.5)'
+        elementTHead = document.getElementById(`tHead5`)
+        elementTHead.style.width = 'calc(100%/8)'
       }
       if (elementTData) {
         for (let i = 0; i < dataColumnsBody?.length; i++) {
           elementTData = document.getElementById(`tData${i}0`)
           elementTData.style.width = 'calc(100%/7)'
           elementTData = document.getElementById(`tData${i}1`)
-          elementTData.style.width = 'calc(100%/7)'
+          elementTData.style.width = 'calc(100%/10)'
           elementTData = document.getElementById(`tData${i}2`)
           elementTData.style.width = 'calc(100%/7)'
           elementTData = document.getElementById(`tData${i}3`)
-          elementTData.style.width = 'calc(100%/5.5)'
+          elementTData.style.width = 'calc(100%/7)'
           elementTData = document.getElementById(`tData${i}4`)
-          elementTData.style.width = 'calc(100%/10)'
+          elementTData.style.width = 'calc(100%/5.5)'
+          elementTData = document.getElementById(`tData${i}5`)
+          elementTData.style.width = 'calc(100%/8)'
         }
       }
     }
@@ -139,6 +146,11 @@ function ConfirmationPatient() {
               data: [
                 {
                   name: item.patientName
+                },
+                {
+                  name: item?.isConfirm?.roomInfo?.roomName,
+                  colorName: '#ff296d',
+                  fontWeightName: 'bold'
                 },
                 {
                   firstDesc: makeNormalDate(item.appointmentDate),
@@ -513,7 +525,7 @@ function ConfirmationPatient() {
               margin: '50px 0 0 0'
             }}>
               <TableBody styleWrapp={{
-                width: '1230px'
+                width: '1300px'
               }}>
                 <TableHead
                   id='tHead'
@@ -566,7 +578,8 @@ function ConfirmationPatient() {
                               }}
                               styleName={{
                                 fontSize: data?.fontSize,
-                                color: data?.colorName
+                                color: data?.colorName,
+                                fontWeight: data?.fontWeightName
                               }}
                             />
                           )

@@ -23,6 +23,8 @@ import { monthNames } from 'lib/namesOfCalendar/monthNames'
 import { dayNamesEng } from 'lib/namesOfCalendar/dayNamesEng'
 import { dayNamesInd } from 'lib/namesOfCalendar/dayNamesInd'
 import monthNamesInd from 'lib/namesOfCalendar/monthNameInd'
+import specialCharacter from 'lib/regex/specialCharacter'
+import spaceString from 'lib/regex/spaceString'
 
 function PersonalDataRegistration() {
     const [onPopupEdit, setOnPopupEdit] = useState(false)
@@ -1424,8 +1426,10 @@ function PersonalDataRegistration() {
         const templateId = process.env.NEXT_PUBLIC_TEMPLATE_ID_KONFIRMASI_JP
         const publicKey = process.env.NEXT_PUBLIC_PUBLIC_KEY_ADM
 
+        const patientName = patientData?.patientName?.replace(specialCharacter, '')?.replace(spaceString, '')
+
         const dataSend = {
-            pdf_link_patient_treatment: `${urlOrigin}/patient-registration-information/${patientData?.id}/${patientData?.patientName}/pdf`,
+            pdf_link_patient_treatment: `${urlOrigin}/patient-registration-information/${patientData?.id}/${patientName}/pdf`,
             to_email: patientData?.emailAddress,
             patient_name: patientData?.patientName,
         }
@@ -1658,9 +1662,9 @@ function PersonalDataRegistration() {
                                 const dateConfirm = `${nowMonth}/${getDate}/${getYear}`
                                 const confirmHour = `${nowHours}:${nowMinutes}`
 
-                                const checkQueueNumber = patientOfCurrentDiseaseTForUpdtConfInfo?.length > 0 ? patientOfCurrentDiseaseTForUpdtConfInfo.filter(patient=>patient?.id !== patientData?.id) : []
+                                const checkQueueNumber = patientOfCurrentDiseaseTForUpdtConfInfo?.length > 0 ? patientOfCurrentDiseaseTForUpdtConfInfo.filter(patient => patient?.id !== patientData?.id) : []
 
-                                const { id, message, presence} = patientData?.isConfirm
+                                const { id, message, presence } = patientData?.isConfirm
                                 const data = {
                                     id,
                                     message,
@@ -1669,7 +1673,7 @@ function PersonalDataRegistration() {
                                     dateConfirm,
                                     confirmHour,
                                     treatmentHours: inputUpdtConfirmInfo.treatmentHours,
-                                    doctorInfo:{
+                                    doctorInfo: {
                                         nameDoctor: chooseDocUpdtConf?.name,
                                         doctorSpecialist: chooseDocUpdtConf?.deskripsi
                                     },
@@ -1733,7 +1737,7 @@ function PersonalDataRegistration() {
         const getDay = makeNormalDateOnPatientInfo(patientData?.appointmentDate)
         const day = getDay?.split(' ')[3]
 
-        if(inputUpdtConfirmInfo.treatmentHours.length > 0){
+        if (inputUpdtConfirmInfo.treatmentHours.length > 0) {
             return null
         }
         if (docSpecialistUpdtConf?.title === patientData?.isConfirm?.doctorInfo?.doctorSpecialist) {
@@ -1759,7 +1763,7 @@ function PersonalDataRegistration() {
     }
 
     const clickPresenceConfInfo = (status) => {
-        if (loadingSubmitUpdtConfirmInfo === false && loadingSubmitConfToLoket === false && inputUpdtConfirmInfo.id.length > 0 && window.confirm(`pasien ${status}?`)) {
+        if (loadingSubmitUpdtConfirmInfo === false && loadingSubmitConfToLoket === false && window.confirm(`pasien ${status}?`)) {
             setLoadingSubmitUpdtConfirmInfo(true)
 
             updatePresencePatient(() => {
@@ -1913,11 +1917,12 @@ function PersonalDataRegistration() {
                         alert('Successful confirmation')
                         setLoadingConfFinishTreatment(false)
 
+                        const patientName = patientData?.patientName?.replace(specialCharacter, '')?.replace(spaceString, '')
                         const [p1, p2, p3, p4, p5, p6, p7, p8] = params
 
                         setTimeout(() => {
                             router.push(`/patient/patient-registration/${p1}/${p2}/${p3}/${p4}/${p5}/${p6}/confirmed/${p8}`)
-                            window.open(`${urlOrigin}/patient-receipt/${patientData?.patientName}/${patientData?.id}/pdf/download`)
+                            window.open(`${urlOrigin}/patient-receipt/${patientName}/${patientData?.id}/pdf/download`)
                         }, 0);
                     }, (err) => {
                         alert('Oops, telah terjadi kesalahan server!\nMohon coba beberapa saat lagi')
@@ -1989,10 +1994,10 @@ function PersonalDataRegistration() {
                             alert('confirmed successfully')
                             setLoadingConfFinishTreatment(false)
 
-                            const [p1, p2, p3, p4, p5, p6, p7, p8, p9] = params
+                            const [p1, p2, p3, p4, p5, p6, p7, p8] = params
 
                             setTimeout(() => {
-                                router.push(`/patient/patient-registration/${p1}/${p2}/${p3}/${p4}/${p5}/${p6}/${p7}/confirmed/${p9}`)
+                                router.push(`/patient/patient-registration/personal-data/confirmed/${patientData?.patientName}/${patientData?.id}/counter/${p6}/confirmed/${p8}`)
                             }, 0);
                         }, (err) => {
                             alert('Oops, telah terjadi kesalahan server\nMohon coba beberapa saat lagi')
@@ -2041,6 +2046,54 @@ function PersonalDataRegistration() {
                     console.log(err)
                     setLoadingSubmitConfPatient(false)
                 })
+        }
+    }
+
+    const clickCancelRegistration = () => {
+        if (loadingSubmitConfPatient === false && window.confirm('Cancel registration?')) {
+            setLoadingSubmitConfPatient(true)
+
+            const nowHours = `${new Date().getHours().toString().length === 1 ? `0${new Date().getHours()}` : new Date().getHours()}`
+            const nowMinutes = `${new Date().getMinutes().toString().length === 1 ? `0${new Date().getMinutes()}` : new Date().getMinutes()}`
+            const nowDate = `${new Date()}`
+            const getDate = nowDate.split(' ')[2]
+            const getYear = nowDate.split(' ')[3]
+            const getMonth = nowDate.split(' ')[1]
+            const findMonth = monthNames.findIndex(item => item === getMonth) + 1
+            const nowMonth = findMonth.toString().length === 1 ? `0${findMonth}` : findMonth
+            const dateConfirm = `${nowMonth}/${getDate}/${getYear}`
+            const confirmHour = `${nowHours}:${nowMinutes}`
+
+            const dataFinishTreatment = {
+                id: `${new Date().getTime()}`,
+                rulesTreatment: 'patient-registration',
+                patientId: patientData?.id,
+                patientName: patientData?.patientName,
+                patientEmail: patientData?.emailAddress,
+                phone: patientData?.phone,
+                confirmedTime: {
+                    confirmHour: confirmHour,
+                    dateConfirm: dateConfirm
+                },
+                adminInfo: {
+                    emailAdmin: user?.email,
+                    nameAdmin: user?.name
+                }
+            }
+
+            const patientName = patientData?.patientName?.replace(specialCharacter, '')?.replace(spaceString, '')
+
+            postToPatientFinishTreatment(dataFinishTreatment, () => {
+                alert('Successfully canceled registration')
+                setLoadingSubmitConfPatient(false)
+                setTimeout(() => {
+                    router.push(`/patient/patient-registration/personal-data/cancelled/${patientName}/${patientData?.id}`)
+                }, 0);
+            }, (err) => {
+                alert('Oops, telah terjadi kesalahan server!\nMohon coba beberapa saat lagi')
+                setLoadingSubmitConfPatient(false)
+                console.log(err)
+            })
         }
     }
 
@@ -2500,14 +2553,25 @@ function PersonalDataRegistration() {
                                                     />
                                                 </>
                                             )}
-                                            {!patientData?.isConfirm?.id && (
+                                            {!patientData?.isConfirm?.id && !findCurrentPatientFinishTreatment?.id && (
                                                 <>
                                                     <HeadConfirmInfo
                                                         icon="fa-sharp fa-solid fa-circle-exclamation"
                                                         styleTitle={{
-                                                            color: '#ff296d'
+                                                            color: '#fa9c1b'
                                                         }}
                                                         desc="Not yet confirmed"
+                                                    />
+                                                </>
+                                            )}
+                                            {!patientData?.isConfirm?.id && findCurrentPatientFinishTreatment?.id && (
+                                                <>
+                                                    <HeadConfirmInfo
+                                                        icon="fa-solid fa-ban"
+                                                        styleTitle={{
+                                                            color: '#ff296d'
+                                                        }}
+                                                        desc="Canceled"
                                                     />
                                                 </>
                                             )}
@@ -2771,17 +2835,35 @@ function PersonalDataRegistration() {
 
                                         {/* Button re confirmation */}
                                         {patientData?.isConfirm?.id && !findPatientInLoket?.patientId && !findCurrentPatientFinishTreatment?.patientId && (
-                                            <Button
-                                                name="RESEND CONFIRMATION"
-                                                style={{
-                                                    widh: 'auto',
-                                                    margin: '15px auto'
-                                                }}
-                                                click={clickResendConfirmation}
-                                                styleLoading={{
-                                                    display: loadingSubmitConfPatient ? 'flex' : 'none'
-                                                }}
-                                            />
+                                            <div className={style['container-re-confirm']}>
+                                                <Button
+                                                    name="RESEND CONFIRMATION"
+                                                    style={{
+                                                        widh: 'auto',
+                                                        margin: '10px 0'
+                                                    }}
+                                                    click={clickResendConfirmation}
+                                                    styleLoading={{
+                                                        display: loadingSubmitConfPatient ? 'flex' : 'none'
+                                                    }}
+                                                />
+                                                <Button
+                                                    name="CANCEL REGISTRATION"
+                                                    style={{
+                                                        width: 'auto',
+                                                        margin: '10px 0'
+                                                    }}
+                                                    // click={clickCancelRegistration}
+                                                    styleLoading={{
+                                                        display: loadingSubmitConfPatient ? 'flex' : 'none',
+                                                        backgroundColor: '#ff296d'
+                                                    }}
+                                                    classBtn="not-present-btn"
+                                                    styleLoadCircle={{
+                                                        borderTopColor: '#ff296d'
+                                                    }}
+                                                />
+                                            </div>
                                         )}
 
                                         {/* form confirm to take medicine */}
@@ -2892,7 +2974,7 @@ function PersonalDataRegistration() {
                                         )}
 
                                         {/* form confirm */}
-                                        {!patientData?.isConfirm?.id && (
+                                        {!patientData?.isConfirm?.id && !findCurrentPatientFinishTreatment?.id && (
                                             <>
                                                 <h1 className={style['title-confirm']}>
                                                     Form Confirmation
@@ -3095,7 +3177,7 @@ function PersonalDataRegistration() {
                                                                 width: 'auto',
                                                                 margin: '0 0 10px 0'
                                                             }}
-                                                            // click={submitConfirmPatient}
+                                                            click={clickCancelRegistration}
                                                             styleLoading={{
                                                                 display: loadingSubmitConfPatient ? 'flex' : 'none',
                                                                 backgroundColor: '#ff296d'
@@ -3417,7 +3499,7 @@ function PersonalDataRegistration() {
                                                     {!findPatientInLoket?.isConfirm?.paymentInfo?.paymentMethod?.toLowerCase()?.includes('bpjs') && (
                                                         <CardPatientRegisData
                                                             title="Total Cost"
-                                                            desc={numberFormatIndo(findPatientInLoket?.isConfirm?.paymentInfo?.totalCost)}
+                                                            desc={findPatientInLoket?.isConfirm?.paymentInfo?.paymentMethod !== '-' ? numberFormatIndo(findPatientInLoket?.isConfirm?.paymentInfo?.totalCost) : '-'}
                                                         />
                                                     )}
                                                 </div>
