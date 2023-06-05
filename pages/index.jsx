@@ -66,6 +66,13 @@ export default function Home() {
   const getPatientRegisAtFinishTreatment = dataFinishTreatment?.data ? dataFinishTreatment?.data?.filter(item => item.rulesTreatment === 'patient-registration') : null
   const patientRegisAtFinishTreatment = getPatientRegisAtFinishTreatment?.length > 0 ? getPatientRegisAtFinishTreatment : null
 
+  // patient registration cancelled
+  const patientRegisCancelled = patientRegisAtFinishTreatment?.length > 0 ? patientRegisAtFinishTreatment.filter(patient => {
+    const findPatientFT = userAppointmentData?.length > 0 ? userAppointmentData.find(pat => pat.id === patient.patientId && !pat?.isConfirm?.id) : {}
+
+    return findPatientFT?.id
+  }) : null
+
   const checkPatientRegisDataInMonth = (item) => {
     const findPatientInRegisData = userAppointmentData?.length > 0 ? userAppointmentData.find(patient => patient.id === item.patientId) : {}
 
@@ -147,6 +154,12 @@ export default function Home() {
           title: 'Patient Not Present',
           icon: 'fa-solid fa-person-circle-xmark',
           color: '#ffa500'
+        },
+        {
+          value: patientRegisCancelled?.length,
+          title: 'Patient Cancelled',
+          icon: 'fa-solid fa-ban',
+          color: '#ff0000'
         },
         {
           value: filterPMPatient('cash')?.length,
@@ -244,6 +257,7 @@ export default function Home() {
     findPatientFTInMonthDec?.length,
   ]
 
+  // data kehadiran di setiap bulan
   const findPatientPresenceInMonthJan = findPatientFTInMonthJan?.length > 0 ? findPatientFTInMonthJan.map(item => ({
     completionStage: checkPatientRegisDataInMonth(item) === 'hadir' ? checkCurrentLoketInMonth(item) : checkPatientRegisDataInMonth(item)
   })) : []
@@ -318,6 +332,67 @@ export default function Home() {
     getPatientPresenceOnMonth(findPatientPresenceInMonthDec, 'tidak hadir')?.length,
   ]
 
+  // get patient cancelled in every month
+  const getPatientCancelOnMonth = (patientId) => {
+    const findPatient = userAppointmentData?.length > 0 ? userAppointmentData.find(patient => patient.id === patientId && !patient?.isConfirm?.id) : null
+
+    return findPatient
+  }
+
+  // data cancel di setiap bulan
+  const findPatientCancelInMonthJan = findPatientFTInMonthJan?.length > 0 ? findPatientFTInMonthJan.filter(patient => {
+    return getPatientCancelOnMonth(patient?.patientId)?.id
+  }) : []
+  const findPatientCancelInMonthFeb = findPatientFTInMonthFeb?.length > 0 ? findPatientFTInMonthFeb.filter(patient => {
+    return getPatientCancelOnMonth(patient?.patientId)?.id
+  }) : []
+  const findPatientCancelInMonthMar = findPatientFTInMonthMar?.length > 0 ? findPatientFTInMonthMar.filter(patient => {
+    return getPatientCancelOnMonth(patient?.patientId)?.id
+  }) : []
+  const findPatientCancelInMonthApr = findPatientFTInMonthApr?.length > 0 ? findPatientFTInMonthApr.filter(patient => {
+    return getPatientCancelOnMonth(patient?.patientId)?.id
+  }) : []
+  const findPatientCancelInMonthMay = findPatientFTInMonthMay?.length > 0 ? findPatientFTInMonthMay.filter(patient => {
+    return getPatientCancelOnMonth(patient?.patientId)?.id
+  }) : []
+  const findPatientCancelInMonthJun = findPatientFTInMonthJun?.length > 0 ? findPatientFTInMonthJun.filter(patient => {
+    return getPatientCancelOnMonth(patient?.patientId)?.id
+  }) : []
+  const findPatientCancelInMonthJul = findPatientFTInMonthJul?.length > 0 ? findPatientFTInMonthJul.filter(patient => {
+    return getPatientCancelOnMonth(patient?.patientId)?.id
+  }) : []
+  const findPatientCancelInMonthAug = findPatientFTInMonthAug?.length > 0 ? findPatientFTInMonthAug.filter(patient => {
+    return getPatientCancelOnMonth(patient?.patientId)?.id
+  }) : []
+  const findPatientCancelInMonthSep = findPatientFTInMonthSep?.length > 0 ? findPatientFTInMonthSep.filter(patient => {
+    return getPatientCancelOnMonth(patient?.patientId)?.id
+  }) : []
+  const findPatientCancelInMonthOct = findPatientFTInMonthOct?.length > 0 ? findPatientFTInMonthOct.filter(patient => {
+    return getPatientCancelOnMonth(patient?.patientId)?.id
+  }) : []
+  const findPatientCancelInMonthNov = findPatientFTInMonthNov?.length > 0 ? findPatientFTInMonthNov.filter(patient => {
+    return getPatientCancelOnMonth(patient?.patientId)?.id
+  }) : []
+  const findPatientCancelInMonthDec = findPatientFTInMonthDec?.length > 0 ? findPatientFTInMonthDec.filter(patient => {
+    return getPatientCancelOnMonth(patient?.patientId)?.id
+  }) : []
+
+  // total data pasien yang dibatalkan (bar chart)
+  const totalDataPatientCancelInEveryMonth = [
+    findPatientCancelInMonthJan?.length,
+    findPatientCancelInMonthFeb?.length,
+    findPatientCancelInMonthMar?.length,
+    findPatientCancelInMonthApr?.length,
+    findPatientCancelInMonthMay?.length,
+    findPatientCancelInMonthJun?.length,
+    findPatientCancelInMonthJul?.length,
+    findPatientCancelInMonthAug?.length,
+    findPatientCancelInMonthSep?.length,
+    findPatientCancelInMonthOct?.length,
+    findPatientCancelInMonthNov?.length,
+    findPatientCancelInMonthDec?.length,
+  ]
+
   // total data patient treated in this year (polar chart)
   const totalPatientTreatmentOnYear = patientFinishTreatmentOnYears(chooseYear)?.length > 0 ? patientFinishTreatmentOnYears(chooseYear) : []
   const totalPatientPresenceOnYear = patientFinishTreatmentOnYears(chooseYear)?.length > 0 ? patientFinishTreatmentOnYears(chooseYear).map(item => ({
@@ -325,11 +400,15 @@ export default function Home() {
   })) : []
   const totalPatientPresentOnYear = totalPatientPresenceOnYear?.length > 0 ? totalPatientPresenceOnYear.filter(patient => patient.completionStage?.toLowerCase() === 'hadir') : []
   const totalPatientNotPresentOnYear = totalPatientPresenceOnYear?.length > 0 ? totalPatientPresenceOnYear.filter(patient => patient.completionStage?.toLowerCase() === 'tidak hadir') : []
+  const totalPatientCancelOnYear = patientFinishTreatmentOnYears(chooseYear)?.length > 0 ? patientFinishTreatmentOnYears(chooseYear).filter(patient=>{
+    return getPatientCancelOnMonth(patient?.patientId)?.id
+  }) : []
 
   const dataTotalPatientTreatmentOnThisYear = [
     totalPatientTreatmentOnYear?.length,
     totalPatientPresentOnYear?.length,
-    totalPatientNotPresentOnYear?.length
+    totalPatientNotPresentOnYear?.length,
+    totalPatientCancelOnYear?.length
   ]
 
   // polar area chart
@@ -579,6 +658,11 @@ export default function Home() {
         label: 'Not present',
         data: dataNotPresentInEveryMonth,
         backgroundColor: '#ffa500',
+      },
+      {
+        label: 'Cancelled',
+        data: totalDataPatientCancelInEveryMonth,
+        backgroundColor: '#ff0000',
       }
     ]
   }
@@ -597,7 +681,7 @@ export default function Home() {
   }
 
   const dataPatientTreatedPolarChart = {
-    labels: ['Patient treatment', 'Present', 'Not present'],
+    labels: ['Patient treatment', 'Present', 'Not present', 'Cancelled'],
     datasets: [
       {
         label: 'Total',
@@ -605,7 +689,8 @@ export default function Home() {
         backgroundColor: [
           '#187bcd',
           '#7600bc',
-          '#ffa500'
+          '#ffa500',
+          '#ff0000'
         ],
         borderWidth: 1
       },
@@ -716,7 +801,7 @@ export default function Home() {
     if (selectElPI) {
       selectElPI.value = `${new Date().getFullYear()}`
     }
-    if (selectElEarnings){
+    if (selectElEarnings) {
       selectElEarnings.value = `${new Date().getFullYear()}`
     }
   }, [])
@@ -730,7 +815,7 @@ export default function Home() {
     if (yearOn === 'selectYearPI' && id) {
       setChooseYearPaymentInfo(id)
     }
-    if(yearOn === 'selectYearEarnings' && id){
+    if (yearOn === 'selectYearEarnings' && id) {
       setChooseYearEarnings(id)
     }
   }

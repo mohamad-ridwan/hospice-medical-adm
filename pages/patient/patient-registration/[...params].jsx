@@ -111,6 +111,7 @@ function PersonalDataRegistration() {
     })
     const [errSubmitConfFinishTreatment, setErrSubmitConfFinishTreatment] = useState({})
     const [loadingConfFinishTreatment, setLoadingConfFinishTreatment] = useState(false)
+    const [loadCancelRegisAfterConf, setLoadCancelRegisAfterConf] = useState(false)
 
     const router = useRouter()
     const { params = [] } = router.query
@@ -1381,6 +1382,9 @@ function PersonalDataRegistration() {
             const dateConfirm = `${nowMonth}/${getDate}/${getYear}`
             const confirmHour = `${nowHours}:${nowMinutes}`
 
+            const findLastPatientOfCurrentDate = patientOfCurrentDiseaseT?.length > 0 ? patientOfCurrentDiseaseT.filter((patient, idx)=>idx === 0) : []
+            const getQueueNumber = findLastPatientOfCurrentDate?.length === 1 ? parseInt(findLastPatientOfCurrentDate[0]?.isConfirm?.queueNumber) + 1 : 1
+
             const postData = {
                 id: `${new Date().getTime()}`,
                 message: inputConfirm.message,
@@ -1393,7 +1397,7 @@ function PersonalDataRegistration() {
                     nameDoctor: chooseDoctor?.name,
                     doctorSpecialist: chooseDoctor?.deskripsi
                 },
-                queueNumber: `${patientOfCurrentDiseaseT?.length + 1}`,
+                queueNumber: `${getQueueNumber}`,
                 roomInfo: {
                     roomName: chooseDoctor?.room,
                 },
@@ -1663,6 +1667,8 @@ function PersonalDataRegistration() {
                                 const confirmHour = `${nowHours}:${nowMinutes}`
 
                                 const checkQueueNumber = patientOfCurrentDiseaseTForUpdtConfInfo?.length > 0 ? patientOfCurrentDiseaseTForUpdtConfInfo.filter(patient => patient?.id !== patientData?.id) : []
+                                const getQueueNumberOfCurrentPatient = checkQueueNumber?.length > 0 ? checkQueueNumber.filter((patient, idx)=>idx === 0) : []
+                                const queueNumber = getQueueNumberOfCurrentPatient?.length === 1 ? parseInt(getQueueNumberOfCurrentPatient[0]?.isConfirm?.queueNumber) + 1 : 1
 
                                 const { id, message, presence } = patientData?.isConfirm
                                 const data = {
@@ -1677,7 +1683,7 @@ function PersonalDataRegistration() {
                                         nameDoctor: chooseDocUpdtConf?.name,
                                         doctorSpecialist: chooseDocUpdtConf?.deskripsi
                                     },
-                                    queueNumber: checkQueueNumber?.length + 1,
+                                    queueNumber,
                                     roomInfo: {
                                         roomName: chooseDocUpdtConf?.room
                                     },
@@ -2094,6 +2100,62 @@ function PersonalDataRegistration() {
                 setLoadingSubmitConfPatient(false)
                 console.log(err)
             })
+        }
+    }
+
+    const clickCancelRegisAfterConfirm = () => {
+        if (loadCancelRegisAfterConf === false && window.confirm('Cancel Registration?')) {
+            setLoadCancelRegisAfterConf(true)
+
+            API.APICancelRegistration(bookAnAppointment?._id, patientData?.id)
+                .then(res => {
+                    const nowHours = `${new Date().getHours().toString().length === 1 ? `0${new Date().getHours()}` : new Date().getHours()}`
+                    const nowMinutes = `${new Date().getMinutes().toString().length === 1 ? `0${new Date().getMinutes()}` : new Date().getMinutes()}`
+                    const nowDate = `${new Date()}`
+                    const getDate = nowDate.split(' ')[2]
+                    const getYear = nowDate.split(' ')[3]
+                    const getMonth = nowDate.split(' ')[1]
+                    const findMonth = monthNames.findIndex(item => item === getMonth) + 1
+                    const nowMonth = findMonth.toString().length === 1 ? `0${findMonth}` : findMonth
+                    const dateConfirm = `${nowMonth}/${getDate}/${getYear}`
+                    const confirmHour = `${nowHours}:${nowMinutes}`
+
+                    const dataFinishTreatment = {
+                        id: `${new Date().getTime()}`,
+                        rulesTreatment: 'patient-registration',
+                        patientId: patientData?.id,
+                        patientName: patientData?.patientName,
+                        patientEmail: patientData?.emailAddress,
+                        phone: patientData?.phone,
+                        confirmedTime: {
+                            confirmHour: confirmHour,
+                            dateConfirm: dateConfirm
+                        },
+                        adminInfo: {
+                            emailAdmin: user?.email,
+                            nameAdmin: user?.name
+                        }
+                    }
+
+                    const patientName = patientData?.patientName?.replace(specialCharacter, '')?.replace(spaceString, '')
+
+                    postToPatientFinishTreatment(dataFinishTreatment, () => {
+                        alert('Successfully canceled registration')
+                        setLoadCancelRegisAfterConf(false)
+                        setTimeout(() => {
+                            router.push(`/patient/patient-registration/personal-data/cancelled/${patientName}/${patientData?.id}`)
+                        }, 0);
+                    }, (err => {
+                        alert('Oops, telah terjadi kesalahan server!\nMohon coba beberapa saat lagi')
+                        setLoadCancelRegisAfterConf(false)
+                        console.log(err)
+                    }))
+                })
+                .catch(err => {
+                    alert('Oops, telah terjadi kesalahan server!\nMohon coba beberapa saat lagi')
+                    setLoadCancelRegisAfterConf(false)
+                    console.log(err)
+                })
         }
     }
 
@@ -2835,7 +2897,7 @@ function PersonalDataRegistration() {
 
                                         {/* Button re confirmation */}
                                         {patientData?.isConfirm?.id && !findPatientInLoket?.patientId && !findCurrentPatientFinishTreatment?.patientId && (
-                                            <div className={style['container-re-confirm']}>
+                                            <div className={`${style['data']} container-re-confirm`}>
                                                 <Button
                                                     name="RESEND CONFIRMATION"
                                                     style={{
@@ -2853,9 +2915,9 @@ function PersonalDataRegistration() {
                                                         width: 'auto',
                                                         margin: '10px 0'
                                                     }}
-                                                    // click={clickCancelRegistration}
+                                                    click={clickCancelRegisAfterConfirm}
                                                     styleLoading={{
-                                                        display: loadingSubmitConfPatient ? 'flex' : 'none',
+                                                        display: loadCancelRegisAfterConf ? 'flex' : 'none',
                                                         backgroundColor: '#ff296d'
                                                     }}
                                                     classBtn="not-present-btn"

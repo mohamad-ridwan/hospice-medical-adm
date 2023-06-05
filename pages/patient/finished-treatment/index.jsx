@@ -25,10 +25,10 @@ function FinishedTreatment() {
             name: 'Patient Name'
         },
         {
-            name: 'Presence'
+            name: 'Status'
         },
         {
-            name: 'Attendance Record'
+            name: 'State Record'
         },
         {
             name: 'Confirmation Date'
