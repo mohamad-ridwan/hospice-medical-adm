@@ -65,6 +65,7 @@ function PersonalDataRegistration() {
         message: '',
     })
     const [loadingSubmitConfToLoket, setLoadingSubmitConfToLoket] = useState(false)
+    const [loadingPatientNotPresentInCalling, setLoadingPatientNotPresentInCalling] = useState(false)
     const [errMsgConfToLoket, setErrMsgConfToLoket] = useState({})
     // state update info confirmation
     const [onPopupEditConfirm, setOnPopupEditConfirm] = useState(false)
@@ -892,24 +893,45 @@ function PersonalDataRegistration() {
     }
 
     const deleteDataPersonalPatientRegis = () => {
+        if (findPatientInLoket?.id) {
+            API.APIDeleteLoket(findPatientInLoket?._id)
+                .then(res => {
+                    if (findCurrentPatientFinishTreatment?.id) {
+                        API.APIDeleteFinishedTreatment(findCurrentPatientFinishTreatment?._id)
+                            .then(res => {
+                                pushToDeletePatientRegis()
+                            })
+                            .catch(err => {
+                                alert('Oops, telah terjadi kesalahan server\nMohon coba beberapa saat lagi')
+                                setLoadingSubmit(false)
+                                console.log(err)
+                            })
+                    } else {
+                        pushToDeletePatientRegis()
+                    }
+                })
+                .catch(err => {
+                    alert('Oops, telah terjadi kesalahan server\nMohon coba beberapa saat lagi')
+                    setLoadingSubmit(false)
+                    console.log(err)
+                })
+        } else {
+            pushToDeletePatientRegis()
+        }
+    }
+
+    const pushToDeletePatientRegis = () => {
         API.APIDeletePatientRegistration(bookAnAppointment?._id, patientData?.id)
             .then(res => {
                 alert('Deleted successfully')
-
-                if (params[1] === 'not-yet-confirmed') {
-                    setTimeout(() => {
-                        router.push('/patient/patient-registration')
-                    }, 100)
-                }
-                if (params[1] === 'confirmed') {
-                    setTimeout(() => {
-                        router.push('/patient/confirmation-patient')
-                    }, 100)
-                }
+                setTimeout(() => {
+                    window.location.reload()
+                }, 0)
             })
             .catch(err => {
                 alert('Oops, telah terjadi kesalahan server\nMohon coba beberapa saat lagi')
                 setLoadingSubmit(false)
+                console.log(err)
             })
     }
 
@@ -1520,6 +1542,10 @@ function PersonalDataRegistration() {
         const dateConfirm = `${nowMonth}/${getDate}/${getYear}`
         const confirmHour = `${nowHours}:${nowMinutes}`
 
+        const findPatientInLoket = getPatientQueue?.filter(patient => patient.loketName === infoLoket?.loketName && patient?.submissionDate === currentDate && patient?.isConfirm?.confirmState === false)
+        const findPatientConfInLoketToday = getPatientQueue?.filter(patient => patient.loketName === infoLoket?.loketName && patient?.isConfirm?.confirmState && patient?.submissionDate === currentDate && patient?.isConfirm?.dateConfirm === currentDate)
+        const getQueueNumber = findPatientInLoket?.length > 0 ? parseInt(findPatientInLoket[findPatientInLoket.length - 1]?.queueNumber) + 1 : findPatientConfInLoketToday?.length > 0 ? parseInt(findPatientConfInLoketToday[findPatientConfInLoketToday.length - 1]?.queueNumber) + 1 : 1
+
         const data = {
             id: `${new Date().getTime()}`,
             loketRules: 'patient-queue',
@@ -1528,7 +1554,7 @@ function PersonalDataRegistration() {
             patientName: patientName,
             patientEmail: emailAddress,
             phone: phone,
-            queueNumber: infoLoket?.totalQueue + 1,
+            queueNumber: getQueueNumber,
             message: inputConfToLoket.message,
             emailAdmin: user?.email,
             presence: 'menunggu',
@@ -1580,7 +1606,6 @@ function PersonalDataRegistration() {
             console.log(err)
             setLoadingSubmitConfToLoket(false)
         }, 'hadir')
-
     }
 
     const updatePresencePatient = (sc, error, value) => {
@@ -1783,8 +1808,8 @@ function PersonalDataRegistration() {
     }
 
     const clickPresenceConfInfo = (status) => {
-        if (loadingSubmitUpdtConfirmInfo === false && loadingSubmitConfToLoket === false && window.confirm(`pasien ${status}?`)) {
-            setLoadingSubmitUpdtConfirmInfo(true)
+        if (loadingSubmitUpdtConfirmInfo === false && loadingSubmitConfToLoket === false && loadingPatientNotPresentInCalling === false && window.confirm(`pasien ${status}?`)) {
+            setLoadingPatientNotPresentInCalling(true)
 
             updatePresencePatient(() => {
                 if (status === 'tidak hadir') {
@@ -1817,20 +1842,20 @@ function PersonalDataRegistration() {
                     }
                     postToPatientFinishTreatment(dataFinishTreatment, () => {
                         alert('confirmation information updated successfully')
-                        setLoadingSubmitUpdtConfirmInfo(false)
+                        setLoadingPatientNotPresentInCalling(false)
                     }, (err) => {
                         alert('Oops, telah terjadi kesalahan server!\nMohon coba beberapa saat lagi')
                         console.log(err)
-                        setLoadingSubmitUpdtConfirmInfo(false)
+                        setLoadingPatientNotPresentInCalling(false)
                     })
                 } else if (status === 'hadir') {
                     alert('confirmation information updated successfully')
-                    setLoadingSubmitUpdtConfirmInfo(false)
+                    setLoadingPatientNotPresentInCalling(false)
                 }
             }, (err) => {
                 alert('Oops, telah terjadi kesalahan server!\nMohon coba beberapa saat lagi')
                 console.log(err)
-                setLoadingSubmitUpdtConfirmInfo(false)
+                setLoadingPatientNotPresentInCalling(false)
             }, status)
         }
     }
@@ -2177,7 +2202,7 @@ function PersonalDataRegistration() {
         return (
             <>
                 <Head>
-                    <title>{patientData?.patientName} | Patient Registration | Admin Hospice Medical</title>
+                    <title>{patientData?.patientName ? `${patientData?.patientName}` : 'Patient Not Found |'} Patient Registration | Admin Hospice Medical</title>
                     <meta name="description" content="data pendaftaran personal pasien hospice medical" />
                 </Head>
 
@@ -2586,224 +2611,226 @@ function PersonalDataRegistration() {
                 <div className={onNavLeft ? `${style['wrapp']} ${style['wrapp-active']}` : style['wrapp']}>
                     <div className={style['container']}>
                         <div className={style['content']}>
-                            <div className={style['head-content']}>
-                                <h1 className={style['title']}>
-                                    <span className={style['patient-of']}>Patient of</span>
-                                    <span className={style['name']}>
-                                        {patientData?.patientName}
-                                    </span>
-                                </h1>
-
-                                {findCurrentPatientFinishTreatment?.id && (
-                                    <h1 className={style['title']} style={{
-                                        fontSize: '26px',
-                                        marginTop: '30px'
-                                    }}>
-                                        <span className={style['patient-of']} style={{
-                                            color: '#0ab110'
-                                        }}>
-                                            <i className="fa-solid fa-check-to-slot"></i>
-                                        </span>
-                                        <span className={style['name']} style={{
-                                            color: '#0ab110'
-                                        }}>
-                                            Have Finished Treatment
-                                        </span>
-                                    </h1>
-                                )}
-                            </div>
-
-                            <div className={style['white-content']}>
-                                {patientData?.id && (
-                                    <>
-                                        {/* confirm info */}
-                                        <div className={style['confirm-info']}>
-                                            {patientData?.isConfirm?.id && (
-                                                <>
-                                                    <HeadConfirmInfo
-                                                        icon="fa-solid fa-circle-check"
-                                                        styleTitle={{
-                                                            color: '#288bbc'
-                                                        }}
-                                                        desc="Confirmed"
-                                                    />
-                                                </>
-                                            )}
-                                            {!patientData?.isConfirm?.id && !findCurrentPatientFinishTreatment?.id && (
-                                                <>
-                                                    <HeadConfirmInfo
-                                                        icon="fa-sharp fa-solid fa-circle-exclamation"
-                                                        styleTitle={{
-                                                            color: '#fa9c1b'
-                                                        }}
-                                                        desc="Not yet confirmed"
-                                                    />
-                                                </>
-                                            )}
-                                            {!patientData?.isConfirm?.id && findCurrentPatientFinishTreatment?.id && (
-                                                <>
-                                                    <HeadConfirmInfo
-                                                        icon="fa-solid fa-ban"
-                                                        styleTitle={{
-                                                            color: '#ff296d'
-                                                        }}
-                                                        desc="Canceled"
-                                                    />
-                                                </>
-                                            )}
-                                        </div>
-
-                                        <h1 className={style['title-info']}>
-                                            Patient Information
+                            {patientData?.id ? (
+                                <>
+                                    <div className={style['head-content']}>
+                                        <h1 className={style['title']}>
+                                            <span className={style['patient-of']}>Patient of</span>
+                                            <span className={style['name']}>
+                                                {patientData?.patientName}
+                                            </span>
                                         </h1>
 
-                                        {/* button action */}
-                                        <div className={style['btn-action']}>
-                                            <button className={style['edit']}
-                                                onClick={handlePopupEdit}>
-                                                <div className={style['loading-circle']} style={{
-                                                    display: loadingSubmit || loadingSubmitUpdtConfirmInfo ? 'flex' : 'none'
-                                                }}></div>
-
-                                                <i className="fa-solid fa-pencil" style={{
-                                                    display: loadingSubmit || loadingSubmitUpdtConfirmInfo ? 'none' : 'flex'
-                                                }}></i>
-                                            </button>
-                                            <button className={`${style['edit']} ${style['delete']}`}
-                                                onClick={clickDeletePersonalDataRegis}>
-                                                <div className={style['loading-circle']} style={{
-                                                    display: loadingSubmit || loadingSubmitUpdtConfirmInfo ? 'flex' : 'none'
+                                        {findCurrentPatientFinishTreatment?.id && (
+                                            <h1 className={style['title']} style={{
+                                                fontSize: '26px',
+                                                marginTop: '30px'
+                                            }}>
+                                                <span className={style['patient-of']} style={{
+                                                    color: '#0ab110'
                                                 }}>
+                                                    <i className="fa-solid fa-check-to-slot"></i>
+                                                </span>
+                                                <span className={style['name']} style={{
+                                                    color: '#0ab110'
+                                                }}>
+                                                    Have Finished Treatment
+                                                </span>
+                                            </h1>
+                                        )}
+                                    </div>
 
-                                                </div>
-                                                <i className="fa-solid fa-trash" style={{
-                                                    display: loadingSubmit || loadingSubmitUpdtConfirmInfo ? 'none' : 'flex'
-                                                }}></i>
-                                            </button>
-                                        </div>
-
-                                        {/* data information */}
-                                        <div className={style['data']}>
-                                            <CardPatientRegisData
-                                                {...propsIconDataInfo}
-                                                title="Appointment Date"
-                                                icon="fa-solid fa-calendar-days"
-                                                firstDesc={makeNormalDateOnPatientInfo(patientData.appointmentDate)}
-                                                desc={patientData.appointmentDate}
-                                                styleFirstDesc={{
-                                                    marginBottom: '5px',
-                                                    fontSize: '14px',
-                                                    fontWeight: 'bold',
-                                                    color: '#f85084'
-                                                }}
-                                                styleDesc={{
-                                                    fontSize: '12px'
-                                                }}
-                                            />
-                                            <CardPatientRegisData
-                                                title="Submission Date"
-                                                firstDesc={makeNormalDateOnPatientInfo(patientData.submissionDate)}
-                                                desc={patientData.submissionDate}
-                                                styleFirstDesc={{
-                                                    marginBottom: '5px',
-                                                    fontSize: '14px',
-                                                    fontWeight: 'bold',
-                                                    color: '#7600bc'
-                                                }}
-                                                styleDesc={{
-                                                    fontSize: '12px'
-                                                }}
-                                            />
-                                            <CardPatientRegisData
-                                                {...propsIconDataInfo}
-                                                title="O'Clock"
-                                                icon='fa-solid fa-clock'
-                                                desc={patientData.clock}
-                                                styleDesc={{
-                                                    color: '#f85084'
-                                                }}
-                                            />
-                                            <CardPatientRegisData
-                                                title="Patient Name"
-                                                desc={patientData.patientName}
-                                            />
-                                            <CardPatientRegisData
-                                                title="Email"
-                                                desc={patientData.emailAddress}
-                                            />
-                                            <CardPatientRegisData
-                                                title="Date of Birth"
-                                                firstDesc={makeNormalDateOnPatientInfo(patientData.dateOfBirth)}
-                                                desc={patientData.dateOfBirth}
-                                                styleFirstDesc={{
-                                                    marginBottom: '5px',
-                                                    fontSize: '14px',
-                                                    fontWeight: 'bold',
-                                                    color: '#288bbc'
-                                                }}
-                                                styleDesc={{
-                                                    fontSize: '12px'
-                                                }}
-                                            />
-                                            <CardPatientRegisData
-                                                title="Phone"
-                                                desc={patientData.phone}
-                                            />
-                                            <CardPatientRegisData
-                                                title="Patient ID"
-                                                desc={patientData.id}
-                                            />
-                                            <CardPatientRegisData
-                                                title="Patient Complaints"
-                                                desc={patientData?.patientComplaints}
-                                            />
-                                            <CardPatientRegisData
-                                                title="Messages from Patient"
-                                                desc={patientData.message}
-                                            />
-                                        </div>
-
-                                        {/* data confirmations */}
-                                        {patientData?.isConfirm?.id && (
+                                    <div className={style['white-content']}>
+                                        {patientData?.id && (
                                             <>
-                                                <div className={`${style['data-conf-patients']} ${style['confirm-data-group']}`}>
-                                                    <h1 className={style['title']}>
-                                                        Confirmation Data Information
-                                                    </h1>
+                                                {/* confirm info */}
+                                                <div className={style['confirm-info']}>
+                                                    {patientData?.isConfirm?.id && (
+                                                        <>
+                                                            <HeadConfirmInfo
+                                                                icon="fa-solid fa-circle-check"
+                                                                styleTitle={{
+                                                                    color: '#288bbc'
+                                                                }}
+                                                                desc="Confirmed"
+                                                            />
+                                                        </>
+                                                    )}
+                                                    {!patientData?.isConfirm?.id && !findCurrentPatientFinishTreatment?.id && (
+                                                        <>
+                                                            <HeadConfirmInfo
+                                                                icon="fa-sharp fa-solid fa-circle-exclamation"
+                                                                styleTitle={{
+                                                                    color: '#fa9c1b'
+                                                                }}
+                                                                desc="Not yet confirmed"
+                                                            />
+                                                        </>
+                                                    )}
+                                                    {!patientData?.isConfirm?.id && findCurrentPatientFinishTreatment?.id && (
+                                                        <>
+                                                            <HeadConfirmInfo
+                                                                icon="fa-solid fa-ban"
+                                                                styleTitle={{
+                                                                    color: '#ff296d'
+                                                                }}
+                                                                desc="Canceled"
+                                                            />
+                                                        </>
+                                                    )}
+                                                </div>
 
-                                                    {/* button action */}
-                                                    <div className={style['btn-action']} style={{
-                                                        width: '100%',
-                                                        margin: '20px 0 10px 0'
-                                                    }}>
-                                                        <button className={style['edit']}
-                                                            onClick={handlePopupEditConfirmInfo}
-                                                        >
-                                                            <div className={style['loading-circle']} style={{
-                                                                display: loadingSubmit || loadingSubmitUpdtConfirmInfo ? 'flex' : 'none'
-                                                            }}>
+                                                <h1 className={style['title-info']}>
+                                                    Patient Information
+                                                </h1>
 
-                                                            </div>
-                                                            <i className="fa-solid fa-pencil" style={{
-                                                                display: loadingSubmit || loadingSubmitUpdtConfirmInfo ? 'none' : 'flex'
-                                                            }}></i>
-                                                        </button>
-                                                    </div>
+                                                {/* button action */}
+                                                <div className={style['btn-action']}>
+                                                    <button className={style['edit']}
+                                                        onClick={handlePopupEdit}>
+                                                        <div className={style['loading-circle']} style={{
+                                                            display: loadingSubmit || loadingSubmitUpdtConfirmInfo ? 'flex' : 'none'
+                                                        }}></div>
 
+                                                        <i className="fa-solid fa-pencil" style={{
+                                                            display: loadingSubmit || loadingSubmitUpdtConfirmInfo ? 'none' : 'flex'
+                                                        }}></i>
+                                                    </button>
+                                                    <button className={`${style['edit']} ${style['delete']}`}
+                                                        onClick={clickDeletePersonalDataRegis}>
+                                                        <div className={style['loading-circle']} style={{
+                                                            display: loadingSubmit || loadingSubmitUpdtConfirmInfo ? 'flex' : 'none'
+                                                        }}>
+
+                                                        </div>
+                                                        <i className="fa-solid fa-trash" style={{
+                                                            display: loadingSubmit || loadingSubmitUpdtConfirmInfo ? 'none' : 'flex'
+                                                        }}></i>
+                                                    </button>
+                                                </div>
+
+                                                {/* data information */}
+                                                <div className={style['data']}>
                                                     <CardPatientRegisData
-                                                        title="Presence State"
-                                                        desc={presenceState}
-                                                        styleWrapp={{
-                                                            margin: '20px 0'
+                                                        {...propsIconDataInfo}
+                                                        title="Appointment Date"
+                                                        icon="fa-solid fa-calendar-days"
+                                                        firstDesc={makeNormalDateOnPatientInfo(patientData.appointmentDate)}
+                                                        desc={patientData.appointmentDate}
+                                                        styleFirstDesc={{
+                                                            marginBottom: '5px',
+                                                            fontSize: '14px',
+                                                            fontWeight: 'bold',
+                                                            color: '#f85084'
                                                         }}
                                                         styleDesc={{
-                                                            color: '#f85084',
-                                                            textTransform: 'uppercase',
-                                                            fontWeight: 'bold'
+                                                            fontSize: '12px'
                                                         }}
-                                                    >
-                                                        <div className={style['update-absent']}>
-                                                            {/* <Button
+                                                    />
+                                                    <CardPatientRegisData
+                                                        title="Submission Date"
+                                                        firstDesc={makeNormalDateOnPatientInfo(patientData.submissionDate)}
+                                                        desc={patientData.submissionDate}
+                                                        styleFirstDesc={{
+                                                            marginBottom: '5px',
+                                                            fontSize: '14px',
+                                                            fontWeight: 'bold',
+                                                            color: '#7600bc'
+                                                        }}
+                                                        styleDesc={{
+                                                            fontSize: '12px'
+                                                        }}
+                                                    />
+                                                    <CardPatientRegisData
+                                                        {...propsIconDataInfo}
+                                                        title="O'Clock"
+                                                        icon='fa-solid fa-clock'
+                                                        desc={patientData.clock}
+                                                        styleDesc={{
+                                                            color: '#f85084'
+                                                        }}
+                                                    />
+                                                    <CardPatientRegisData
+                                                        title="Patient Name"
+                                                        desc={patientData.patientName}
+                                                    />
+                                                    <CardPatientRegisData
+                                                        title="Email"
+                                                        desc={patientData.emailAddress}
+                                                    />
+                                                    <CardPatientRegisData
+                                                        title="Date of Birth"
+                                                        firstDesc={makeNormalDateOnPatientInfo(patientData.dateOfBirth)}
+                                                        desc={patientData.dateOfBirth}
+                                                        styleFirstDesc={{
+                                                            marginBottom: '5px',
+                                                            fontSize: '14px',
+                                                            fontWeight: 'bold',
+                                                            color: '#288bbc'
+                                                        }}
+                                                        styleDesc={{
+                                                            fontSize: '12px'
+                                                        }}
+                                                    />
+                                                    <CardPatientRegisData
+                                                        title="Phone"
+                                                        desc={patientData.phone}
+                                                    />
+                                                    <CardPatientRegisData
+                                                        title="Patient ID"
+                                                        desc={patientData.id}
+                                                    />
+                                                    <CardPatientRegisData
+                                                        title="Patient Complaints"
+                                                        desc={patientData?.patientComplaints}
+                                                    />
+                                                    <CardPatientRegisData
+                                                        title="Messages from Patient"
+                                                        desc={patientData.message}
+                                                    />
+                                                </div>
+
+                                                {/* data confirmations */}
+                                                {patientData?.isConfirm?.id && (
+                                                    <>
+                                                        <div className={`${style['data-conf-patients']} ${style['confirm-data-group']}`}>
+                                                            <h1 className={style['title']}>
+                                                                Confirmation Data Information
+                                                            </h1>
+
+                                                            {/* button action */}
+                                                            <div className={style['btn-action']} style={{
+                                                                width: '100%',
+                                                                margin: '20px 0 10px 0'
+                                                            }}>
+                                                                <button className={style['edit']}
+                                                                    onClick={handlePopupEditConfirmInfo}
+                                                                >
+                                                                    <div className={style['loading-circle']} style={{
+                                                                        display: loadingSubmit || loadingSubmitUpdtConfirmInfo ? 'flex' : 'none'
+                                                                    }}>
+
+                                                                    </div>
+                                                                    <i className="fa-solid fa-pencil" style={{
+                                                                        display: loadingSubmit || loadingSubmitUpdtConfirmInfo ? 'none' : 'flex'
+                                                                    }}></i>
+                                                                </button>
+                                                            </div>
+
+                                                            <CardPatientRegisData
+                                                                title="Presence State"
+                                                                desc={presenceState}
+                                                                styleWrapp={{
+                                                                    margin: '20px 0'
+                                                                }}
+                                                                styleDesc={{
+                                                                    color: '#f85084',
+                                                                    textTransform: 'uppercase',
+                                                                    fontWeight: 'bold'
+                                                                }}
+                                                            >
+                                                                <div className={style['update-absent']}>
+                                                                    {/* <Button
                                                                 name="HADIR"
                                                                 click={() => clickPresenceConfInfo('hadir')}
                                                                 style={{
@@ -2813,7 +2840,7 @@ function PersonalDataRegistration() {
                                                                     marginTop: '10px'
                                                                 }}
                                                             /> */}
-                                                            {/* <Button
+                                                                    {/* <Button
                                                                 name="TIDAK HADIR"
                                                                 classBtn="not-present-btn"
                                                                 click={() => clickPresenceConfInfo('tidak hadir')}
@@ -2823,326 +2850,326 @@ function PersonalDataRegistration() {
                                                                     marginTop: '10px'
                                                                 }}
                                                             /> */}
+                                                                </div>
+                                                            </CardPatientRegisData>
+                                                            <CardPatientRegisData
+                                                                {...propsIconDataInfo}
+                                                                title="Queue Number"
+                                                                icon='fa-solid fa-id-card'
+                                                                desc={patientData?.isConfirm?.queueNumber}
+                                                                styleDesc={{
+                                                                    color: '#288bbc',
+                                                                }}
+                                                            />
+                                                            <CardPatientRegisData
+                                                                {...propsIconDataInfo}
+                                                                title="Treatment Hours"
+                                                                icon='fa-solid fa-clock'
+                                                                desc={patientData?.isConfirm?.treatmentHours}
+                                                                styleDesc={{
+                                                                    color: '#f85084',
+                                                                }}
+                                                                styleWrapp={{
+                                                                    margin: '20px 0'
+                                                                }}
+                                                            />
+                                                            <CardPatientRegisData
+                                                                title="Room Name"
+                                                                desc={patientData?.isConfirm?.roomInfo?.roomName}
+                                                            />
+                                                            <CardPatientRegisData
+                                                                title="Doctor Name"
+                                                                desc={patientData?.isConfirm?.doctorInfo?.nameDoctor}
+                                                                styleWrapp={{
+                                                                    margin: '20px 0'
+                                                                }}
+                                                            />
+                                                            <CardPatientRegisData
+                                                                title="Doctor Specialist"
+                                                                desc={patientData?.isConfirm?.doctorInfo?.doctorSpecialist}
+                                                            />
+                                                            <CardPatientRegisData
+                                                                {...propsIconDataInfo}
+                                                                icon='fa-solid fa-clock'
+                                                                title="Confirmation Hour"
+                                                                desc={patientData?.isConfirm?.confirmHour}
+                                                                styleWrapp={{
+                                                                    margin: '20px 0'
+                                                                }}
+                                                                styleDesc={{
+                                                                    color: '#006400'
+                                                                }}
+                                                            />
+                                                            <CardPatientRegisData
+                                                                {...propsIconDataInfo}
+                                                                icon="fa-solid fa-calendar-days"
+                                                                title="Confirmed Date"
+                                                                firstDesc={makeNormalDateOnPatientInfo(patientData?.isConfirm?.dateConfirm)}
+                                                                desc={patientData?.isConfirm?.dateConfirm}
+                                                                styleFirstDesc={{
+                                                                    marginBottom: '5px',
+                                                                    fontSize: '14px',
+                                                                    fontWeight: 'bold',
+                                                                    color: '#006400'
+                                                                }}
+                                                                styleDesc={{
+                                                                    fontSize: '12px'
+                                                                }}
+                                                            />
+                                                            <h1 className={style['title']} style={{
+                                                                marginTop: '30px'
+                                                            }}>
+                                                                Confirmation Admin Information
+                                                            </h1>
+                                                            <CardPatientRegisData
+                                                                title="Admin Email"
+                                                                desc={patientData?.isConfirm?.emailAdmin}
+                                                                styleWrapp={{
+                                                                    margin: '20px 0'
+                                                                }}
+                                                            />
+                                                            <CardPatientRegisData
+                                                                title="Admin Name"
+                                                                desc={patientData?.isConfirm?.nameAdmin}
+                                                            />
                                                         </div>
-                                                    </CardPatientRegisData>
-                                                    <CardPatientRegisData
-                                                        {...propsIconDataInfo}
-                                                        title="Queue Number"
-                                                        icon='fa-solid fa-id-card'
-                                                        desc={patientData?.isConfirm?.queueNumber}
-                                                        styleDesc={{
-                                                            color: '#288bbc',
-                                                        }}
-                                                    />
-                                                    <CardPatientRegisData
-                                                        {...propsIconDataInfo}
-                                                        title="Treatment Hours"
-                                                        icon='fa-solid fa-clock'
-                                                        desc={patientData?.isConfirm?.treatmentHours}
-                                                        styleDesc={{
-                                                            color: '#f85084',
-                                                        }}
-                                                        styleWrapp={{
-                                                            margin: '20px 0'
-                                                        }}
-                                                    />
-                                                    <CardPatientRegisData
-                                                        title="Room Name"
-                                                        desc={patientData?.isConfirm?.roomInfo?.roomName}
-                                                    />
-                                                    <CardPatientRegisData
-                                                        title="Doctor Name"
-                                                        desc={patientData?.isConfirm?.doctorInfo?.nameDoctor}
-                                                        styleWrapp={{
-                                                            margin: '20px 0'
-                                                        }}
-                                                    />
-                                                    <CardPatientRegisData
-                                                        title="Doctor Specialist"
-                                                        desc={patientData?.isConfirm?.doctorInfo?.doctorSpecialist}
-                                                    />
-                                                    <CardPatientRegisData
-                                                        {...propsIconDataInfo}
-                                                        icon='fa-solid fa-clock'
-                                                        title="Confirmation Hour"
-                                                        desc={patientData?.isConfirm?.confirmHour}
-                                                        styleWrapp={{
-                                                            margin: '20px 0'
-                                                        }}
-                                                        styleDesc={{
-                                                            color: '#006400'
-                                                        }}
-                                                    />
-                                                    <CardPatientRegisData
-                                                        {...propsIconDataInfo}
-                                                        icon="fa-solid fa-calendar-days"
-                                                        title="Confirmed Date"
-                                                        firstDesc={makeNormalDateOnPatientInfo(patientData?.isConfirm?.dateConfirm)}
-                                                        desc={patientData?.isConfirm?.dateConfirm}
-                                                        styleFirstDesc={{
-                                                            marginBottom: '5px',
-                                                            fontSize: '14px',
-                                                            fontWeight: 'bold',
-                                                            color: '#006400'
-                                                        }}
-                                                        styleDesc={{
-                                                            fontSize: '12px'
-                                                        }}
-                                                    />
-                                                    <h1 className={style['title']} style={{
-                                                        marginTop: '30px'
-                                                    }}>
-                                                        Confirmation Admin Information
-                                                    </h1>
-                                                    <CardPatientRegisData
-                                                        title="Admin Email"
-                                                        desc={patientData?.isConfirm?.emailAdmin}
-                                                        styleWrapp={{
-                                                            margin: '20px 0'
-                                                        }}
-                                                    />
-                                                    <CardPatientRegisData
-                                                        title="Admin Name"
-                                                        desc={patientData?.isConfirm?.nameAdmin}
-                                                    />
-                                                </div>
-                                            </>
-                                        )}
+                                                    </>
+                                                )}
 
-                                        {/* Button re confirmation */}
-                                        {patientData?.isConfirm?.id && !findPatientInLoket?.patientId && !findCurrentPatientFinishTreatment?.patientId && (
-                                            <div className={`${style['data']} container-re-confirm`}>
-                                                <Button
-                                                    name="RESEND CONFIRMATION"
-                                                    style={{
-                                                        widh: 'auto',
-                                                        margin: '10px 0'
-                                                    }}
-                                                    click={clickResendConfirmation}
-                                                    styleLoading={{
-                                                        display: loadingSubmitConfPatient ? 'flex' : 'none'
-                                                    }}
-                                                />
-                                                <Button
-                                                    name="CANCEL REGISTRATION"
-                                                    style={{
-                                                        width: 'auto',
-                                                        margin: '10px 0'
-                                                    }}
-                                                    click={clickCancelRegisAfterConfirm}
-                                                    styleLoading={{
-                                                        display: loadCancelRegisAfterConf ? 'flex' : 'none',
-                                                        backgroundColor: '#ff296d'
-                                                    }}
-                                                    classBtn="not-present-btn"
-                                                    styleLoadCircle={{
-                                                        borderTopColor: '#ff296d'
-                                                    }}
-                                                />
-                                            </div>
-                                        )}
-
-                                        {/* form confirm to take medicine */}
-                                        {patientData?.isConfirm?.id && !findPatientInLoket?.id && (
-                                            <>
-                                                <div className={`${style['form-conf-take-medic']} ${style['confirm-data-group']}`} style={{
-                                                    margin: '20px 0'
-                                                }}>
-                                                    <h1 className={style['title']} style={{
-                                                        margin: '0 10px'
-                                                    }}>
-                                                        Form Confirm to Take Medicine
-                                                    </h1>
-
-                                                    <CardPatientRegisData
-                                                        styleTitle={{
-                                                            display: 'none',
-                                                        }}
-                                                        styleWrappDesc={{
-                                                            display: 'none'
-                                                        }}
-                                                        styleWrapp={{
-                                                            width: '100%',
-                                                            margin: '20px 10px 0 10px'
-                                                        }}
-                                                    >
-                                                        <Input
-                                                            {...propsInputEdit}
-                                                            {...propsErrMsg}
-                                                            styleInputText={{
-                                                                display: 'none'
-                                                            }}
-                                                            styleTxtArea={{
-                                                                display: 'flex'
-                                                            }}
-                                                            type='text'
-                                                            nameTxtArea='message'
-                                                            placeholderTxtArea={`Doctor's Prescription...`}
-                                                            valueTxtArea={inputConfToLoket.message}
-                                                            title={`Doctor's Prescription`}
-                                                            changeTxtArea={handleChangeConfToLoket}
-                                                            errorMessage={errMsgConfToLoket?.message}
-                                                        />
-                                                    </CardPatientRegisData>
-                                                    {/* select loket */}
-                                                    <CardPatientRegisData
-                                                        styleTitle={{
-                                                            display: 'none',
-                                                        }}
-                                                        styleWrappDesc={{
-                                                            display: 'none'
-                                                        }}
-                                                        styleWrapp={{
-                                                            margin: '0px 10px 20px 10px'
-                                                        }}
-                                                    >
-                                                        <SelectCategory
-                                                            styleWrapp={{
-                                                                margin: '0px 0'
-                                                            }}
-                                                            styleTitle={{
-                                                                fontSize: '13px'
-                                                            }}
-                                                            titleCtg="Select Counter"
-                                                            idSelect="selectCounter"
-                                                            handleCategory={handleSelectCounter}
-                                                            dataBlogCategory={newLoket}
-                                                        />
-                                                    </CardPatientRegisData>
-                                                    <CardPatientRegisData
-                                                        title="Total Queue"
-                                                        desc={infoLoket?.totalQueue}
-                                                        styleWrapp={{
-                                                            margin: '20px 10px 20px 10px'
-                                                        }}
-                                                    />
-                                                    <Button
-                                                        name="CONFIRM AT THE COUNTER"
-                                                        style={{
-                                                            widh: 'auto',
-                                                            margin: findCurrentPatientFinishTreatment?.id ? '0 auto' : '20px 0 0 0'
-                                                        }}
-                                                        click={handleSubmitConfToLoket}
-                                                        styleLoading={{
-                                                            display: loadingSubmitConfToLoket || loadingSubmitUpdtConfirmInfo ? 'flex' : 'none'
-                                                        }}
-                                                    />
-                                                    {!findCurrentPatientFinishTreatment?.id && (
+                                                {/* Button re confirmation */}
+                                                {patientData?.isConfirm?.id && !findPatientInLoket?.patientId && !findCurrentPatientFinishTreatment?.patientId && (
+                                                    <div className={`${style['data']} container-re-confirm`}>
                                                         <Button
-                                                            name="PATIENT NOT PRESENT"
-                                                            classBtn="not-present-btn"
+                                                            name="RESEND CONFIRMATION"
                                                             style={{
                                                                 widh: 'auto',
-                                                                margin: '20px 0 0 0'
+                                                                margin: '10px 0'
                                                             }}
-                                                            click={() => clickPresenceConfInfo('tidak hadir')}
+                                                            click={clickResendConfirmation}
                                                             styleLoading={{
-                                                                display: loadingSubmitConfToLoket || loadingSubmitUpdtConfirmInfo ? 'flex' : 'none',
+                                                                display: loadingSubmitConfPatient ? 'flex' : 'none'
+                                                            }}
+                                                        />
+                                                        <Button
+                                                            name="CANCEL REGISTRATION"
+                                                            style={{
+                                                                width: 'auto',
+                                                                margin: '10px 0'
+                                                            }}
+                                                            click={clickCancelRegisAfterConfirm}
+                                                            styleLoading={{
+                                                                display: loadCancelRegisAfterConf ? 'flex' : 'none',
                                                                 backgroundColor: '#ff296d'
                                                             }}
+                                                            classBtn="not-present-btn"
                                                             styleLoadCircle={{
                                                                 borderTopColor: '#ff296d'
                                                             }}
                                                         />
-                                                    )}
-                                                </div>
-                                            </>
-                                        )}
+                                                    </div>
+                                                )}
 
-                                        {/* form confirm */}
-                                        {!patientData?.isConfirm?.id && !findCurrentPatientFinishTreatment?.id && (
-                                            <>
-                                                <h1 className={style['title-confirm']}>
-                                                    Form Confirmation
-                                                </h1>
+                                                {/* form confirm to take medicine */}
+                                                {patientData?.isConfirm?.id && !findPatientInLoket?.id && (
+                                                    <>
+                                                        <div className={`${style['form-conf-take-medic']} ${style['confirm-data-group']}`} style={{
+                                                            margin: '20px 0'
+                                                        }}>
+                                                            <h1 className={style['title']} style={{
+                                                                margin: '0 10px'
+                                                            }}>
+                                                                Form Confirm to Take Medicine
+                                                            </h1>
 
-                                                <div className={style['form-confirm']}>
-                                                    <div className={style['input']}>
-                                                        {/* select doctor */}
-                                                        <SelectCategory
-                                                            styleWrapp={{
-                                                                margin: '0px 0'
-                                                            }}
-                                                            styleTitle={{
-                                                                fontSize: '13px'
-                                                            }}
-                                                            titleCtg="Doctor Specialist"
-                                                            idSelect="chooseSpecialist"
-                                                            handleCategory={handleChooseSpecialist}
-                                                            dataBlogCategory={getAllDoctorSpecialist()}
-                                                        />
-                                                    </div>
-                                                    <div className={style['input']}>
-                                                        <Input
-                                                            {...propsInputEdit}
-                                                            {...propsErrMsg}
-                                                            type='text'
-                                                            nameInput='doctorSpecialist'
-                                                            placeholder='doctor specialist...'
-                                                            valueInput={chooseSpecialist?.specialist !== null ? chooseSpecialist?.specialist : ''}
-                                                            title='Doctor Specialist'
-                                                            readOnly={true}
-                                                            errorMessage={errSubmitConfPatient?.doctorSpecialist}
-                                                        />
-                                                    </div>
-                                                    <div className={style['input']}>
-                                                        {/* select day on appointment date patient */}
-                                                        <SelectCategory
-                                                            styleWrapp={{
-                                                                margin: '0px 0'
-                                                            }}
-                                                            styleTitle={{
-                                                                fontSize: '13px'
-                                                            }}
-                                                            titleCtg="Doctor Schedule"
-                                                            idSelect="chooseDayConf"
-                                                            handleCategory={handleChooseDay}
-                                                            dataBlogCategory={listChooseDay}
-                                                        />
-                                                    </div>
-                                                    <div className={style['input']}>
-                                                        <Input
-                                                            {...propsInputEdit}
-                                                            {...propsErrMsg}
-                                                            type='text'
-                                                            nameInput='chooseDayConf'
-                                                            placeholder='Choose Day'
-                                                            valueInput={chooseDayConf?.title ? chooseDayConf.title : ''}
-                                                            title='Choose Day'
-                                                            readOnly={true}
-                                                            errorMessage={errSubmitConfPatient?.chooseDayConf}
-                                                        />
-                                                    </div>
-                                                    <div className={style['input']}>
-                                                        {/* select doctor */}
-                                                        <SelectCategory
-                                                            styleWrapp={{
-                                                                margin: '0px 0'
-                                                            }}
-                                                            styleTitle={{
-                                                                fontSize: '13px'
-                                                            }}
-                                                            titleCtg="Choose a Doctor"
-                                                            idSelect="chooseDoctors"
-                                                            handleCategory={handleChooseDoctors}
-                                                            dataBlogCategory={listDoctorOnSpecialist}
-                                                        />
-                                                    </div>
-                                                    <div className={style['input']}>
-                                                        <Input
-                                                            {...propsInputEdit}
-                                                            {...propsErrMsg}
-                                                            type='text'
-                                                            nameInput='nameDoctor'
-                                                            placeholder='doctor name...'
-                                                            valueInput={chooseDoctor?.name ? chooseDoctor?.name : ''}
-                                                            title='Doctor Name'
-                                                            readOnly={true}
-                                                            errorMessage={errSubmitConfPatient?.nameDoctor}
-                                                        />
-                                                    </div>
-                                                    {/* select room */}
-                                                    {/* <div className={style['input']}>
+                                                            <CardPatientRegisData
+                                                                styleTitle={{
+                                                                    display: 'none',
+                                                                }}
+                                                                styleWrappDesc={{
+                                                                    display: 'none'
+                                                                }}
+                                                                styleWrapp={{
+                                                                    width: '100%',
+                                                                    margin: '20px 10px 0 10px'
+                                                                }}
+                                                            >
+                                                                <Input
+                                                                    {...propsInputEdit}
+                                                                    {...propsErrMsg}
+                                                                    styleInputText={{
+                                                                        display: 'none'
+                                                                    }}
+                                                                    styleTxtArea={{
+                                                                        display: 'flex'
+                                                                    }}
+                                                                    type='text'
+                                                                    nameTxtArea='message'
+                                                                    placeholderTxtArea={`Doctor's Prescription...`}
+                                                                    valueTxtArea={inputConfToLoket.message}
+                                                                    title={`Doctor's Prescription`}
+                                                                    changeTxtArea={handleChangeConfToLoket}
+                                                                    errorMessage={errMsgConfToLoket?.message}
+                                                                />
+                                                            </CardPatientRegisData>
+                                                            {/* select loket */}
+                                                            <CardPatientRegisData
+                                                                styleTitle={{
+                                                                    display: 'none',
+                                                                }}
+                                                                styleWrappDesc={{
+                                                                    display: 'none'
+                                                                }}
+                                                                styleWrapp={{
+                                                                    margin: '0px 10px 20px 10px'
+                                                                }}
+                                                            >
+                                                                <SelectCategory
+                                                                    styleWrapp={{
+                                                                        margin: '0px 0'
+                                                                    }}
+                                                                    styleTitle={{
+                                                                        fontSize: '13px'
+                                                                    }}
+                                                                    titleCtg="Select Counter"
+                                                                    idSelect="selectCounter"
+                                                                    handleCategory={handleSelectCounter}
+                                                                    dataBlogCategory={newLoket}
+                                                                />
+                                                            </CardPatientRegisData>
+                                                            <CardPatientRegisData
+                                                                title="Total Queue"
+                                                                desc={infoLoket?.totalQueue}
+                                                                styleWrapp={{
+                                                                    margin: '20px 10px 20px 10px'
+                                                                }}
+                                                            />
+                                                            <Button
+                                                                name="CONFIRM AT THE COUNTER"
+                                                                style={{
+                                                                    widh: 'auto',
+                                                                    margin: findCurrentPatientFinishTreatment?.id ? '0 auto' : '20px 0 0 0'
+                                                                }}
+                                                                click={handleSubmitConfToLoket}
+                                                                styleLoading={{
+                                                                    display: loadingSubmitConfToLoket ? 'flex' : 'none'
+                                                                }}
+                                                            />
+                                                            {!findCurrentPatientFinishTreatment?.id && (
+                                                                <Button
+                                                                    name="PATIENT NOT PRESENT"
+                                                                    classBtn="not-present-btn"
+                                                                    style={{
+                                                                        widh: 'auto',
+                                                                        margin: '20px 0 0 0'
+                                                                    }}
+                                                                    click={() => clickPresenceConfInfo('tidak hadir')}
+                                                                    styleLoading={{
+                                                                        display: loadingPatientNotPresentInCalling ? 'flex' : 'none',
+                                                                        backgroundColor: '#ff296d'
+                                                                    }}
+                                                                    styleLoadCircle={{
+                                                                        borderTopColor: '#ff296d'
+                                                                    }}
+                                                                />
+                                                            )}
+                                                        </div>
+                                                    </>
+                                                )}
+
+                                                {/* form confirm */}
+                                                {!patientData?.isConfirm?.id && !findCurrentPatientFinishTreatment?.id && (
+                                                    <>
+                                                        <h1 className={style['title-confirm']}>
+                                                            Form Confirmation
+                                                        </h1>
+
+                                                        <div className={style['form-confirm']}>
+                                                            <div className={style['input']}>
+                                                                {/* select doctor */}
+                                                                <SelectCategory
+                                                                    styleWrapp={{
+                                                                        margin: '0px 0'
+                                                                    }}
+                                                                    styleTitle={{
+                                                                        fontSize: '13px'
+                                                                    }}
+                                                                    titleCtg="Doctor Specialist"
+                                                                    idSelect="chooseSpecialist"
+                                                                    handleCategory={handleChooseSpecialist}
+                                                                    dataBlogCategory={getAllDoctorSpecialist()}
+                                                                />
+                                                            </div>
+                                                            <div className={style['input']}>
+                                                                <Input
+                                                                    {...propsInputEdit}
+                                                                    {...propsErrMsg}
+                                                                    type='text'
+                                                                    nameInput='doctorSpecialist'
+                                                                    placeholder='doctor specialist...'
+                                                                    valueInput={chooseSpecialist?.specialist !== null ? chooseSpecialist?.specialist : ''}
+                                                                    title='Doctor Specialist'
+                                                                    readOnly={true}
+                                                                    errorMessage={errSubmitConfPatient?.doctorSpecialist}
+                                                                />
+                                                            </div>
+                                                            <div className={style['input']}>
+                                                                {/* select day on appointment date patient */}
+                                                                <SelectCategory
+                                                                    styleWrapp={{
+                                                                        margin: '0px 0'
+                                                                    }}
+                                                                    styleTitle={{
+                                                                        fontSize: '13px'
+                                                                    }}
+                                                                    titleCtg="Doctor Schedule"
+                                                                    idSelect="chooseDayConf"
+                                                                    handleCategory={handleChooseDay}
+                                                                    dataBlogCategory={listChooseDay}
+                                                                />
+                                                            </div>
+                                                            <div className={style['input']}>
+                                                                <Input
+                                                                    {...propsInputEdit}
+                                                                    {...propsErrMsg}
+                                                                    type='text'
+                                                                    nameInput='chooseDayConf'
+                                                                    placeholder='Choose Day'
+                                                                    valueInput={chooseDayConf?.title ? chooseDayConf.title : ''}
+                                                                    title='Choose Day'
+                                                                    readOnly={true}
+                                                                    errorMessage={errSubmitConfPatient?.chooseDayConf}
+                                                                />
+                                                            </div>
+                                                            <div className={style['input']}>
+                                                                {/* select doctor */}
+                                                                <SelectCategory
+                                                                    styleWrapp={{
+                                                                        margin: '0px 0'
+                                                                    }}
+                                                                    styleTitle={{
+                                                                        fontSize: '13px'
+                                                                    }}
+                                                                    titleCtg="Choose a Doctor"
+                                                                    idSelect="chooseDoctors"
+                                                                    handleCategory={handleChooseDoctors}
+                                                                    dataBlogCategory={listDoctorOnSpecialist}
+                                                                />
+                                                            </div>
+                                                            <div className={style['input']}>
+                                                                <Input
+                                                                    {...propsInputEdit}
+                                                                    {...propsErrMsg}
+                                                                    type='text'
+                                                                    nameInput='nameDoctor'
+                                                                    placeholder='doctor name...'
+                                                                    valueInput={chooseDoctor?.name ? chooseDoctor?.name : ''}
+                                                                    title='Doctor Name'
+                                                                    readOnly={true}
+                                                                    errorMessage={errSubmitConfPatient?.nameDoctor}
+                                                                />
+                                                            </div>
+                                                            {/* select room */}
+                                                            {/* <div className={style['input']}>
                                                         <SelectCategory
                                                             idSelect="chooseRoom"
                                                             styleWrapp={{
@@ -3156,479 +3183,485 @@ function PersonalDataRegistration() {
                                                             dataBlogCategory={roomDiseaseType}
                                                         />
                                                     </div> */}
-                                                    <div className={style['input']}>
-                                                        <Input
-                                                            {...propsInputEdit}
-                                                            {...propsErrMsg}
-                                                            type='text'
-                                                            nameInput='practiceHours'
-                                                            placeholder='Practice Hours...'
-                                                            valueInput={practiceHoursDoc !== null ? practiceHoursDoc : ''}
-                                                            title='Practice Hours'
-                                                            readOnly={true}
-                                                            errorMessage={errSubmitConfPatient?.practiceHours}
-                                                        />
-                                                    </div>
-                                                    <div className={style['input']}>
-                                                        <Input
-                                                            {...propsInputEdit}
-                                                            {...propsErrMsg}
-                                                            type='text'
-                                                            nameInput='roomName'
-                                                            placeholder='room name...'
-                                                            valueInput={chooseDoctor?.room ? chooseDoctor.room : ''}
-                                                            title='Room Name'
-                                                            readOnly={true}
-                                                            errorMessage={errSubmitConfPatient?.roomName}
-                                                        />
-                                                    </div>
-                                                    <div className={style['input']} style={{
-                                                        width: '100%'
-                                                    }}>
-                                                        <Input
-                                                            {...propsInputEdit}
-                                                            {...propsErrMsg}
-                                                            type='text'
-                                                            nameInput='appointedDay'
-                                                            placeholder='Appointed Day...'
-                                                            valueInput={`${dataServicingHours?.day} (${dataServicingHours?.time})`}
-                                                            title='Appointed Day'
-                                                            readOnly={true}
-                                                        // errorMessage={errSubmitConfPatient?.roomName}
-                                                        />
-                                                    </div>
-                                                    {checkCurrentDSOnDayAppointment && chooseDoctor?.id && (
-                                                        <>
                                                             <div className={style['input']}>
                                                                 <Input
                                                                     {...propsInputEdit}
                                                                     {...propsErrMsg}
                                                                     type='text'
-                                                                    nameInput='totalPatients'
-                                                                    placeholder='total patient...'
-                                                                    valueInput={patientOfCurrentDiseaseT?.length}
-                                                                    title='Total Number of Patients in this Room'
+                                                                    nameInput='practiceHours'
+                                                                    placeholder='Practice Hours...'
+                                                                    valueInput={practiceHoursDoc !== null ? practiceHoursDoc : ''}
+                                                                    title='Practice Hours'
+                                                                    readOnly={true}
+                                                                    errorMessage={errSubmitConfPatient?.practiceHours}
+                                                                />
+                                                            </div>
+                                                            <div className={style['input']}>
+                                                                <Input
+                                                                    {...propsInputEdit}
+                                                                    {...propsErrMsg}
+                                                                    type='text'
+                                                                    nameInput='roomName'
+                                                                    placeholder='room name...'
+                                                                    valueInput={chooseDoctor?.room ? chooseDoctor.room : ''}
+                                                                    title='Room Name'
+                                                                    readOnly={true}
+                                                                    errorMessage={errSubmitConfPatient?.roomName}
+                                                                />
+                                                            </div>
+                                                            <div className={style['input']} style={{
+                                                                width: '100%'
+                                                            }}>
+                                                                <Input
+                                                                    {...propsInputEdit}
+                                                                    {...propsErrMsg}
+                                                                    type='text'
+                                                                    nameInput='appointedDay'
+                                                                    placeholder='Appointed Day...'
+                                                                    valueInput={`${dataServicingHours?.day} (${dataServicingHours?.time})`}
+                                                                    title='Appointed Day'
                                                                     readOnly={true}
                                                                 // errorMessage={errSubmitConfPatient?.roomName}
                                                                 />
                                                             </div>
-                                                            <div className={style['input']}>
+                                                            {checkCurrentDSOnDayAppointment && chooseDoctor?.id && (
+                                                                <>
+                                                                    <div className={style['input']}>
+                                                                        <Input
+                                                                            {...propsInputEdit}
+                                                                            {...propsErrMsg}
+                                                                            type='text'
+                                                                            nameInput='totalPatients'
+                                                                            placeholder='total patient...'
+                                                                            valueInput={patientOfCurrentDiseaseT?.length}
+                                                                            title='Total Number of Patients in this Room'
+                                                                            readOnly={true}
+                                                                        // errorMessage={errSubmitConfPatient?.roomName}
+                                                                        />
+                                                                    </div>
+                                                                    <div className={style['input']}>
+                                                                        <Input
+                                                                            {...propsInputEdit}
+                                                                            {...propsErrMsg}
+                                                                            type='text'
+                                                                            nameInput='treatmentHours'
+                                                                            placeholder='Treatment hours...'
+                                                                            valueInput={inputConfirm.treatmentHours}
+                                                                            title={`Treatment Hours "Example" (08:00 - 10:00)`}
+                                                                            changeInput={handleChangeInputConfirm}
+                                                                            errorMessage={errSubmitConfPatient?.treatmentHours}
+                                                                        />
+                                                                    </div>
+                                                                </>
+                                                            )}
+                                                            <div className={style['input']} style={{
+                                                                flexDirection: 'row',
+                                                                justifyContent: 'flex-start'
+                                                            }}>
+                                                                <Button
+                                                                    name="CONFIRM PATIENT"
+                                                                    style={{
+                                                                        width: 'auto',
+                                                                        margin: '0 0 10px 0'
+                                                                    }}
+                                                                    click={submitConfirmPatient}
+                                                                    styleLoading={{
+                                                                        display: loadingSubmitConfPatient ? 'flex' : 'none'
+                                                                    }}
+                                                                />
+                                                            </div>
+                                                            <div className={style['input']} style={{
+                                                                flexDirection: 'row',
+                                                                justifyContent: 'flex-end'
+                                                            }}>
+                                                                <Button
+                                                                    name="CANCEL REGISTRATION"
+                                                                    style={{
+                                                                        width: 'auto',
+                                                                        margin: '0 0 10px 0'
+                                                                    }}
+                                                                    click={clickCancelRegistration}
+                                                                    styleLoading={{
+                                                                        display: loadingSubmitConfPatient ? 'flex' : 'none',
+                                                                        backgroundColor: '#ff296d'
+                                                                    }}
+                                                                    classBtn="not-present-btn"
+                                                                    styleLoadCircle={{
+                                                                        borderTopColor: '#ff296d'
+                                                                    }}
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    </>
+                                                )}
+                                            </>
+                                        )}
+                                    </div>
+
+                                    {/* info pasien di loket */}
+                                    {params.length === 8 && (
+                                        <>
+                                            <h1 className={style['title']} style={{
+                                                margin: '50px 0 0 0',
+                                                fontSize: '28px'
+                                            }}>
+                                                <span className={style['patient-of']}>Counter From</span>
+                                                <span className={style['name']}>
+                                                    {findPatientInLoket?.loketName}
+                                                </span>
+                                            </h1>
+
+                                            <div className={style['white-content']}>
+                                                {/* confirm info */}
+                                                <div className={style['confirm-info']}>
+                                                    {findPatientInLoket?.isConfirm?.confirmState && (
+                                                        <>
+                                                            <HeadConfirmInfo
+                                                                icon="fa-solid fa-circle-check"
+                                                                styleTitle={{
+                                                                    color: '#288bbc'
+                                                                }}
+                                                                desc="Confirmed"
+                                                            />
+                                                        </>
+                                                    )}
+                                                    {!findPatientInLoket?.isConfirm?.confirmState && (
+                                                        <>
+                                                            <HeadConfirmInfo
+                                                                icon="fa-sharp fa-solid fa-circle-exclamation"
+                                                                styleTitle={{
+                                                                    color: '#ff296d'
+                                                                }}
+                                                                desc="Not yet confirmed"
+                                                            />
+                                                        </>
+                                                    )}
+                                                </div>
+
+                                                <h1 className={style['title-info']}>
+                                                    Information Counter
+                                                </h1>
+
+                                                {/* data info patient in the counter*/}
+                                                {findPatientInLoket ? (
+                                                    <>
+                                                        <div className={style['data']}>
+                                                            <CardPatientRegisData
+                                                                title="Queue Number"
+                                                                desc={findPatientInLoket.queueNumber}
+                                                                styleIcon={{
+                                                                    display: 'flex'
+                                                                }}
+                                                                icon='fa-solid fa-id-card'
+                                                                styleDesc={{
+                                                                    color: '#288bbc',
+                                                                }}
+                                                            />
+                                                            <CardPatientRegisData
+                                                                title="Patient Name"
+                                                                desc={findPatientInLoket.patientName}
+                                                            />
+                                                            <CardPatientRegisData
+                                                                title="Presence State"
+                                                                desc={findPatientInLoket.presence?.toUpperCase()}
+                                                                styleDesc={{
+                                                                    color: '#f85084',
+                                                                    fontWeight: 'bold'
+                                                                }}
+                                                            />
+                                                            <CardPatientRegisData
+                                                                title="Doctor's Prescription"
+                                                                desc={findPatientInLoket.message}
+                                                            />
+                                                            <CardPatientRegisData
+                                                                title="Hours Submitted"
+                                                                desc={findPatientInLoket?.submitHours}
+                                                                styleIcon={{
+                                                                    display: 'flex'
+                                                                }}
+                                                                icon='fa-solid fa-clock'
+                                                            />
+                                                            <CardPatientRegisData
+                                                                title="Submission Date"
+                                                                firstDesc={makeNormalDateOnPatientInfo(findPatientInLoket?.submissionDate)}
+                                                                desc={findPatientInLoket?.submissionDate}
+                                                                styleFirstDesc={{
+                                                                    marginBottom: '5px',
+                                                                    fontSize: '14px',
+                                                                    fontWeight: 'bold',
+                                                                    color: '#495057'
+                                                                }}
+                                                                styleDesc={{
+                                                                    fontSize: '12px',
+                                                                }}
+                                                            />
+                                                            {findPatientInLoket?.isConfirm?.confirmState === false && (
+                                                                <CardPatientRegisData
+                                                                    title="Status"
+                                                                    desc={findPatientInLoket?.submissionDate === currentDate ? 'IN PROGRESS' : 'EXPIRED'}
+                                                                    styleDesc={{
+                                                                        color: findPatientInLoket?.submissionDate === currentDate ? '#288bbc' : '#ff296d',
+                                                                        fontWeight: 'bold'
+                                                                    }}
+                                                                />
+                                                            )}
+                                                            {/* <CardPatientRegisData
+                                                        title="Disease Type"
+                                                        desc={patientData?.jenisPenyakit}
+                                                    /> */}
+                                                            <CardPatientRegisData
+                                                                title="Counter Name"
+                                                                desc={findPatientInLoket.loketName}
+                                                            />
+                                                        </div>
+                                                    </>
+                                                ) : (
+                                                    <></>
+                                                )}
+
+                                                {/* form confirm patient finished treatment */}
+                                                {!findPatientInLoket?.isConfirm?.confirmState && (
+                                                    <>
+                                                        <div className={`${style['form-conf-take-medic']} ${style['confirm-data-group']}`} style={{
+                                                            margin: '20px 0'
+                                                        }}>
+                                                            <h1 className={style['title']} style={{
+                                                                margin: '0 10px'
+                                                            }}>
+                                                                Form Confirmation
+                                                            </h1>
+
+                                                            {/* select loket */}
+                                                            <CardPatientRegisData
+                                                                styleTitle={{
+                                                                    display: 'none',
+                                                                }}
+                                                                styleWrappDesc={{
+                                                                    display: 'none'
+                                                                }}
+                                                                styleWrapp={{
+                                                                    width: '100%',
+                                                                    margin: '0px 10px 0px 10px'
+                                                                }}
+                                                            >
+                                                                <SelectCategory
+                                                                    styleWrapp={{
+                                                                        margin: '0px 0'
+                                                                    }}
+                                                                    styleTitle={{
+                                                                        fontSize: '13px'
+                                                                    }}
+                                                                    titleCtg="Select Payment Method"
+                                                                    idSelect="selectPaymentMethod"
+                                                                    handleCategory={handleSelectPaymentMethod}
+                                                                    dataBlogCategory={paymentMethod}
+                                                                />
+                                                            </CardPatientRegisData>
+
+                                                            <CardPatientRegisData
+                                                                styleTitle={{
+                                                                    display: 'none',
+                                                                }}
+                                                                styleWrappDesc={{
+                                                                    display: 'none'
+                                                                }}
+                                                                styleWrapp={{
+                                                                    margin: '20px 10px 0 10px'
+                                                                }}
+                                                            >
                                                                 <Input
                                                                     {...propsInputEdit}
                                                                     {...propsErrMsg}
                                                                     type='text'
-                                                                    nameInput='treatmentHours'
-                                                                    placeholder='Treatment hours...'
-                                                                    valueInput={inputConfirm.treatmentHours}
-                                                                    title={`Treatment Hours "Example" (08:00 - 10:00)`}
-                                                                    changeInput={handleChangeInputConfirm}
-                                                                    errorMessage={errSubmitConfPatient?.treatmentHours}
+                                                                    nameInput='paymentMethod'
+                                                                    placeholder='Payment Method...'
+                                                                    valueInput={inputConfFinishTreatment.paymentMethod}
+                                                                    title='Payment Method'
+                                                                    readOnly={true}
+                                                                    // changeInput={handleChangeInputConfirm}
+                                                                    errorMessage={errSubmitConfFinishTreatment?.paymentMethod}
+                                                                />
+                                                            </CardPatientRegisData>
+                                                            {inputConfFinishTreatment.paymentMethod.toLowerCase().includes('bpjs') && (
+                                                                <CardPatientRegisData
+                                                                    styleTitle={{
+                                                                        display: 'none',
+                                                                    }}
+                                                                    styleWrappDesc={{
+                                                                        display: 'none'
+                                                                    }}
+                                                                    styleWrapp={{
+                                                                        margin: '20px 10px 0 10px'
+                                                                    }}
+                                                                >
+                                                                    <Input
+                                                                        {...propsInputEdit}
+                                                                        {...propsErrMsg}
+                                                                        type='number'
+                                                                        nameInput='bpjsNumber'
+                                                                        placeholder='BPJS Number...'
+                                                                        valueInput={inputConfFinishTreatment.bpjsNumber}
+                                                                        title='BPJS Number'
+                                                                        changeInput={onChangeFormConfFinishTreatment}
+                                                                        errorMessage={errSubmitConfFinishTreatment?.bpjsNumber}
+                                                                    />
+                                                                </CardPatientRegisData>
+                                                            )}
+                                                            {!inputConfFinishTreatment.paymentMethod.toLowerCase().includes('bpjs') && (
+                                                                <CardPatientRegisData
+                                                                    styleTitle={{
+                                                                        display: 'none',
+                                                                    }}
+                                                                    styleWrappDesc={{
+                                                                        display: 'none'
+                                                                    }}
+                                                                    styleWrapp={{
+                                                                        margin: '20px 10px 0 10px'
+                                                                    }}
+                                                                >
+                                                                    <Input
+                                                                        {...propsInputEdit}
+                                                                        {...propsErrMsg}
+                                                                        type='number'
+                                                                        nameInput='totalCost'
+                                                                        placeholder='Total Cost...'
+                                                                        valueInput={inputConfFinishTreatment.totalCost}
+                                                                        title='Total Cost'
+                                                                        changeInput={onChangeFormConfFinishTreatment}
+                                                                        errorMessage={errSubmitConfFinishTreatment?.totalCost}
+                                                                    />
+                                                                </CardPatientRegisData>
+                                                            )}
+                                                            <div className="btn-finish-treatment" style={{
+                                                                width: '100%',
+                                                                justifyContent: !findCurrentPatientFinishTreatment?.id ? 'flex-start' : 'center'
+                                                            }}>
+                                                                <Button
+                                                                    name="FINISHED TREATMENT"
+                                                                    style={{
+                                                                        widh: 'auto',
+                                                                        margin: !findCurrentPatientFinishTreatment?.id ? 'auto 0' : 'auto'
+                                                                    }}
+                                                                    click={submitConfFinishTreatment}
+                                                                    styleLoading={{
+                                                                        display: loadingConfFinishTreatment ? 'flex' : 'none'
+                                                                    }}
                                                                 />
                                                             </div>
-                                                        </>
-                                                    )}
-                                                    <div className={style['input']} style={{
-                                                        flexDirection: 'row',
-                                                        justifyContent: 'flex-start'
-                                                    }}>
-                                                        <Button
-                                                            name="CONFIRM PATIENT"
-                                                            style={{
-                                                                width: 'auto',
-                                                                margin: '0 0 10px 0'
-                                                            }}
-                                                            click={submitConfirmPatient}
-                                                            styleLoading={{
-                                                                display: loadingSubmitConfPatient ? 'flex' : 'none'
-                                                            }}
-                                                        />
-                                                    </div>
-                                                    <div className={style['input']} style={{
-                                                        flexDirection: 'row',
-                                                        justifyContent: 'flex-end'
-                                                    }}>
-                                                        <Button
-                                                            name="CANCEL REGISTRATION"
-                                                            style={{
-                                                                width: 'auto',
-                                                                margin: '0 0 10px 0'
-                                                            }}
-                                                            click={clickCancelRegistration}
-                                                            styleLoading={{
-                                                                display: loadingSubmitConfPatient ? 'flex' : 'none',
-                                                                backgroundColor: '#ff296d'
-                                                            }}
-                                                            classBtn="not-present-btn"
-                                                            styleLoadCircle={{
-                                                                borderTopColor: '#ff296d'
-                                                            }}
-                                                        />
-                                                    </div>
-                                                </div>
-                                            </>
-                                        )}
-                                    </>
-                                )}
-                            </div>
+                                                            {!findCurrentPatientFinishTreatment?.id && (
+                                                                <div className="btn-not-present" style={{
+                                                                    display: 'flex',
+                                                                    width: '100%',
+                                                                    justifyContent: 'flex-end'
+                                                                }}>
+                                                                    <Button
+                                                                        name="PATIENT NOT PRESENT"
+                                                                        style={{
+                                                                            widh: 'auto',
+                                                                            margin: '20px 0 0 0'
+                                                                        }}
+                                                                        click={clickPatientNotPresentInCounter}
+                                                                        classBtn="not-present-btn"
+                                                                        styleLoading={{
+                                                                            display: loadingConfFinishTreatment ? 'flex' : 'none',
+                                                                            backgroundColor: '#ff296d'
+                                                                        }}
+                                                                        styleLoadCircle={{
+                                                                            borderTopColor: '#ff296d'
+                                                                        }}
+                                                                    />
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </>
+                                                )}
 
-                            {/* info pasien di loket */}
-                            {params.length === 8 && (
-                                <>
-                                    <h1 className={style['title']} style={{
-                                        margin: '50px 0 0 0',
-                                        fontSize: '28px'
-                                    }}>
-                                        <span className={style['patient-of']}>Counter From</span>
-                                        <span className={style['name']}>
-                                            {findPatientInLoket?.loketName}
-                                        </span>
-                                    </h1>
+                                                {findPatientInLoket?.isConfirm?.confirmState && (
+                                                    <>
+                                                        <h1 className={`${style['title']} ${style['patient-confirm-at-the-counter']}`} >
+                                                            Confirmation Data Information
+                                                        </h1>
 
-                                    <div className={style['white-content']}>
-                                        {/* confirm info */}
-                                        <div className={style['confirm-info']}>
-                                            {findPatientInLoket?.isConfirm?.confirmState && (
-                                                <>
-                                                    <HeadConfirmInfo
-                                                        icon="fa-solid fa-circle-check"
-                                                        styleTitle={{
-                                                            color: '#288bbc'
-                                                        }}
-                                                        desc="Confirmed"
-                                                    />
-                                                </>
-                                            )}
-                                            {!findPatientInLoket?.isConfirm?.confirmState && (
-                                                <>
-                                                    <HeadConfirmInfo
-                                                        icon="fa-sharp fa-solid fa-circle-exclamation"
-                                                        styleTitle={{
-                                                            color: '#ff296d'
-                                                        }}
-                                                        desc="Not yet confirmed"
-                                                    />
-                                                </>
-                                            )}
-                                        </div>
-
-                                        <h1 className={style['title-info']}>
-                                            Information Counter
-                                        </h1>
-
-                                        {/* data info patient in the counter*/}
-                                        {findPatientInLoket ? (
-                                            <>
-                                                <div className={style['data']}>
-                                                    <CardPatientRegisData
-                                                        title="Queue Number"
-                                                        desc={findPatientInLoket.queueNumber}
-                                                        styleIcon={{
-                                                            display: 'flex'
-                                                        }}
-                                                        icon='fa-solid fa-id-card'
-                                                        styleDesc={{
-                                                            color: '#288bbc',
-                                                        }}
-                                                    />
-                                                    <CardPatientRegisData
-                                                        title="Patient Name"
-                                                        desc={findPatientInLoket.patientName}
-                                                    />
-                                                    <CardPatientRegisData
-                                                        title="Presence State"
-                                                        desc={findPatientInLoket.presence?.toUpperCase()}
-                                                        styleDesc={{
-                                                            color: '#f85084',
-                                                            fontWeight: 'bold'
-                                                        }}
-                                                    />
-                                                    <CardPatientRegisData
-                                                        title="Doctor's Prescription"
-                                                        desc={findPatientInLoket.message}
-                                                    />
-                                                    <CardPatientRegisData
-                                                        title="Hours Submitted"
-                                                        desc={findPatientInLoket?.submitHours}
-                                                        styleIcon={{
-                                                            display: 'flex'
-                                                        }}
-                                                        icon='fa-solid fa-clock'
-                                                    />
-                                                    <CardPatientRegisData
-                                                        title="Submission Date"
-                                                        firstDesc={makeNormalDateOnPatientInfo(findPatientInLoket?.submissionDate)}
-                                                        desc={findPatientInLoket?.submissionDate}
-                                                        styleFirstDesc={{
-                                                            marginBottom: '5px',
-                                                            fontSize: '14px',
-                                                            fontWeight: 'bold',
-                                                            color: '#495057'
-                                                        }}
-                                                        styleDesc={{
-                                                            fontSize: '12px',
-                                                        }}
-                                                    />
-                                                    {findPatientInLoket?.isConfirm?.confirmState === false && (
-                                                        <CardPatientRegisData
-                                                            title="Status"
-                                                            desc={findPatientInLoket?.submissionDate === currentDate ? 'IN PROGRESS' : 'EXPIRED'}
-                                                            styleDesc={{
-                                                                color: findPatientInLoket?.submissionDate === currentDate ? '#288bbc' : '#ff296d',
-                                                                fontWeight: 'bold'
-                                                            }}
-                                                        />
-                                                    )}
-                                                    {/* <CardPatientRegisData
-                                                        title="Disease Type"
-                                                        desc={patientData?.jenisPenyakit}
-                                                    /> */}
-                                                    <CardPatientRegisData
-                                                        title="Counter Name"
-                                                        desc={findPatientInLoket.loketName}
-                                                    />
-                                                </div>
-                                            </>
-                                        ) : (
-                                            <></>
-                                        )}
-
-                                        {/* form confirm patient finished treatment */}
-                                        {!findPatientInLoket?.isConfirm?.confirmState && (
-                                            <>
-                                                <div className={`${style['form-conf-take-medic']} ${style['confirm-data-group']}`} style={{
-                                                    margin: '20px 0'
-                                                }}>
-                                                    <h1 className={style['title']} style={{
-                                                        margin: '0 10px'
-                                                    }}>
-                                                        Form Confirmation
-                                                    </h1>
-
-                                                    {/* select loket */}
-                                                    <CardPatientRegisData
-                                                        styleTitle={{
-                                                            display: 'none',
-                                                        }}
-                                                        styleWrappDesc={{
-                                                            display: 'none'
-                                                        }}
-                                                        styleWrapp={{
-                                                            width: '100%',
-                                                            margin: '0px 10px 0px 10px'
-                                                        }}
-                                                    >
-                                                        <SelectCategory
-                                                            styleWrapp={{
-                                                                margin: '0px 0'
-                                                            }}
-                                                            styleTitle={{
-                                                                fontSize: '13px'
-                                                            }}
-                                                            titleCtg="Select Payment Method"
-                                                            idSelect="selectPaymentMethod"
-                                                            handleCategory={handleSelectPaymentMethod}
-                                                            dataBlogCategory={paymentMethod}
-                                                        />
-                                                    </CardPatientRegisData>
-
-                                                    <CardPatientRegisData
-                                                        styleTitle={{
-                                                            display: 'none',
-                                                        }}
-                                                        styleWrappDesc={{
-                                                            display: 'none'
-                                                        }}
-                                                        styleWrapp={{
-                                                            margin: '20px 10px 0 10px'
-                                                        }}
-                                                    >
-                                                        <Input
-                                                            {...propsInputEdit}
-                                                            {...propsErrMsg}
-                                                            type='text'
-                                                            nameInput='paymentMethod'
-                                                            placeholder='Payment Method...'
-                                                            valueInput={inputConfFinishTreatment.paymentMethod}
-                                                            title='Payment Method'
-                                                            readOnly={true}
-                                                            // changeInput={handleChangeInputConfirm}
-                                                            errorMessage={errSubmitConfFinishTreatment?.paymentMethod}
-                                                        />
-                                                    </CardPatientRegisData>
-                                                    {inputConfFinishTreatment.paymentMethod.toLowerCase().includes('bpjs') && (
-                                                        <CardPatientRegisData
-                                                            styleTitle={{
-                                                                display: 'none',
-                                                            }}
-                                                            styleWrappDesc={{
-                                                                display: 'none'
-                                                            }}
-                                                            styleWrapp={{
-                                                                margin: '20px 10px 0 10px'
-                                                            }}
-                                                        >
-                                                            <Input
-                                                                {...propsInputEdit}
-                                                                {...propsErrMsg}
-                                                                type='number'
-                                                                nameInput='bpjsNumber'
-                                                                placeholder='BPJS Number...'
-                                                                valueInput={inputConfFinishTreatment.bpjsNumber}
-                                                                title='BPJS Number'
-                                                                changeInput={onChangeFormConfFinishTreatment}
-                                                                errorMessage={errSubmitConfFinishTreatment?.bpjsNumber}
-                                                            />
-                                                        </CardPatientRegisData>
-                                                    )}
-                                                    {!inputConfFinishTreatment.paymentMethod.toLowerCase().includes('bpjs') && (
-                                                        <CardPatientRegisData
-                                                            styleTitle={{
-                                                                display: 'none',
-                                                            }}
-                                                            styleWrappDesc={{
-                                                                display: 'none'
-                                                            }}
-                                                            styleWrapp={{
-                                                                margin: '20px 10px 0 10px'
-                                                            }}
-                                                        >
-                                                            <Input
-                                                                {...propsInputEdit}
-                                                                {...propsErrMsg}
-                                                                type='number'
-                                                                nameInput='totalCost'
-                                                                placeholder='Total Cost...'
-                                                                valueInput={inputConfFinishTreatment.totalCost}
-                                                                title='Total Cost'
-                                                                changeInput={onChangeFormConfFinishTreatment}
-                                                                errorMessage={errSubmitConfFinishTreatment?.totalCost}
-                                                            />
-                                                        </CardPatientRegisData>
-                                                    )}
-                                                    <div className="btn-finish-treatment" style={{
-                                                        width: '100%',
-                                                        justifyContent: !findCurrentPatientFinishTreatment?.id ? 'flex-start' : 'center'
-                                                    }}>
-                                                        <Button
-                                                            name="FINISHED TREATMENT"
-                                                            style={{
-                                                                widh: 'auto',
-                                                                margin: !findCurrentPatientFinishTreatment?.id ? 'auto 0' : 'auto'
-                                                            }}
-                                                            click={submitConfFinishTreatment}
-                                                            styleLoading={{
-                                                                display: loadingConfFinishTreatment ? 'flex' : 'none'
-                                                            }}
-                                                        />
-                                                    </div>
-                                                    {!findCurrentPatientFinishTreatment?.id && (
-                                                        <div className="btn-not-present" style={{
-                                                            display: 'flex',
-                                                            width: '100%',
-                                                            justifyContent: 'flex-end'
-                                                        }}>
-                                                            <Button
-                                                                name="PATIENT NOT PRESENT"
-                                                                style={{
-                                                                    widh: 'auto',
-                                                                    margin: '20px 0 0 0'
+                                                        <div className={style['data']}>
+                                                            <CardPatientRegisData
+                                                                title="Confirmation hour"
+                                                                desc={findPatientInLoket?.isConfirm?.confirmHour}
+                                                                styleIcon={{
+                                                                    display: 'flex'
                                                                 }}
-                                                                click={clickPatientNotPresentInCounter}
-                                                                classBtn="not-present-btn"
-                                                                styleLoading={{
-                                                                    display: loadingConfFinishTreatment ? 'flex' : 'none',
-                                                                    backgroundColor: '#ff296d'
+                                                                icon='fa-solid fa-clock'
+                                                                styleDesc={{
+                                                                    color: '#ffa500',
                                                                 }}
-                                                                styleLoadCircle={{
-                                                                    borderTopColor: '#ff296d'
+                                                            />
+                                                            <CardPatientRegisData
+                                                                title="Confirmed Date"
+                                                                icon="fa-solid fa-calendar-days"
+                                                                firstDesc={makeNormalDateOnPatientInfo(findPatientInLoket?.isConfirm?.dateConfirm)}
+                                                                desc={findPatientInLoket?.isConfirm?.dateConfirm}
+                                                                styleFirstDesc={{
+                                                                    marginBottom: '5px',
+                                                                    fontSize: '14px',
+                                                                    fontWeight: 'bold',
+                                                                    color: '#ffa500'
+                                                                }}
+                                                                styleIcon={{
+                                                                    display: 'flex'
+                                                                }}
+                                                                styleDesc={{
+                                                                    fontSize: '12px',
                                                                 }}
                                                             />
                                                         </div>
-                                                    )}
-                                                </div>
-                                            </>
-                                        )}
 
-                                        {findPatientInLoket?.isConfirm?.confirmState && (
-                                            <>
-                                                <h1 className={`${style['title']} ${style['patient-confirm-at-the-counter']}`} >
-                                                    Confirmation Data Information
-                                                </h1>
+                                                        <h1 className={`${style['title']} ${style['patient-payment-method']} ${style['title-confirm-loket']}`}>
+                                                            Payment Info
+                                                        </h1>
 
-                                                <div className={style['data']}>
-                                                    <CardPatientRegisData
-                                                        title="Confirmation hour"
-                                                        desc={findPatientInLoket?.isConfirm?.confirmHour}
-                                                        styleIcon={{
-                                                            display: 'flex'
-                                                        }}
-                                                        icon='fa-solid fa-clock'
-                                                        styleDesc={{
-                                                            color: '#ffa500',
-                                                        }}
-                                                    />
-                                                    <CardPatientRegisData
-                                                        title="Confirmed Date"
-                                                        icon="fa-solid fa-calendar-days"
-                                                        firstDesc={makeNormalDateOnPatientInfo(findPatientInLoket?.isConfirm?.dateConfirm)}
-                                                        desc={findPatientInLoket?.isConfirm?.dateConfirm}
-                                                        styleFirstDesc={{
-                                                            marginBottom: '5px',
-                                                            fontSize: '14px',
-                                                            fontWeight: 'bold',
-                                                            color: '#ffa500'
-                                                        }}
-                                                        styleIcon={{
-                                                            display: 'flex'
-                                                        }}
-                                                        styleDesc={{
-                                                            fontSize: '12px',
-                                                        }}
-                                                    />
-                                                </div>
+                                                        <div className={style['data']}>
+                                                            <CardPatientRegisData
+                                                                title="Payment Method"
+                                                                desc={findPatientInLoket?.isConfirm?.paymentInfo?.paymentMethod}
+                                                            />
+                                                            <CardPatientRegisData
+                                                                title="BPJS Number"
+                                                                desc={findPatientInLoket?.isConfirm?.paymentInfo?.bpjsNumber}
+                                                                styleWrapp={{
+                                                                    display: findPatientInLoket?.isConfirm?.paymentInfo?.paymentMethod?.toLowerCase()?.includes('bpjs') ? 'flex' : 'none'
+                                                                }}
+                                                            />
+                                                            {!findPatientInLoket?.isConfirm?.paymentInfo?.paymentMethod?.toLowerCase()?.includes('bpjs') && (
+                                                                <CardPatientRegisData
+                                                                    title="Total Cost"
+                                                                    desc={findPatientInLoket?.isConfirm?.paymentInfo?.paymentMethod !== '-' ? numberFormatIndo(findPatientInLoket?.isConfirm?.paymentInfo?.totalCost) : '-'}
+                                                                />
+                                                            )}
+                                                        </div>
 
-                                                <h1 className={`${style['title']} ${style['patient-payment-method']} ${style['title-confirm-loket']}`}>
-                                                    Payment Info
-                                                </h1>
+                                                        <h1 className={`${style['title']} ${style['confirm-admin-information']} ${style['title-confirm-loket']}`}>
+                                                            Confirmation Admin Information
+                                                        </h1>
 
-                                                <div className={style['data']}>
-                                                    <CardPatientRegisData
-                                                        title="Payment Method"
-                                                        desc={findPatientInLoket?.isConfirm?.paymentInfo?.paymentMethod}
-                                                    />
-                                                    <CardPatientRegisData
-                                                        title="BPJS Number"
-                                                        desc={findPatientInLoket?.isConfirm?.paymentInfo?.bpjsNumber}
-                                                        styleWrapp={{
-                                                            display: findPatientInLoket?.isConfirm?.paymentInfo?.paymentMethod?.toLowerCase()?.includes('bpjs') ? 'flex' : 'none'
-                                                        }}
-                                                    />
-                                                    {!findPatientInLoket?.isConfirm?.paymentInfo?.paymentMethod?.toLowerCase()?.includes('bpjs') && (
-                                                        <CardPatientRegisData
-                                                            title="Total Cost"
-                                                            desc={findPatientInLoket?.isConfirm?.paymentInfo?.paymentMethod !== '-' ? numberFormatIndo(findPatientInLoket?.isConfirm?.paymentInfo?.totalCost) : '-'}
-                                                        />
-                                                    )}
-                                                </div>
-
-                                                <h1 className={`${style['title']} ${style['confirm-admin-information']} ${style['title-confirm-loket']}`}>
-                                                    Confirmation Admin Information
-                                                </h1>
-
-                                                <div className={style['data']}>
-                                                    <CardPatientRegisData
-                                                        title="Admin Email"
-                                                        desc={findPatientInLoket?.isConfirm?.emailAdmin}
-                                                    />
-                                                    <CardPatientRegisData
-                                                        title="Admin Name"
-                                                        desc={findPatientInLoket?.isConfirm?.nameAdmin}
-                                                    />
-                                                </div>
-                                            </>
-                                        )}
-                                    </div>
+                                                        <div className={style['data']}>
+                                                            <CardPatientRegisData
+                                                                title="Admin Email"
+                                                                desc={findPatientInLoket?.isConfirm?.emailAdmin}
+                                                            />
+                                                            <CardPatientRegisData
+                                                                title="Admin Name"
+                                                                desc={findPatientInLoket?.isConfirm?.nameAdmin}
+                                                            />
+                                                        </div>
+                                                    </>
+                                                )}
+                                            </div>
+                                        </>
+                                    )}
                                 </>
+                            ) : (
+                                <div className={style['white-content']}>
+                                    <h1>No Patient Data</h1>
+                                </div>
                             )}
                         </div>
                     </div>

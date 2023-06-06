@@ -116,8 +116,8 @@ function NavLeftMobile() {
                             <Image
                                 src={logoweb}
                                 alt='admin hospice medical'
-                                height={30}
-                                width={30}
+                                height={40}
+                                width={40}
                             />
                         ) : (
                             <ShineLoading
@@ -130,9 +130,9 @@ function NavLeftMobile() {
                             />
                         )}
 
-                        <h1 className={style['title']}>
+                        {/* <h1 className={style['title']}>
                             Admin HM
-                        </h1>
+                        </h1> */}
                     </Link>
                 </div>
                 <div className={style['container-scroll']}>
@@ -172,7 +172,7 @@ function NavLeftMobile() {
                 </div>
                 <div className={style['copy-right']}>
                     <h1 className={style['title']}>Created by</h1>
-                    <span className={style['name-created']}>Q&Q_Espy™</span>
+                    <span className={style['name-created']}>Ridwan</span>
                 </div>
             </div>
             {/* overlay */}

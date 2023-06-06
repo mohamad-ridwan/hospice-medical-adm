@@ -543,6 +543,9 @@ function ConfirmationPatient() {
                         styleEdit={{
                           display: 'none'
                         }}
+                        styleDelete={{
+                          display: 'none'
+                        }}
                         styleLoadingCircle={{
                           display: idDataRegisForUpdt === item.id && loadingSubmit ? 'flex' : 'none'
                         }}

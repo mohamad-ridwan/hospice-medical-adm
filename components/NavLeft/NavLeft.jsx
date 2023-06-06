@@ -119,8 +119,8 @@ function NavLeft() {
                         <Image
                             src={logoweb}
                             alt='admin hospice medical'
-                            height={30}
-                            width={30}
+                            height={40}
+                            width={40}
                         />
                     ) : (
                         <ShineLoading
@@ -133,14 +133,14 @@ function NavLeft() {
                         />
                     )}
 
-                    <h1 className={style['title']} style={{
+                    {/* <h1 className={style['title']} style={{
                         opacity: onNavLeft ? '0' : '1',
                         transition: onNavLeft ? '0s' : '0.2s ease',
                         transitionDelay: onNavLeft ? '0ms' : '200ms',
                         whiteSpace: onNavLeft ? 'nowrap' : 'normal'
                     }}>
                         Admin HM
-                    </h1>
+                    </h1> */}
                 </Link>
             </div>
             <div className={style['container-scroll']}>
@@ -189,7 +189,7 @@ function NavLeft() {
                 display: onNavLeft ? 'none' : 'flex',
             }}>
                 <h1 className={style['title']}>Created by</h1>
-                <span className={style['name-created']}>Q&Q_Espy™</span>
+                <span className={style['name-created']}>Ridwan</span>
             </div>
             <button className={style['btn-on-nav']}
                 onClick={handleOnNavLeft}

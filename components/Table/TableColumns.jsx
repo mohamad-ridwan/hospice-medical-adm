@@ -6,6 +6,7 @@ function TableColumns({
     clickDelete,
     styleWrappBtn,
     styleEdit,
+    styleDelete,
     classWrapp,
     styleLoadingCircle,
     styleIconDelete
@@ -23,6 +24,7 @@ function TableColumns({
                 </button>
                 <button className={`${style['edit']} ${style['delete']}`}
                 onClick={clickDelete}
+                style={styleDelete}
                 >
                     <div className={style['loading-circle']} style={styleLoadingCircle}>
 

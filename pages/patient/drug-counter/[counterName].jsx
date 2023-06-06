@@ -152,11 +152,15 @@ function DetailCounter() {
             elementTHead = document.getElementById(`tHead1`)
             elementTHead.style.width = 'calc(100%/7)'
             elementTHead = document.getElementById(`tHead2`)
-            elementTHead.style.width = 'calc(100%/8)'
+            elementTHead.style.width = 'calc(100%/10)'
             elementTHead = document.getElementById(`tHead3`)
-            elementTHead.style.width = 'calc(100%/6)'
+            elementTHead.style.width = 'calc(100%/9)'
             elementTHead = document.getElementById(`tHead4`)
+            elementTHead.style.width = 'calc(100%/6)'
+            elementTHead = document.getElementById(`tHead5`)
             elementTHead.style.width = 'calc(100%/8)'
+            elementTHead = document.getElementById(`tHead6`)
+            elementTHead.style.width = 'calc(100%/10)'
         }
         if (elementTData) {
             for (let i = 0; i < getLoket?.length; i++) {
@@ -165,11 +169,15 @@ function DetailCounter() {
                 elementTData = document.getElementById(`tData${i}1`)
                 elementTData.style.width = 'calc(100%/7)'
                 elementTData = document.getElementById(`tData${i}2`)
-                elementTData.style.width = 'calc(100%/8)'
+                elementTData.style.width = 'calc(100%/10)'
                 elementTData = document.getElementById(`tData${i}3`)
-                elementTData.style.width = 'calc(100%/6)'
+                elementTData.style.width = 'calc(100%/9)'
                 elementTData = document.getElementById(`tData${i}4`)
+                elementTData.style.width = 'calc(100%/6)'
+                elementTData = document.getElementById(`tData${i}5`)
                 elementTData.style.width = 'calc(100%/8)'
+                elementTData = document.getElementById(`tData${i}6`)
+                elementTData.style.width = 'calc(100%/10)'
             }
         }
     }
@@ -262,6 +270,9 @@ function DetailCounter() {
                                         <button key={index} className={style['columns-data']} onClick={() => toPage(pathUrlToDataDetail)}>
                                             <TableColumns
                                                 styleEdit={{
+                                                    display: 'none'
+                                                }}
+                                                styleDelete={{
                                                     display: 'none'
                                                 }}
                                                 styleLoadingCircle={{
