@@ -26,6 +26,9 @@ function DetailCounter() {
             name: 'Patient Name'
         },
         {
+            name: 'Status'
+        },
+        {
             name: 'Counter Name'
         },
         {
@@ -58,6 +61,14 @@ function DetailCounter() {
     const { data: loketData, error: errLoketData, isLoading: loadLoketData } = useSwr(endpoint.getLoket())
     const findLoketPatientQueue = loketData?.data ? loketData.data.filter(item => item?.loketRules === 'patient-queue') : null
     const getCurrentLoket = findLoketPatientQueue?.length > 0 ? findLoketPatientQueue.filter(item => item.loketName === counterName && item?.isConfirm?.confirmState === false) : null
+
+    // now date
+    const newGetCurrentMonth = new Date().getMonth() + 1
+    const getCurrentMonth = newGetCurrentMonth.toString().length === 1 ? `0${newGetCurrentMonth}` : newGetCurrentMonth
+    const getCurrentDate = new Date().getDate().toString().length === 1 ? `0${new Date().getDate()}` : new Date().getDate()
+    const getCurrentYear = new Date().getFullYear()
+    const currentDate = `${getCurrentMonth}/${getCurrentDate}/${getCurrentYear}`
+
     const getLoket = getCurrentLoket?.length > 0 ? getCurrentLoket.map((item) => {
         const getEveryDetailPatient = userAppointmentData.filter(patient => patient.id === item.patientId)
 
@@ -74,6 +85,8 @@ function DetailCounter() {
             return !dateOfBirth ? `${getMonthOfAD} ${getDateOfAD} ${getYearOfAD}, ${getNameOfAD}` : `${getMonthOfAD} ${getDateOfAD} ${getYearOfAD}`
         }
 
+        const checkProgressPatient = item?.submissionDate === currentDate ? 'IN PROGRESS' : 'EXPIRED'
+
         return {
             _id: item._id,
             id: item.id,
@@ -86,6 +99,14 @@ function DetailCounter() {
                 },
                 {
                     name: item.patientName
+                },
+                {
+                    name: checkProgressPatient,
+                    fontSize: '11px',
+                    padding: '5.5px 8px',
+                    colorName: '#fff',
+                    borderRadius: '3px',
+                    background: checkProgressPatient === 'IN PROGRESS' ? '#288bbc' : '#ff296d'
                 },
                 {
                     name: item.loketName
@@ -270,7 +291,10 @@ function DetailCounter() {
                                                             }}
                                                             styleName={{
                                                                 fontSize: data?.fontSize,
-                                                                color: data?.colorName
+                                                                color: data?.colorName,
+                                                                padding: data?.padding,
+                                                                borderRadius: data?.borderRadius,
+                                                                background: data?.background
                                                             }}
                                                         />
                                                     )

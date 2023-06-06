@@ -34,13 +34,15 @@ function DrugCounter() {
     useEffect(() => {
         if (dataLoket?.data && newLoket?.length > 0) {
             const findLoket = newLoket[0]?.id
-            const findPatientInLoket = getPatientQueue.filter(patient => patient.loketName === findLoket && patient?.isConfirm?.confirmState === false)
-            const findTotalPatientToday = getPatientQueue.filter(patient => patient.loketName === findLoket && patient?.isConfirm?.confirmState && patient?.isConfirm?.dateConfirm === currentDate)
+            const findPatientInLoket = getPatientQueue?.filter(patient => patient.loketName === findLoket && patient?.submissionDate === currentDate && patient?.isConfirm?.confirmState === false)
+            const findTotalPatientToday = getPatientQueue?.filter(patient => patient.loketName === findLoket && patient?.isConfirm?.confirmState && patient?.submissionDate === currentDate && patient?.isConfirm?.dateConfirm === currentDate)
+            const findTotalExpired = getPatientQueue?.filter(patient => patient.loketName === findLoket && patient?.submissionDate !== currentDate && patient?.isConfirm?.confirmState === false)
             setChooseCounter({
                 id: 'patient-queue',
                 loketName: findLoket,
                 totalQueue: findPatientInLoket?.length,
-                totalPatientToday: findTotalPatientToday?.length
+                totalPatientToday: findTotalPatientToday?.length,
+                totalExpired: findTotalExpired?.length
             })
         }
     }, [dataLoket])
@@ -49,13 +51,15 @@ function DrugCounter() {
         const selectEl = document.getElementById('selectCounter')
         const id = selectEl.options[selectEl.selectedIndex].value
         if (id) {
-            const findPatientInLoket = getPatientQueue.filter(patient => patient.loketName === id && patient?.isConfirm?.confirmState === false)
-            const findTotalPatientToday = getPatientQueue.filter(patient => patient.loketName === id && patient?.isConfirm?.confirmState && patient?.isConfirm?.dateConfirm === currentDate)
+            const findPatientInLoket = getPatientQueue?.filter(patient => patient.loketName === id && patient?.submissionDate === currentDate && patient?.isConfirm?.confirmState === false)
+            const findTotalPatientToday = getPatientQueue?.filter(patient => patient.loketName === id && patient?.isConfirm?.confirmState && patient?.submissionDate === currentDate && patient?.isConfirm?.dateConfirm === currentDate)
+            const findTotalExpired = getPatientQueue?.filter(patient => patient.loketName === id && patient?.submissionDate !== currentDate && patient?.isConfirm?.confirmState === false)
             setChooseCounter({
                 id: 'patient-queue',
                 loketName: id,
                 totalQueue: findPatientInLoket?.length,
-                totalPatientToday: findTotalPatientToday?.length
+                totalPatientToday: findTotalPatientToday?.length,
+                totalExpired: findTotalExpired?.length
             })
         }
     }
@@ -90,7 +94,7 @@ function DrugCounter() {
                             />
                             <div className={style['total-patient-waiting']}>
                                 <p className={style['desc']}>
-                                    Total Patient Waiting :
+                                    Total Patient Waiting Today :
                                 </p>
                                 <span className={style['number']}>
                                     {chooseCounter?.totalQueue}
@@ -98,10 +102,18 @@ function DrugCounter() {
                             </div>
                             <div className={`${style['total-patient-waiting']} total-patient-at-the-counter-today`}>
                                 <p className={style['desc']}>
-                                    Finished Taking Medicine Today :
+                                    Has been Confirmed Today :
                                 </p>
                                 <span className={style['number']}>
                                     {chooseCounter?.totalPatientToday}
+                                </span>
+                            </div>
+                            <div className={`${style['total-patient-waiting']} total-patient-expired-at-the-counter`}>
+                                <p className={style['desc']}>
+                                    Total Expired Progress :
+                                </p>
+                                <span className={style['number']}>
+                                    {chooseCounter?.totalExpired}
                                 </span>
                             </div>
                             <Link href={`/patient/drug-counter/${chooseCounter?.loketName}`} style={{

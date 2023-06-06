@@ -556,8 +556,8 @@ function PersonalDataRegistration() {
     useEffect(() => {
         if (params?.length > 0 && dataLoket?.data && newLoket?.length > 0) {
             const findLoket = newLoket[0]?.id
-            const findPatientInLoket = getPatientQueue.filter(patient => patient.loketName === findLoket && patient?.isConfirm?.confirmState === false)
-            const findPatientToday = getPatientQueue.filter(patient => patient.loketName === findLoket && patient?.isConfirm?.confirmState && patient?.isConfirm?.dateConfirm === currentDate)
+            const findPatientInLoket = getPatientQueue.filter(patient => patient.loketName === findLoket && patient?.submissionDate === currentDate && patient?.isConfirm?.confirmState === false)
+            const findPatientToday = getPatientQueue.filter(patient => patient.loketName === findLoket && patient?.isConfirm?.confirmState && patient?.submissionDate === currentDate && patient?.isConfirm?.dateConfirm === currentDate)
             setInfoLoket({
                 id: 'patient-queue',
                 loketName: findLoket,
@@ -1382,7 +1382,7 @@ function PersonalDataRegistration() {
             const dateConfirm = `${nowMonth}/${getDate}/${getYear}`
             const confirmHour = `${nowHours}:${nowMinutes}`
 
-            const findLastPatientOfCurrentDate = patientOfCurrentDiseaseT?.length > 0 ? patientOfCurrentDiseaseT.filter((patient, idx)=>idx === 0) : []
+            const findLastPatientOfCurrentDate = patientOfCurrentDiseaseT?.length > 0 ? patientOfCurrentDiseaseT.filter((patient, idx) => idx === 0) : []
             const getQueueNumber = findLastPatientOfCurrentDate?.length === 1 ? parseInt(findLastPatientOfCurrentDate[0]?.isConfirm?.queueNumber) + 1 : 1
 
             const postData = {
@@ -1508,12 +1508,23 @@ function PersonalDataRegistration() {
 
     const pushToPostConfToLoket = () => {
         const { id, jenisPenyakit, patientName, emailAddress, phone } = patientData
+
+        const nowHours = `${new Date().getHours().toString().length === 1 ? `0${new Date().getHours()}` : new Date().getHours()}`
+        const nowMinutes = `${new Date().getMinutes().toString().length === 1 ? `0${new Date().getMinutes()}` : new Date().getMinutes()}`
+        const nowDate = `${new Date()}`
+        const getDate = nowDate.split(' ')[2]
+        const getYear = nowDate.split(' ')[3]
+        const getMonth = nowDate.split(' ')[1]
+        const findMonth = monthNames.findIndex(item => item === getMonth) + 1
+        const nowMonth = findMonth.toString().length === 1 ? `0${findMonth}` : findMonth
+        const dateConfirm = `${nowMonth}/${getDate}/${getYear}`
+        const confirmHour = `${nowHours}:${nowMinutes}`
+
         const data = {
             id: `${new Date().getTime()}`,
             loketRules: 'patient-queue',
             loketName: infoLoket?.loketName,
             patientId: id,
-            jenisPenyakit: jenisPenyakit,
             patientName: patientName,
             patientEmail: emailAddress,
             phone: phone,
@@ -1521,6 +1532,8 @@ function PersonalDataRegistration() {
             message: inputConfToLoket.message,
             emailAdmin: user?.email,
             presence: 'menunggu',
+            submissionDate: dateConfirm,
+            submitHours: confirmHour,
             isConfirm: {
                 confirmState: false
             }
@@ -1593,8 +1606,9 @@ function PersonalDataRegistration() {
         const selectEl = document.getElementById('selectCounter')
         const id = selectEl.options[selectEl.selectedIndex].value
         if (id) {
-            const findPatientInLoket = getPatientQueue.filter(patient => patient.loketName === id && patient?.isConfirm?.confirmState === false)
-            const findPatientToday = getPatientQueue.filter(patient => patient.loketName === id && patient?.isConfirm?.confirmState && patient?.isConfirm?.dateConfirm === currentDate)
+            const findPatientInLoket = getPatientQueue.filter(patient => patient.loketName === id && patient?.submissionDate === currentDate && patient?.isConfirm?.confirmState === false)
+            const findPatientToday = getPatientQueue.filter(patient => patient.loketName === id && patient?.isConfirm?.confirmState && patient?.submissionDate === currentDate && patient?.isConfirm?.dateConfirm === currentDate)
+
             setInfoLoket({
                 id: 'patient-queue',
                 loketName: id,
@@ -1667,7 +1681,7 @@ function PersonalDataRegistration() {
                                 const confirmHour = `${nowHours}:${nowMinutes}`
 
                                 const checkQueueNumber = patientOfCurrentDiseaseTForUpdtConfInfo?.length > 0 ? patientOfCurrentDiseaseTForUpdtConfInfo.filter(patient => patient?.id !== patientData?.id) : []
-                                const getQueueNumberOfCurrentPatient = checkQueueNumber?.length > 0 ? checkQueueNumber.filter((patient, idx)=>idx === 0) : []
+                                const getQueueNumberOfCurrentPatient = checkQueueNumber?.length > 0 ? checkQueueNumber.filter((patient, idx) => idx === 0) : []
                                 const queueNumber = getQueueNumberOfCurrentPatient?.length === 1 ? parseInt(getQueueNumberOfCurrentPatient[0]?.isConfirm?.queueNumber) + 1 : 1
 
                                 const { id, message, presence } = patientData?.isConfirm
@@ -3332,6 +3346,38 @@ function PersonalDataRegistration() {
                                                         title="Doctor's Prescription"
                                                         desc={findPatientInLoket.message}
                                                     />
+                                                    <CardPatientRegisData
+                                                        title="Hours Submitted"
+                                                        desc={findPatientInLoket?.submitHours}
+                                                        styleIcon={{
+                                                            display: 'flex'
+                                                        }}
+                                                        icon='fa-solid fa-clock'
+                                                    />
+                                                    <CardPatientRegisData
+                                                        title="Submission Date"
+                                                        firstDesc={makeNormalDateOnPatientInfo(findPatientInLoket?.submissionDate)}
+                                                        desc={findPatientInLoket?.submissionDate}
+                                                        styleFirstDesc={{
+                                                            marginBottom: '5px',
+                                                            fontSize: '14px',
+                                                            fontWeight: 'bold',
+                                                            color: '#495057'
+                                                        }}
+                                                        styleDesc={{
+                                                            fontSize: '12px',
+                                                        }}
+                                                    />
+                                                    {findPatientInLoket?.isConfirm?.confirmState === false && (
+                                                        <CardPatientRegisData
+                                                            title="Status"
+                                                            desc={findPatientInLoket?.submissionDate === currentDate ? 'IN PROGRESS' : 'EXPIRED'}
+                                                            styleDesc={{
+                                                                color: findPatientInLoket?.submissionDate === currentDate ? '#288bbc' : '#ff296d',
+                                                                fontWeight: 'bold'
+                                                            }}
+                                                        />
+                                                    )}
                                                     {/* <CardPatientRegisData
                                                         title="Disease Type"
                                                         desc={patientData?.jenisPenyakit}
@@ -3443,7 +3489,6 @@ function PersonalDataRegistration() {
                                                                 display: 'none'
                                                             }}
                                                             styleWrapp={{
-                                                                width: inputConfFinishTreatment.paymentMethod.toLowerCase().includes('bpjs') ? '100%' : '45%',
                                                                 margin: '20px 10px 0 10px'
                                                             }}
                                                         >
