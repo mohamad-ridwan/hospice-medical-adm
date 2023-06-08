@@ -100,52 +100,6 @@ function PatientRegistration() {
 
     const mailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/
 
-    const changeTableStyle = (dataColumnsBody) => {
-        if (dataColumnsBody?.length > 0) {
-            let elementTDataLoad = document.getElementById('tDataLoad00')
-            let elementTHead = document.getElementById('tHead0')
-            let elementTData = document.getElementById('tData00')
-            if (elementTDataLoad) {
-                for (let i = 0; i < loadTableScreen?.length; i++) {
-                    elementTDataLoad = document.getElementById(`tDataLoad${i}0`)
-                    elementTDataLoad.style.width = 'calc(100%/7)'
-                    elementTDataLoad = document.getElementById(`tDataLoad${i}1`)
-                    elementTDataLoad.style.width = 'calc(100%/8)'
-                    elementTDataLoad = document.getElementById(`tDataLoad${i}3`)
-                    elementTDataLoad.style.width = 'calc(100%/5)'
-                    elementTDataLoad = document.getElementById(`tDataLoad${i}5`)
-                    elementTDataLoad.style.width = 'calc(100%/8)'
-                }
-            }
-            if (elementTHead) {
-                elementTHead = document.getElementById(`tHead0`)
-                elementTHead.style.width = 'calc(100%/7)'
-                elementTHead = document.getElementById(`tHead1`)
-                elementTHead.style.width = 'calc(100%/7)'
-                elementTHead = document.getElementById(`tHead2`)
-                elementTHead.style.width = 'calc(100%/8)'
-                elementTHead = document.getElementById(`tHead3`)
-                elementTHead.style.width = 'calc(100%/5)'
-                elementTHead = document.getElementById(`tHead5`)
-                elementTHead.style.width = 'calc(100%/10)'
-            }
-            if (elementTData) {
-                for (let i = 0; i < dataColumnsBody?.length; i++) {
-                    elementTData = document.getElementById(`tData${i}0`)
-                    elementTData.style.width = 'calc(100%/7)'
-                    elementTData = document.getElementById(`tData${i}1`)
-                    elementTData.style.width = 'calc(100%/7)'
-                    elementTData = document.getElementById(`tData${i}2`)
-                    elementTData.style.width = 'calc(100%/8)'
-                    elementTData = document.getElementById(`tData${i}3`)
-                    elementTData.style.width = 'calc(100%/5)'
-                    elementTData = document.getElementById(`tData${i}5`)
-                    elementTData.style.width = 'calc(100%/10)'
-                }
-            }
-        }
-    }
-
     const findDataRegistration = () => {
         if (bookAnAppointment) {
             const userAppointmentData = bookAnAppointment.userAppointmentData
@@ -219,10 +173,7 @@ function PatientRegistration() {
                     setDataColumns(newData)
                     setTimeout(() => {
                         setLoadConditionTableScreen(false)
-                        setTimeout(() => {
-                            changeTableStyle(newData)
-                        }, 100);
-                    }, 1500)
+                    }, 500)
                 }
             } else {
                 setLoadConditionTableScreen(false)
@@ -243,12 +194,66 @@ function PatientRegistration() {
         }
     }, [dataService, dataFinishTreatment])
 
+    const changeTableStyle = (dataColumnsBody) => {
+        if (dataColumnsBody?.length > 0) {
+            let elementTDataLoad = document.getElementById('tDataLoad00')
+            let elementTHead = document.getElementById('tHead0')
+            let elementTData = document.getElementById('tData00')
+            if (elementTDataLoad) {
+                for (let i = 0; i < loadTableScreen?.length; i++) {
+                    elementTDataLoad = document.getElementById(`tDataLoad${i}0`)
+                    elementTDataLoad.style.width = 'calc(100%/7)'
+                    elementTDataLoad = document.getElementById(`tDataLoad${i}1`)
+                    elementTDataLoad.style.width = 'calc(100%/8)'
+                    elementTDataLoad = document.getElementById(`tDataLoad${i}3`)
+                    elementTDataLoad.style.width = 'calc(100%/5)'
+                    elementTDataLoad = document.getElementById(`tDataLoad${i}5`)
+                    elementTDataLoad.style.width = 'calc(100%/8)'
+                }
+            }
+            if (elementTHead) {
+                elementTHead = document.getElementById(`tHead0`)
+                elementTHead.style.width = 'calc(100%/7)'
+                elementTHead = document.getElementById(`tHead1`)
+                elementTHead.style.width = 'calc(100%/7)'
+                elementTHead = document.getElementById(`tHead2`)
+                elementTHead.style.width = 'calc(100%/8)'
+                elementTHead = document.getElementById(`tHead3`)
+                elementTHead.style.width = 'calc(100%/5)'
+                elementTHead = document.getElementById(`tHead5`)
+                elementTHead.style.width = 'calc(100%/10)'
+            }
+            if (elementTData) {
+                for (let i = 0; i < dataColumnsBody?.length; i++) {
+                    elementTData = document.getElementById(`tData${i}0`)
+                    elementTData.style.width = 'calc(100%/7)'
+                    elementTData = document.getElementById(`tData${i}1`)
+                    elementTData.style.width = 'calc(100%/7)'
+                    elementTData = document.getElementById(`tData${i}2`)
+                    elementTData.style.width = 'calc(100%/8)'
+                    elementTData = document.getElementById(`tData${i}3`)
+                    elementTData.style.width = 'calc(100%/5)'
+                    elementTData = document.getElementById(`tData${i}5`)
+                    elementTData.style.width = 'calc(100%/10)'
+                }
+            }
+        }
+    }
+
     let pageSize = 5
 
     const currentTableData = useMemo(() => {
         const firstPageIndex = (currentPage - 1) * 5
         const lastPageIndex = firstPageIndex + pageSize
         return dataColumns?.slice(firstPageIndex, lastPageIndex)
+    }, [currentPage, dataColumns])
+
+    useEffect(()=>{
+        if(currentTableData?.length > 0){
+            setTimeout(() => {
+                changeTableStyle(currentTableData)
+            }, 500)
+        }
     }, [currentPage, dataColumns])
 
     const propsInputEdit = {

@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from 'react'
+import { useState, useEffect, useContext, useMemo } from 'react'
 import Head from 'next/head'
 import { useRouter } from 'next/router'
 import style from 'styles/DetailCounter.module.scss'
@@ -16,8 +16,10 @@ import { dayNamesEng } from 'lib/namesOfCalendar/dayNamesEng'
 import { dayNamesInd } from 'lib/namesOfCalendar/dayNamesInd'
 import { monthNames } from 'lib/namesOfCalendar/monthNames'
 import monthNamesInd from 'lib/namesOfCalendar/monthNameInd'
+import Pagination from 'components/Pagination/Pagination'
 
 function DetailCounter() {
+    const [currentPage, setCurrentPage] = useState(1)
     const [head] = useState([
         {
             name: 'Queue Number'
@@ -142,6 +144,14 @@ function DetailCounter() {
         }
     }, [])
 
+    let pageSize = 5
+
+    const currentTableData = useMemo(() => {
+        const firstPageIndex = (currentPage - 1) * 5
+        const lastPageIndex = firstPageIndex + pageSize
+        return getLoket?.slice(firstPageIndex, lastPageIndex)
+    }, [currentPage, getLoket])
+
     const changeTableStyle = () => {
         let elementTHead = document.getElementById('tHead0')
         let elementTData = document.getElementById('tData00')
@@ -163,7 +173,7 @@ function DetailCounter() {
             elementTHead.style.width = 'calc(100%/10)'
         }
         if (elementTData) {
-            for (let i = 0; i < getLoket?.length; i++) {
+            for (let i = 0; i < currentTableData?.length; i++) {
                 elementTData = document.getElementById(`tData${i}0`)
                 elementTData.style.width = 'calc(100%/10)'
                 elementTData = document.getElementById(`tData${i}1`)
@@ -183,12 +193,12 @@ function DetailCounter() {
     }
 
     useEffect(() => {
-        if (getLoket?.length > 0) {
+        if (currentTableData?.length > 0) {
             setTimeout(() => {
                 changeTableStyle()
             }, 100);
         }
-    }, [getLoket])
+    }, [currentPage, currentTableData])
 
     const toPage = (path) => {
         router.push(path)
@@ -255,70 +265,78 @@ function DetailCounter() {
                             margin: '50px 0 0 0'
                         }}>
                             <TableBody>
-                                <TableHead
-                                    id='tHead'
-                                    data={head}
-                                    styleName={{
-                                        padding: '15px 8px'
-                                    }}
-                                />
+                                <div className={style['container-table-content']}>
+                                    <TableHead
+                                        id='tHead'
+                                        data={head}
+                                        styleName={{
+                                            padding: '15px 8px'
+                                        }}
+                                    />
 
-                                {getLoket.length > 0 ? getLoket.map((item, index) => {
-                                    const pathUrlToDataDetail = `/patient/patient-registration/personal-data/confirmed/${item.data[1]?.name}/${item.patientId}/counter/${counterName}/${item.confirmState ? 'confirmed' : 'not-yet-confirmed'}/${item.data[0]?.name}`
+                                    {currentTableData.length > 0 ? currentTableData.map((item, index) => {
+                                        const pathUrlToDataDetail = `/patient/patient-registration/personal-data/confirmed/${item.data[1]?.name}/${item.patientId}/counter/${counterName}/${item.confirmState ? 'confirmed' : 'not-yet-confirmed'}/${item.data[0]?.name}`
 
-                                    return (
-                                        <button key={index} className={style['columns-data']} onClick={() => toPage(pathUrlToDataDetail)}>
-                                            <TableColumns
-                                                styleEdit={{
-                                                    display: 'none'
-                                                }}
-                                                styleDelete={{
-                                                    display: 'none'
-                                                }}
-                                                styleLoadingCircle={{
-                                                    display: idDataRegisForUpdt === item._id && loadingSubmit ? 'flex' : 'none'
-                                                }}
-                                                styleIconDelete={{
-                                                    display: idDataRegisForUpdt === item._id && loadingSubmit ? 'none' : 'flex'
-                                                }}
-                                                clickDelete={(e) => {
-                                                    e.stopPropagation()
-                                                    clickDeletePersonalDataInCounter(item._id, item.patientId)
-                                                }}
-                                            >
-                                                {item.data.map((data, idx) => {
-                                                    return (
-                                                        <TableData
-                                                            key={idx}
-                                                            id={`tData${index}${idx}`}
-                                                            firstDesc={data?.firstDesc}
-                                                            name={data.name}
-                                                            styleWrapp={{
-                                                                cursor: 'pointer'
-                                                            }}
-                                                            styleFirstDesc={{
-                                                                color: data?.color,
-                                                                marginBottom: data?.marginBottom
-                                                            }}
-                                                            styleName={{
-                                                                fontSize: data?.fontSize,
-                                                                color: data?.colorName,
-                                                                padding: data?.padding,
-                                                                borderRadius: data?.borderRadius,
-                                                                background: data?.background
-                                                            }}
-                                                        />
-                                                    )
-                                                })}
-                                            </TableColumns>
-                                        </button>
-                                    )
-                                }) : (
-                                    <>
-                                        <p className={style['no-data']}>There is no queue of patients at the counter</p>
-                                    </>
-                                )}
+                                        return (
+                                            <button key={index} className={style['columns-data']} onClick={() => toPage(pathUrlToDataDetail)}>
+                                                <TableColumns
+                                                    styleEdit={{
+                                                        display: 'none'
+                                                    }}
+                                                    styleDelete={{
+                                                        display: 'none'
+                                                    }}
+                                                    styleLoadingCircle={{
+                                                        display: idDataRegisForUpdt === item._id && loadingSubmit ? 'flex' : 'none'
+                                                    }}
+                                                    styleIconDelete={{
+                                                        display: idDataRegisForUpdt === item._id && loadingSubmit ? 'none' : 'flex'
+                                                    }}
+                                                    clickDelete={(e) => {
+                                                        e.stopPropagation()
+                                                        clickDeletePersonalDataInCounter(item._id, item.patientId)
+                                                    }}
+                                                >
+                                                    {item.data.map((data, idx) => {
+                                                        return (
+                                                            <TableData
+                                                                key={idx}
+                                                                id={`tData${index}${idx}`}
+                                                                firstDesc={data?.firstDesc}
+                                                                name={data.name}
+                                                                styleWrapp={{
+                                                                    cursor: 'pointer'
+                                                                }}
+                                                                styleFirstDesc={{
+                                                                    color: data?.color,
+                                                                    marginBottom: data?.marginBottom
+                                                                }}
+                                                                styleName={{
+                                                                    fontSize: data?.fontSize,
+                                                                    color: data?.colorName,
+                                                                    padding: data?.padding,
+                                                                    borderRadius: data?.borderRadius,
+                                                                    background: data?.background
+                                                                }}
+                                                            />
+                                                        )
+                                                    })}
+                                                </TableColumns>
+                                            </button>
+                                        )
+                                    }) : (
+                                        <>
+                                            <p className={style['no-data']}>There is no queue of patients at the counter</p>
+                                        </>
+                                    )}
+                                </div>
                             </TableBody>
+                            <Pagination
+                                currentPage={currentPage}
+                                totalCount={getLoket?.length}
+                                pageSize={pageSize}
+                                onPageChange={(pageNumber) => setCurrentPage(pageNumber)}
+                            />
                         </TableContainer>
                     </div>
                 </div>

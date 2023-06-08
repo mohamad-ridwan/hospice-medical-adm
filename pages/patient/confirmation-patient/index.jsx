@@ -1,4 +1,4 @@
-import { useContext, useState, useEffect } from 'react'
+import { useContext, useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/router'
 import Head from 'next/head'
 import style from 'styles/ConfirmationPatient.module.scss'
@@ -19,8 +19,10 @@ import { dayNamesEng } from 'lib/namesOfCalendar/dayNamesEng'
 import { dayNamesInd } from 'lib/namesOfCalendar/dayNamesInd'
 import { monthNames } from 'lib/namesOfCalendar/monthNames'
 import monthNamesInd from 'lib/namesOfCalendar/monthNameInd'
+import Pagination from 'components/Pagination/Pagination'
 
 function ConfirmationPatient() {
+  const [currentPage, setCurrentPage] = useState(1)
   const [head] = useState([
     {
       name: 'Patient Name'
@@ -192,9 +194,6 @@ function ConfirmationPatient() {
         setTimeout(() => {
           if (newData.length === findRegistration.length) {
             setDataColumns(newData)
-            setTimeout(() => {
-              changeTableStyle(newData)
-            }, 0)
           }
         }, 0)
       }
@@ -211,6 +210,22 @@ function ConfirmationPatient() {
       console.log(errService)
     }
   }, [dataService])
+
+  let pageSize = 5
+
+  const currentTableData = useMemo(() => {
+    const firstPageIndex = (currentPage - 1) * 5
+    const lastPageIndex = firstPageIndex + pageSize
+    return dataColumns?.slice(firstPageIndex, lastPageIndex)
+  }, [currentPage, dataColumns])
+
+  useEffect(()=>{
+    if(dataColumns?.length > 0){
+      setTimeout(() => {
+        changeTableStyle(currentTableData)
+      }, 0)
+    }
+  }, [currentPage, dataColumns])
 
   const propsInputEdit = {
     styleTitle: {
@@ -524,78 +539,88 @@ function ConfirmationPatient() {
             <TableContainer styleWrapp={{
               margin: '50px 0 0 0'
             }}>
-              <TableBody styleWrapp={{
-                width: '1300px'
-              }}>
-                <TableHead
-                  id='tHead'
-                  data={head}
-                  styleName={{
-                    padding: '15px 8px'
-                  }}
-                />
-                {dataColumns?.length > 0 ? dataColumns.map((item, index) => {
-                  const pathUrlToDataDetail = `/patient/patient-registration/personal-data/confirmed/${item.data[0]?.name}/${item.id}`
+              <TableBody
+              // styleWrapp={{
+              //   width: '1300px'
+              // }}
+              >
+                <div className={style['container-table-content']}>
+                  <TableHead
+                    id='tHead'
+                    data={head}
+                    styleName={{
+                      padding: '15px 8px'
+                    }}
+                  />
+                  {currentTableData?.length > 0 ? currentTableData.map((item, index) => {
+                    const pathUrlToDataDetail = `/patient/patient-registration/personal-data/confirmed/${item.data[0]?.name}/${item.id}`
 
-                  return (
-                    <button key={index} className={style['columns-data']} onClick={() => toPage(pathUrlToDataDetail)}>
-                      <TableColumns
-                        styleEdit={{
-                          display: 'none'
-                        }}
-                        styleDelete={{
-                          display: 'none'
-                        }}
-                        styleLoadingCircle={{
-                          display: idDataRegisForUpdt === item.id && loadingSubmit ? 'flex' : 'none'
-                        }}
-                        styleIconDelete={{
-                          display: idDataRegisForUpdt === item.id && loadingSubmit ? 'none' : 'flex'
-                        }}
-                        clickEdit={(e) => {
-                          e.stopPropagation()
-                          handlePopupEdit()
-                          updateForm(item)
-                        }}
-                        clickDelete={(e) => {
-                          e.stopPropagation()
-                          clickDeletePersonalDataRegis(item.id)
-                        }}
-                      >
-                        {/* <i className={`fa-solid fa-circle ${style['icon-no-read']}`} style={{
+                    return (
+                      <button key={index} className={style['columns-data']} onClick={() => toPage(pathUrlToDataDetail)}>
+                        <TableColumns
+                          styleEdit={{
+                            display: 'none'
+                          }}
+                          styleDelete={{
+                            display: 'none'
+                          }}
+                          styleLoadingCircle={{
+                            display: idDataRegisForUpdt === item.id && loadingSubmit ? 'flex' : 'none'
+                          }}
+                          styleIconDelete={{
+                            display: idDataRegisForUpdt === item.id && loadingSubmit ? 'none' : 'flex'
+                          }}
+                          clickEdit={(e) => {
+                            e.stopPropagation()
+                            handlePopupEdit()
+                            updateForm(item)
+                          }}
+                          clickDelete={(e) => {
+                            e.stopPropagation()
+                            clickDeletePersonalDataRegis(item.id)
+                          }}
+                        >
+                          {/* <i className={`fa-solid fa-circle ${style['icon-no-read']}`} style={{
                           color: item.isNotif ? 'transparent' : '#ff296d'
                         }}></i> */}
-                        {item.data.map((data, idx) => {
-                          return (
-                            <TableData
-                              key={idx}
-                              id={`tData${index}${idx}`}
-                              firstDesc={data?.firstDesc}
-                              name={data.name}
-                              styleWrapp={{
-                                cursor: 'pointer'
-                              }}
-                              styleFirstDesc={{
-                                color: data?.color,
-                                marginBottom: data?.marginBottom
-                              }}
-                              styleName={{
-                                fontSize: data?.fontSize,
-                                color: data?.colorName,
-                                fontWeight: data?.fontWeightName
-                              }}
-                            />
-                          )
-                        })}
-                      </TableColumns>
-                    </button>
-                  )
-                }) : (
-                  <>
-                    <p className={style['no-data']}>No patient registration data</p>
-                  </>
-                )}
+                          {item.data.map((data, idx) => {
+                            return (
+                              <TableData
+                                key={idx}
+                                id={`tData${index}${idx}`}
+                                firstDesc={data?.firstDesc}
+                                name={data.name}
+                                styleWrapp={{
+                                  cursor: 'pointer'
+                                }}
+                                styleFirstDesc={{
+                                  color: data?.color,
+                                  marginBottom: data?.marginBottom
+                                }}
+                                styleName={{
+                                  fontSize: data?.fontSize,
+                                  color: data?.colorName,
+                                  fontWeight: data?.fontWeightName
+                                }}
+                              />
+                            )
+                          })}
+                        </TableColumns>
+                      </button>
+                    )
+                  }) : (
+                    <>
+                      <p className={style['no-data']}>No patient registration data</p>
+                    </>
+                  )}
+                </div>
               </TableBody>
+              <Pagination
+                currentPage={currentPage}
+                totalCount={dataColumns?.length}
+                pageSize={pageSize}
+                onPageChange={(pageNumber) => setCurrentPage(pageNumber)}
+              />
             </TableContainer>
           </div>
         </div>

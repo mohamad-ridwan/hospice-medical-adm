@@ -52,6 +52,12 @@
                 }
             }
 
+            .container-table-content{
+                display: flex;
+                flex-direction: column;
+                width: 1400px;
+            }
+
             .columns-data{
                 border: none;
                 outline: none;
