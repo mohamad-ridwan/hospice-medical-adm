@@ -864,25 +864,75 @@ function PersonalDataRegistration() {
 
     const updatePersonalDataPatient = (data) => {
         if (bookAnAppointment?._id && patientData?.id) {
+            const { patientName, phone, emailAddress } = valueInputEdit
+
+            const dataBioPatientInFT = {
+                patientName,
+                patientEmail: emailAddress,
+                phone
+            }
+
             API.APIPutPatientRegistration(
                 bookAnAppointment._id,
                 patientData.id,
                 data
             )
                 .then(res => {
-                    setLoadingSubmit(false)
-                    setTimeout(() => {
-                        alert(`${patientData?.patientName} patient upated successfully`)
-                    }, 0)
+                    if (findPatientInLoket?._id) {
+                        const dataBioPatientInCounter = {
+                            patientName,
+                            phone,
+                            emailAdmin: emailAddress
+                        }
+                        API.APIPutBioPatientInCounter(findPatientInLoket._id, dataBioPatientInCounter)
+                            .then(resCounter => {
+                                if (findCurrentPatientFinishTreatment?._id) {
+                                    updateBioPatientFinishTreatment(dataBioPatientInFT)
+                                } else {
+                                    setLoadingSubmit(false)
+                                    setTimeout(() => {
+                                        alert(`${patientData?.patientName} patient upated successfully`)
+                                    }, 0)
+                                }
+                            })
+                            .catch(err => {
+                                alert('Oops, telah terjadi kesalahan server\nMohon coba beberapa saat lagi')
+                                console.log(err)
+                                setLoadingSubmit(false)
+                            })
+                    } else if (findCurrentPatientFinishTreatment?._id) {
+                        updateBioPatientFinishTreatment(dataBioPatientInFT)
+                    } else {
+                        setLoadingSubmit(false)
+                        setTimeout(() => {
+                            alert(`${patientData?.patientName} patient upated successfully`)
+                        }, 0)
+                    }
                 })
                 .catch(err => {
                     alert('Oops, telah terjadi kesalahan server\nMohon coba beberapa saat lagi')
                     console.log(err)
+                    setLoadingSubmit(false)
                 })
         } else {
             alert('Oops, telah terjadi kesalahan server\nMohon coba beberapa saat lagi')
             setLoadingSubmit(false)
         }
+    }
+
+    const updateBioPatientFinishTreatment = (data) => {
+        API.APIPutBioPatientInFinishTreatment(findCurrentPatientFinishTreatment?._id, data)
+            .then(res => {
+                setLoadingSubmit(false)
+                setTimeout(() => {
+                    alert(`${patientData?.patientName} patient upated successfully`)
+                }, 0)
+            })
+            .catch(err => {
+                alert('Oops, telah terjadi kesalahan server\nMohon coba beberapa saat lagi')
+                console.log(err)
+                setLoadingSubmit(false)
+            })
     }
 
     const clickDeletePersonalDataRegis = () => {
@@ -1430,15 +1480,16 @@ function PersonalDataRegistration() {
                 .then(res => {
                     if (window.confirm('Konfirmasikan patient?')) {
                         setLoadingSubmitConfPatient(true)
-                        pushToEmailPatient()
-                            .then(res => {
-                                pushToConfirmPatient(postData)
-                            })
-                            .catch(err => {
-                                alert('Oops, telah terjadi kesalahan server!\nMohon coba beberapa saat lagi!')
-                                setLoadingSubmitConfPatient(false)
-                                console.log(err)
-                            })
+                        pushToConfirmPatient(postData)
+                        // pushToEmailPatient()
+                        //     .then(res => {
+                        //         pushToConfirmPatient(postData)
+                        //     })
+                        //     .catch(err => {
+                        //         alert('Oops, telah terjadi kesalahan server!\nMohon coba beberapa saat lagi!')
+                        //         setLoadingSubmitConfPatient(false)
+                        //         console.log(err)
+                        //     })
                     }
                 })
                 .catch(err => {
@@ -1542,9 +1593,21 @@ function PersonalDataRegistration() {
         const dateConfirm = `${nowMonth}/${getDate}/${getYear}`
         const confirmHour = `${nowHours}:${nowMinutes}`
 
-        const findPatientInLoket = getPatientQueue?.filter(patient => patient.loketName === infoLoket?.loketName && patient?.submissionDate === currentDate && patient?.isConfirm?.confirmState === false)
         const findPatientConfInLoketToday = getPatientQueue?.filter(patient => patient.loketName === infoLoket?.loketName && patient?.isConfirm?.confirmState && patient?.submissionDate === currentDate && patient?.isConfirm?.dateConfirm === currentDate)
-        const getQueueNumber = findPatientInLoket?.length > 0 ? parseInt(findPatientInLoket[findPatientInLoket.length - 1]?.queueNumber) + 1 : findPatientConfInLoketToday?.length > 0 ? parseInt(findPatientConfInLoketToday[findPatientConfInLoketToday.length - 1]?.queueNumber) + 1 : 1
+        const findPatientInLoketToday = getPatientQueue?.filter(patient => patient.loketName === infoLoket?.loketName && patient?.submissionDate === currentDate && patient?.isConfirm?.confirmState === false)
+        const sortPatientConfInLoketToday = findPatientConfInLoketToday?.length > 0 ? findPatientConfInLoketToday.sort((a, b) => parseInt(b.queueNumber) - parseInt(a.queueNumber)) : []
+        const sortPatientInLoketToday = findPatientInLoketToday?.length > 0 ? findPatientInLoketToday.sort((a, b) => parseInt(b.queueNumber) - parseInt(a.queueNumber)) : []
+
+        const getNumber = (stringNum)=>{
+            return parseInt(stringNum)
+        }
+
+        const getQueueNumber = sortPatientInLoketToday?.length > 0 && sortPatientConfInLoketToday?.length > 0 ?
+            getNumber(sortPatientInLoketToday[0]?.queueNumber) > getNumber(sortPatientConfInLoketToday[0]?.queueNumber) ?
+                getNumber(sortPatientInLoketToday[0]?.queueNumber) + 1 : getNumber(sortPatientConfInLoketToday[0]?.queueNumber) + 1 :
+            sortPatientInLoketToday?.length > 0 && sortPatientConfInLoketToday?.length === 0 ?
+                getNumber(sortPatientInLoketToday[0]?.queueNumber) + 1 : sortPatientConfInLoketToday?.length > 0 && sortPatientInLoketToday?.length === 0 ?
+                    getNumber(sortPatientConfInLoketToday[0]?.queueNumber) + 1 : 1
 
         const data = {
             id: `${new Date().getTime()}`,
@@ -2344,7 +2407,6 @@ function PersonalDataRegistration() {
                         nameInput='emailAddress'
                         valueInput={valueInputEdit.emailAddress}
                         title='Email'
-                        readOnly={true}
                         changeInput={handleChangeEditPR}
                         errorMessage={errorMsgSubmit?.emailAddress}
                     />
