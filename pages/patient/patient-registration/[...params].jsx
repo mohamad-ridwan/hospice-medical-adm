@@ -1480,16 +1480,15 @@ function PersonalDataRegistration() {
                 .then(res => {
                     if (window.confirm('Konfirmasikan patient?')) {
                         setLoadingSubmitConfPatient(true)
-                        pushToConfirmPatient(postData)
-                        // pushToEmailPatient()
-                        //     .then(res => {
-                        //         pushToConfirmPatient(postData)
-                        //     })
-                        //     .catch(err => {
-                        //         alert('Oops, telah terjadi kesalahan server!\nMohon coba beberapa saat lagi!')
-                        //         setLoadingSubmitConfPatient(false)
-                        //         console.log(err)
-                        //     })
+                        pushToEmailPatient()
+                            .then(res => {
+                                pushToConfirmPatient(postData)
+                            })
+                            .catch(err => {
+                                alert('Oops, telah terjadi kesalahan server!\nMohon coba beberapa saat lagi!')
+                                setLoadingSubmitConfPatient(false)
+                                console.log(err)
+                            })
                     }
                 })
                 .catch(err => {
