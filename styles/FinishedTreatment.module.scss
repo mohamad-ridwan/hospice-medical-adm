@@ -38,6 +38,12 @@
                 font-size: 28px;
             }
 
+            .container-table-content{
+                display: flex;
+                flex-direction: column;
+                width: 1500px;
+            }
+
             .no-data{
                 display: flex;
                 padding: 40px 0;

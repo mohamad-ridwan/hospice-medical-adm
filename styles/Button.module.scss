@@ -71,6 +71,48 @@
     }
 }
 
+.pagination-arrow{
+    background-color: transparent;
+    color: $colorDefault;
+    border: 1px solid #fff;
+    &:hover{
+        background-color: $colorDefault;
+        border: 1px solid $colorDefault;
+        color: #fff;
+    }
+}
+
+.disable-pagination{
+    background-color: transparent;
+    color: $colorDefault;
+    border: 1px solid transparent;
+    cursor: default;
+    &:hover{
+        background-color: transparent;
+        color: $colorDefault;
+    }
+}
+
+.pagination-number{
+    background-color: transparent;
+    color: $colorDefault;
+    border: 1px solid #fff;
+    &:hover{
+        background-color: $colorDefault;
+        border: 1px solid $colorDefault;
+        color: #fff;
+    }
+}
+
+.pagination-number-active{
+    background-color: $colorDefault;
+    &:hover{
+        background-color: $colorDefault;
+        border: 1px solid $colorDefault;
+        color: #fff;
+    }
+}
+
 @keyframes load {
     to{
         transform: rotate(360deg);

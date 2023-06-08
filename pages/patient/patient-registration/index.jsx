@@ -1,4 +1,4 @@
-import { useContext, useState, useEffect } from 'react'
+import { useContext, useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/router'
 import Head from 'next/head'
 import style from 'styles/PatientRegistration.module.scss'
@@ -20,8 +20,10 @@ import { dayNamesEng } from 'lib/namesOfCalendar/dayNamesEng'
 import { dayNamesInd } from 'lib/namesOfCalendar/dayNamesInd'
 import { monthNames } from 'lib/namesOfCalendar/monthNames'
 import monthNamesInd from 'lib/namesOfCalendar/monthNameInd'
+import Pagination from 'components/Pagination/Pagination'
 
 function PatientRegistration() {
+    const [currentPage, setCurrentPage] = useState(1)
     const [head] = useState([
         {
             name: 'Patient Name'
@@ -148,7 +150,7 @@ function PatientRegistration() {
         if (bookAnAppointment) {
             const userAppointmentData = bookAnAppointment.userAppointmentData
             const findRegistration = userAppointmentData?.length > 0 ? userAppointmentData.filter(regis => {
-                const findPatientFT = getPatientRegis?.length > 0 ? getPatientRegis.find(patient=>patient?.patientId === regis.id) : {}
+                const findPatientFT = getPatientRegis?.length > 0 ? getPatientRegis.find(patient => patient?.patientId === regis.id) : {}
 
                 return !regis.isConfirm?.id && findPatientFT?.id === undefined
             }) : null
@@ -235,11 +237,19 @@ function PatientRegistration() {
             console.log('error data servicing hours')
             console.log(errService)
         }
-        if(!loadDataFinishTreatment && errDataFinishTreatment){
+        if (!loadDataFinishTreatment && errDataFinishTreatment) {
             console.log('error data finished treatment')
             console.log(dataFinishTreatment)
         }
     }, [dataService, dataFinishTreatment])
+
+    let pageSize = 5
+
+    const currentTableData = useMemo(() => {
+        const firstPageIndex = (currentPage - 1) * 5
+        const lastPageIndex = firstPageIndex + pageSize
+        return dataColumns?.slice(firstPageIndex, lastPageIndex)
+    }, [currentPage, dataColumns])
 
     const propsInputEdit = {
         styleTitle: {
@@ -552,104 +562,114 @@ function PatientRegistration() {
                         <TableContainer styleWrapp={{
                             margin: '50px 0 0 0'
                         }}>
-                            <TableBody styleWrapp={{
-                                width: '1300px'
-                            }}>
-                                <TableHead
-                                    id='tHead'
-                                    data={head}
-                                />
-                                {!loadingAuth && user?.id && !loadConditionTableScreen ? (
-                                    <>
-                                        {dataColumns?.length > 0 ? dataColumns.map((item, index) => {
-                                            const pathUrlToDataDetail = `patient-registration/personal-data/not-yet-confirmed/${item.data[0]?.name}/${item.id}`
+                            <TableBody 
+                            // styleWrapp={{
+                            //     width: '1300px'
+                            // }}
+                            >
+                                <div className={style['container-table-content']}>
+                                    <TableHead
+                                        id='tHead'
+                                        data={head}
+                                    />
+                                    {!loadingAuth && user?.id && !loadConditionTableScreen ? (
+                                        <>
+                                            {currentTableData?.length > 0 ? currentTableData.map((item, index) => {
+                                                const pathUrlToDataDetail = `patient-registration/personal-data/not-yet-confirmed/${item.data[0]?.name}/${item.id}`
 
-                                            return (
-                                                <button key={index} className={style['columns-data']} onClick={() => toPage(pathUrlToDataDetail)}>
-                                                    <TableColumns
-                                                        styleEdit={{
-                                                            display: 'none'
-                                                        }}
-                                                        styleLoadingCircle={{
-                                                            display: idDataRegisForUpdt === item.id && loadingSubmit ? 'flex' : 'none'
-                                                        }}
-                                                        styleIconDelete={{
-                                                            display: idDataRegisForUpdt === item.id && loadingSubmit ? 'none' : 'flex'
-                                                        }}
-                                                        clickEdit={(e) => {
-                                                            e.stopPropagation()
-                                                            handlePopupEdit()
-                                                            updateForm(item)
-                                                        }}
-                                                        clickDelete={(e) => {
-                                                            e.stopPropagation()
-                                                            clickDeletePersonalDataRegis(item.id)
-                                                        }}
-                                                    >
-                                                        <i className={`fa-solid fa-circle ${style['icon-no-read']}`} style={{
-                                                            // color: item.isNotif ? 'transparent' : '#ff296d'
-                                                            color: item.isNotif ? 'transparent' : 'transparent'
-                                                        }}></i>
-                                                        {item.data.map((data, idx) => {
-                                                            return (
-                                                                <TableData
-                                                                    key={idx}
-                                                                    id={`tData${index}${idx}`}
-                                                                    firstDesc={data?.firstDesc}
-                                                                    name={data.name}
-                                                                    styleWrapp={{
-                                                                        cursor: 'pointer'
-                                                                    }}
-                                                                    styleFirstDesc={{
-                                                                        color: data?.color,
-                                                                        marginBottom: data?.marginBottom
-                                                                    }}
-                                                                    styleName={{
-                                                                        fontSize: data?.fontSize,
-                                                                        color: data?.colorName
-                                                                    }}
-                                                                />
-                                                            )
-                                                        })}
-                                                    </TableColumns>
-                                                </button>
-                                            )
-                                        }) : (
-                                            <>
-                                                <p className={style['no-data']}>No patient registration data</p>
-                                            </>
-                                        )}
-                                    </>
-                                ) : (
-                                    <>
-                                        {loadTableScreen.map((item, index) => (
-                                            <TableColumns
-                                                key={index}
-                                                styleWrappBtn={{
-                                                    display: 'none'
-                                                }}
-                                            >
-                                                {item.data.map((data, idx) => (
-                                                    <TableData
-                                                        key={idx}
-                                                        id={`tDataLoad${index}${idx}`}
-                                                        styleWrapp={{
-                                                            background: '#fff'
-                                                        }}
-                                                    >
-                                                        <ShineLoading
-                                                            styleWrapp={{
-                                                                height: '10px',
-                                                                width: '100%'
+                                                return (
+                                                    <button key={index} className={style['columns-data']} onClick={() => toPage(pathUrlToDataDetail)}>
+                                                        <TableColumns
+                                                            styleEdit={{
+                                                                display: 'none'
                                                             }}
-                                                        />
-                                                    </TableData>
-                                                ))}
-                                            </TableColumns>
-                                        ))}
-                                    </>
-                                )}
+                                                            styleLoadingCircle={{
+                                                                display: idDataRegisForUpdt === item.id && loadingSubmit ? 'flex' : 'none'
+                                                            }}
+                                                            styleIconDelete={{
+                                                                display: idDataRegisForUpdt === item.id && loadingSubmit ? 'none' : 'flex'
+                                                            }}
+                                                            clickEdit={(e) => {
+                                                                e.stopPropagation()
+                                                                handlePopupEdit()
+                                                                updateForm(item)
+                                                            }}
+                                                            clickDelete={(e) => {
+                                                                e.stopPropagation()
+                                                                clickDeletePersonalDataRegis(item.id)
+                                                            }}
+                                                        >
+                                                            <i className={`fa-solid fa-circle ${style['icon-no-read']}`} style={{
+                                                                // color: item.isNotif ? 'transparent' : '#ff296d'
+                                                                color: item.isNotif ? 'transparent' : 'transparent'
+                                                            }}></i>
+                                                            {item.data.map((data, idx) => {
+                                                                return (
+                                                                    <TableData
+                                                                        key={idx}
+                                                                        id={`tData${index}${idx}`}
+                                                                        firstDesc={data?.firstDesc}
+                                                                        name={data.name}
+                                                                        styleWrapp={{
+                                                                            cursor: 'pointer'
+                                                                        }}
+                                                                        styleFirstDesc={{
+                                                                            color: data?.color,
+                                                                            marginBottom: data?.marginBottom
+                                                                        }}
+                                                                        styleName={{
+                                                                            fontSize: data?.fontSize,
+                                                                            color: data?.colorName
+                                                                        }}
+                                                                    />
+                                                                )
+                                                            })}
+                                                        </TableColumns>
+                                                    </button>
+                                                )
+                                            }) : (
+                                                <>
+                                                    <p className={style['no-data']}>No patient registration data</p>
+                                                </>
+                                            )}
+                                        </>
+                                    ) : (
+                                        <>
+                                            {loadTableScreen.map((item, index) => (
+                                                <TableColumns
+                                                    key={index}
+                                                    styleWrappBtn={{
+                                                        display: 'none'
+                                                    }}
+                                                >
+                                                    {item.data.map((data, idx) => (
+                                                        <TableData
+                                                            key={idx}
+                                                            id={`tDataLoad${index}${idx}`}
+                                                            styleWrapp={{
+                                                                background: '#fff'
+                                                            }}
+                                                        >
+                                                            <ShineLoading
+                                                                styleWrapp={{
+                                                                    height: '10px',
+                                                                    width: '100%'
+                                                                }}
+                                                            />
+                                                        </TableData>
+                                                    ))}
+                                                </TableColumns>
+                                            ))}
+                                        </>
+                                    )}
+                                </div>
                             </TableBody>
+                            <Pagination
+                                currentPage={currentPage}
+                                totalCount={dataColumns?.length}
+                                pageSize={pageSize}
+                                onPageChange={(pageNumber) => setCurrentPage(pageNumber)}
+                            />
                         </TableContainer>
                     </div>
                 </div>

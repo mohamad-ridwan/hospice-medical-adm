@@ -1,4 +1,4 @@
-import { useState, useContext, useEffect } from 'react'
+import { useState, useContext, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/router'
 import Head from 'next/head'
 import style from 'styles/FinishedTreatment.module.scss'
@@ -16,10 +16,12 @@ import { dayNamesEng } from 'lib/namesOfCalendar/dayNamesEng'
 import { dayNamesInd } from 'lib/namesOfCalendar/dayNamesInd'
 import monthNamesInd from 'lib/namesOfCalendar/monthNameInd'
 import API from 'lib/api'
+import Pagination from 'components/Pagination/Pagination'
 
 function FinishedTreatment() {
     const [idDeleteDataRegis, setIdDeleteDataRegis] = useState(null)
     const [loadingDelete, setLoadingDelete] = useState(false)
+    const [currentPage, setCurrentPage] = useState(1)
     const [head] = useState([
         {
             name: 'Patient Name'
@@ -163,11 +165,19 @@ function FinishedTreatment() {
         return dateTwo - dateOne
     }) : []
 
+    let pageSize = 5
+
+    const currentTableData = useMemo(() => {
+        const firstPageIndex = (currentPage - 1) * 5
+        const lastPageIndex = firstPageIndex + pageSize
+        return newPatientRegistration?.slice(firstPageIndex, lastPageIndex)
+    }, [currentPage, newPatientRegistration])
+
     const changeTableStyle = () => {
         let elementTHead = document.getElementById('tHead0')
         let elementTData = document.getElementById('tData00')
 
-        if (newPatientRegistration?.length > 0 && elementTHead) {
+        if (currentTableData?.length > 0 && elementTHead) {
             elementTHead = document.getElementById(`tHead0`)
             elementTHead.style.width = 'calc(100%/7)'
             elementTHead = document.getElementById(`tHead1`)
@@ -185,8 +195,8 @@ function FinishedTreatment() {
             elementTHead = document.getElementById(`tHead7`)
             elementTHead.style.width = 'calc(100%/7)'
         }
-        if (newPatientRegistration?.length > 0 && elementTData) {
-            for (let i = 0; i < newPatientRegistration?.length; i++) {
+        if (currentTableData?.length > 0 && elementTData) {
+            for (let i = 0; i < currentTableData?.length; i++) {
                 elementTData = document.getElementById(`tData${i}0`)
                 elementTData.style.width = 'calc(100%/7)'
                 elementTData = document.getElementById(`tData${i}1`)
@@ -208,12 +218,12 @@ function FinishedTreatment() {
     }
 
     useEffect(() => {
-        if (newPatientRegistration?.length > 0) {
+        if (currentTableData?.length > 0) {
             setTimeout(() => {
                 changeTableStyle()
             }, 0);
         }
-    }, [newPatientRegistration])
+    }, [currentTableData])
 
     const toPage = (path) => {
         router.push(path)
@@ -289,73 +299,85 @@ function FinishedTreatment() {
                         <TableContainer styleWrapp={{
                             margin: '50px 0 0 0'
                         }}>
-                            <TableBody styleWrapp={{
-                                width: '1500px'
-                            }}>
-                                <TableHead
-                                    id='tHead'
-                                    data={head}
-                                    styleName={{
-                                        padding: '15px 8px'
-                                    }}
-                                />
+                            <TableBody
+                            // styleWrapp={{
+                            //     width: '1500px'
+                            // }}
+                            >
+                                <div className={style['container-table-content']}>
+                                    <TableHead
+                                        id='tHead'
+                                        data={head}
+                                        styleName={{
+                                            padding: '15px 8px'
+                                        }}
+                                    />
 
-                                {newPatientRegistration?.length > 0 ? newPatientRegistration.map((item, index) => {
-                                    const pathUrlToCounterStage = `/patient/patient-registration/personal-data/confirmed/${item.data[0]?.name}/${item.patientId}/counter/${item.dataPatientInCounter?.loketName}/${item.dataPatientInCounter?.confirmState ? 'confirmed' : 'not-yet-confirmed'}/${item.dataPatientInCounter?.queueNumber}`
-                                    const pathUrlToRoomStage = `/patient/patient-registration/personal-data/confirmed/${item.data[0]?.name}/${item.patientId}`
-                                    const pathUrlToRoomStageCancelled = `/patient/patient-registration/personal-data/cancelled/${item.data[0]?.name}/${item.patientId}`
+                                    {currentTableData?.length > 0 ? currentTableData.map((item, index) => {
+                                        const pathUrlToCounterStage = `/patient/patient-registration/personal-data/confirmed/${item.data[0]?.name}/${item.patientId}/counter/${item.dataPatientInCounter?.loketName}/${item.dataPatientInCounter?.confirmState ? 'confirmed' : 'not-yet-confirmed'}/${item.dataPatientInCounter?.queueNumber}`
+                                        const pathUrlToRoomStage = `/patient/patient-registration/personal-data/confirmed/${item.data[0]?.name}/${item.patientId}`
+                                        const pathUrlToRoomStageCancelled = `/patient/patient-registration/personal-data/cancelled/${item.data[0]?.name}/${item.patientId}`
 
-                                    return (
-                                        <button key={index} className={style['columns-data']} onClick={() => toPage(item.completionStage === 'room' ? pathUrlToRoomStage : item.completionStage === 'cancelled' ? pathUrlToRoomStageCancelled : pathUrlToCounterStage)}>
-                                            <TableColumns
-                                                styleEdit={{
-                                                    display: 'none'
-                                                }}
-                                                styleLoadingCircle={{
-                                                    display: idDeleteDataRegis === item._id && loadingDelete ? 'flex' : 'none'
-                                                }}
-                                                styleIconDelete={{
-                                                    display: idDeleteDataRegis === item._id && loadingDelete ? 'none' : 'flex'
-                                                }}
-                                                clickDelete={(e) => {
-                                                    e.stopPropagation()
-                                                    deleteFTPatientData(item._id, item.patientId)
-                                                }}
-                                            >
-                                                {item.data.map((data, idx) => {
-                                                    return (
-                                                        <TableData
-                                                            key={idx}
-                                                            id={`tData${index}${idx}`}
-                                                            firstDesc={data?.firstDesc}
-                                                            name={data?.name}
-                                                            styleWrapp={{
-                                                                cursor: 'pointer'
-                                                            }}
-                                                            styleName={{
-                                                                fontSize: data?.fontSize,
-                                                                fontWeight: data?.fontWeight,
-                                                                color: data?.colorName,
-                                                                padding: idx === 1 ? '5.5px 8px' : '',
-                                                                borderRadius: idx === 1 ? '3px' : '0',
-                                                                background: idx === 1 ? data?.name?.toLowerCase() === 'hadir' ? '#288bbc' : data?.name?.toLowerCase() === 'cancelled' ? '#ff296d' : '#464e51' : 'transparent'
-                                                            }}
-                                                            styleFirstDesc={{
-                                                                color: data?.color,
-                                                                marginBottom: data?.marginBottom
-                                                            }}
-                                                        />
-                                                    )
-                                                })}
-                                            </TableColumns>
-                                        </button>
-                                    )
-                                }) : (
-                                    <>
-                                        <p className={style['no-data']}>There is no queue of patients at the counter</p>
-                                    </>
-                                )}
+                                        return (
+                                            <button key={index} className={style['columns-data']} onClick={() => toPage(item.completionStage === 'room' ? pathUrlToRoomStage : item.completionStage === 'cancelled' ? pathUrlToRoomStageCancelled : pathUrlToCounterStage)}>
+                                                <TableColumns
+                                                    styleEdit={{
+                                                        display: 'none'
+                                                    }}
+                                                    styleLoadingCircle={{
+                                                        display: idDeleteDataRegis === item._id && loadingDelete ? 'flex' : 'none'
+                                                    }}
+                                                    styleIconDelete={{
+                                                        display: idDeleteDataRegis === item._id && loadingDelete ? 'none' : 'flex'
+                                                    }}
+                                                    clickDelete={(e) => {
+                                                        e.stopPropagation()
+                                                        deleteFTPatientData(item._id, item.patientId)
+                                                    }}
+                                                >
+                                                    {item.data.map((data, idx) => {
+                                                        return (
+                                                            <>
+                                                                <TableData
+                                                                    key={idx}
+                                                                    id={`tData${index}${idx}`}
+                                                                    firstDesc={data?.firstDesc}
+                                                                    name={data?.name}
+                                                                    styleWrapp={{
+                                                                        cursor: 'pointer'
+                                                                    }}
+                                                                    styleName={{
+                                                                        fontSize: data?.fontSize,
+                                                                        fontWeight: data?.fontWeight,
+                                                                        color: data?.colorName,
+                                                                        padding: idx === 1 ? '5.5px 8px' : '',
+                                                                        borderRadius: idx === 1 ? '3px' : '0',
+                                                                        background: idx === 1 ? data?.name?.toLowerCase() === 'hadir' ? '#288bbc' : data?.name?.toLowerCase() === 'cancelled' ? '#ff296d' : '#464e51' : 'transparent'
+                                                                    }}
+                                                                    styleFirstDesc={{
+                                                                        color: data?.color,
+                                                                        marginBottom: data?.marginBottom
+                                                                    }}
+                                                                />
+                                                            </>
+                                                        )
+                                                    })}
+                                                </TableColumns>
+                                            </button>
+                                        )
+                                    }) : (
+                                        <>
+                                            <p className={style['no-data']}>There is no queue of patients at the counter</p>
+                                        </>
+                                    )}
+                                </div>
                             </TableBody>
+                            <Pagination
+                                currentPage={currentPage}
+                                totalCount={newPatientRegistration?.length}
+                                pageSize={pageSize}
+                                onPageChange={(pageNumber) => setCurrentPage(pageNumber)}
+                            />
                         </TableContainer>
                     </div>
                 </div>

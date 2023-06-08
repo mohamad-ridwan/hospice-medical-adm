@@ -1441,6 +1441,10 @@ function PersonalDataRegistration() {
         })
     }
 
+    const getNumber = (number1, number2)=>{
+        return parseInt(number1) - parseInt(number2)
+    }
+
     const submitConfirmPatient = () => {
         if (loadingSubmitConfPatient === false) {
             const nowHours = `${new Date().getHours().toString().length === 1 ? `0${new Date().getHours()}` : new Date().getHours()}`
@@ -1454,8 +1458,12 @@ function PersonalDataRegistration() {
             const dateConfirm = `${nowMonth}/${getDate}/${getYear}`
             const confirmHour = `${nowHours}:${nowMinutes}`
 
-            const findLastPatientOfCurrentDate = patientOfCurrentDiseaseT?.length > 0 ? patientOfCurrentDiseaseT.filter((patient, idx) => idx === 0) : []
-            const getQueueNumber = findLastPatientOfCurrentDate?.length === 1 ? parseInt(findLastPatientOfCurrentDate[0]?.isConfirm?.queueNumber) + 1 : 1
+            const getNumber = (number1, number2)=>{
+                return parseInt(number1) - parseInt(number2)
+            }
+
+            const findLastPatientOfCurrentDate = patientOfCurrentDiseaseT?.length > 0 ? patientOfCurrentDiseaseT.sort((a, b)=>getNumber(b?.isConfirm?.queueNumber, a?.isConfirm?.queueNumber)) : []
+            const getQueueNumber = findLastPatientOfCurrentDate?.length > 0 ? parseInt(findLastPatientOfCurrentDate[0]?.isConfirm?.queueNumber) + 1 : 1
 
             const postData = {
                 id: `${new Date().getTime()}`,
@@ -1767,9 +1775,13 @@ function PersonalDataRegistration() {
                                 const dateConfirm = `${nowMonth}/${getDate}/${getYear}`
                                 const confirmHour = `${nowHours}:${nowMinutes}`
 
+                                const getNumber = (num1, num2)=>{
+                                    return parseInt(num1) - parseInt(num2)
+                                }
+
                                 const checkQueueNumber = patientOfCurrentDiseaseTForUpdtConfInfo?.length > 0 ? patientOfCurrentDiseaseTForUpdtConfInfo.filter(patient => patient?.id !== patientData?.id) : []
-                                const getQueueNumberOfCurrentPatient = checkQueueNumber?.length > 0 ? checkQueueNumber.filter((patient, idx) => idx === 0) : []
-                                const queueNumber = getQueueNumberOfCurrentPatient?.length === 1 ? parseInt(getQueueNumberOfCurrentPatient[0]?.isConfirm?.queueNumber) + 1 : 1
+                                const getQueueNumberOfCurrentPatient = checkQueueNumber?.length > 0 ? checkQueueNumber.sort((a, b)=>getNumber(b?.isConfirm?.queueNumber, a?.isConfirm?.queueNumber)) : []
+                                const queueNumber = getQueueNumberOfCurrentPatient?.length > 0 ? parseInt(getQueueNumberOfCurrentPatient[0]?.isConfirm?.queueNumber) + 1 : 1
 
                                 const { id, message, presence } = patientData?.isConfirm
                                 const data = {

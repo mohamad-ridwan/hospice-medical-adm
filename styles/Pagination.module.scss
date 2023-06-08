@@ -1,0 +1,16 @@
+@import 'variables/color';
+@import 'variables/responsive';
+@import 'variables/font';
+
+.wrapp-pagination{
+    display: flex;
+    width: auto;
+    margin: 30px 0 0 0;
+    padding: 10px;
+    justify-content: center;
+    align-items: center;
+
+    .pagination-item-dots{
+        background-color: $colorDefault;
+    }
+}

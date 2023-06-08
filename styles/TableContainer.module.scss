@@ -17,6 +17,10 @@
     box-shadow: 0 2px 3px -1px rgba(0,0,0,0.3);
     border-radius: 5px;
     overflow-x: auto;
+
+    @include smallPaymentInfoChart(){
+      padding: 40px 10px;
+    }
 }
 
 .total-patient-treatment-on-year{
