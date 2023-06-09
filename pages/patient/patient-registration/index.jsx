@@ -328,18 +328,18 @@ function PatientRegistration() {
         return dataColumns
     }
     const sortDate = onSortDate && filterByDate?.length > 0 ? filterByDate.sort((p1, p2) => {
-        const findDateOnSelectDateP1 = p1?.data?.find(data=>
+        const findDateOnSelectDateP1 = p1?.data?.find(data =>
             data?.filterBy?.toLowerCase() === chooseFilterByDate?.id?.toLowerCase()
         )
-        const findDateOnSelectDateP2 = p2?.data?.find(data=>
+        const findDateOnSelectDateP2 = p2?.data?.find(data =>
             data?.filterBy?.toLowerCase() === chooseFilterByDate?.id?.toLowerCase()
-            )
+        )
 
         return new Date(`${findDateOnSelectDateP1?.name} ${findDateOnSelectDateP1?.clock}`) - new Date(`${findDateOnSelectDateP2?.name} ${findDateOnSelectDateP2?.clock}`)
     }) : []
 
-    const checkSortSubmissionDate = ()=>{
-        if(onSortDate){
+    const checkSortSubmissionDate = () => {
+        if (onSortDate) {
             return sortDate
         }
 
@@ -347,10 +347,14 @@ function PatientRegistration() {
     }
 
     const filterText = checkSortSubmissionDate()?.length > 0 ? checkSortSubmissionDate().filter(patient => {
-        const findItem = patient?.data?.filter(data => data?.name?.replace(specialCharacter, '')?.replace(spaceString, '')?.toLowerCase()?.includes(searchText?.replace(spaceString, '')))
+        const findItem = patient?.data?.filter(data => data?.name?.replace(specialCharacter, '')?.replace(spaceString, '')?.toLowerCase()?.includes(searchText?.replace(spaceString, '')?.toLowerCase()))
 
         return findItem?.length > 0
     }) : []
+
+    useEffect(() => {
+        setCurrentPage(() => 1)
+    }, [searchText])
 
     let pageSize = 5
 
@@ -722,7 +726,10 @@ function PatientRegistration() {
                                 valueInput={searchText}
                                 changeInput={(e) => setSearchText(e.target.value)}
                                 selected={selectDate}
-                                changeCalendar={(date) => setSelectDate(date)}
+                                changeCalendar={(date) => {
+                                    setCurrentPage(() => 1)
+                                    setSelectDate(date)
+                                }}
                                 handleCategory={handleFilterDate}
                                 dataSortCategory={dataSortDate}
                                 handleSortCategory={handleSortCategory}

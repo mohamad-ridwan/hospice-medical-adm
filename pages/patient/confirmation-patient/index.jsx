@@ -20,6 +20,9 @@ import { dayNamesInd } from 'lib/namesOfCalendar/dayNamesInd'
 import { monthNames } from 'lib/namesOfCalendar/monthNames'
 import monthNamesInd from 'lib/namesOfCalendar/monthNameInd'
 import Pagination from 'components/Pagination/Pagination'
+import TableFilter from 'components/Table/TableFilter'
+import specialCharacter from 'lib/regex/specialCharacter'
+import spaceString from 'lib/regex/spaceString'
 
 function ConfirmationPatient() {
   const [currentPage, setCurrentPage] = useState(1)
@@ -31,7 +34,13 @@ function ConfirmationPatient() {
       name: 'Room Name'
     },
     {
+      name: 'Queue Number'
+    },
+    {
       name: 'Appointment Date'
+    },
+    {
+      name: 'Treatment Hours'
     },
     {
       name: 'Confirmation Date'
@@ -61,6 +70,42 @@ function ConfirmationPatient() {
     dateOfBirth: '',
     phone: ''
   })
+  const [searchText, setSearchText] = useState('')
+  const [displayOnCalendar, setDisplayOnCalendar] = useState(false)
+  const [selectDate, setSelectDate] = useState()
+  const [onSortDate, setOnSortDate] = useState(false)
+  const [chooseFilterByDate, setChooseFilterByDate] = useState({
+    id: 'Off Date',
+    title: 'Off Date'
+  })
+  const [filterBy] = useState([
+    {
+      id: 'Off Date',
+      title: 'Off Date',
+    },
+    {
+      id: 'Appointment Date',
+      title: 'Appointment Date',
+    },
+    {
+      id: 'Confirmation Date',
+      title: 'Confirmation Date',
+    },
+    {
+      id: 'Date of Birth',
+      title: 'Date of Birth',
+    },
+  ])
+  const [dataSortDate] = useState([
+    {
+      id: 'Off Sort Date',
+      title: 'Off Sort Date'
+    },
+    {
+      id: 'On Sort Date',
+      title: 'On Sort Date'
+    },
+  ])
 
   const { data: dataService, error: errService, isLoading: loadService } = useSwr(endpoint.getServicingHours())
   const bookAnAppointment = dataService?.data?.find(item => item.id === 'book-an-appointment')
@@ -94,13 +139,17 @@ function ConfirmationPatient() {
         elementTHead = document.getElementById(`tHead1`)
         elementTHead.style.width = 'calc(100%/10)'
         elementTHead = document.getElementById(`tHead2`)
-        elementTHead.style.width = 'calc(100%/7)'
+        elementTHead.style.width = 'calc(100%/8)'
         elementTHead = document.getElementById(`tHead3`)
         elementTHead.style.width = 'calc(100%/7)'
         elementTHead = document.getElementById(`tHead4`)
-        elementTHead.style.width = 'calc(100%/5.5)'
-        elementTHead = document.getElementById(`tHead5`)
         elementTHead.style.width = 'calc(100%/8)'
+        elementTHead = document.getElementById(`tHead5`)
+        elementTHead.style.width = 'calc(100%/7)'
+        elementTHead = document.getElementById(`tHead6`)
+        elementTHead.style.width = 'calc(100%/5.5)'
+        elementTHead = document.getElementById(`tHead7`)
+        elementTHead.style.width = 'calc(100%/9)'
       }
       if (elementTData) {
         for (let i = 0; i < dataColumnsBody?.length; i++) {
@@ -109,13 +158,17 @@ function ConfirmationPatient() {
           elementTData = document.getElementById(`tData${i}1`)
           elementTData.style.width = 'calc(100%/10)'
           elementTData = document.getElementById(`tData${i}2`)
-          elementTData.style.width = 'calc(100%/7)'
+          elementTData.style.width = 'calc(100%/8)'
           elementTData = document.getElementById(`tData${i}3`)
           elementTData.style.width = 'calc(100%/7)'
           elementTData = document.getElementById(`tData${i}4`)
-          elementTData.style.width = 'calc(100%/5.5)'
-          elementTData = document.getElementById(`tData${i}5`)
           elementTData.style.width = 'calc(100%/8)'
+          elementTData = document.getElementById(`tData${i}5`)
+          elementTData.style.width = 'calc(100%/7)'
+          elementTData = document.getElementById(`tData${i}6`)
+          elementTData.style.width = 'calc(100%/5.5)'
+          elementTData = document.getElementById(`tData${i}7`)
+          elementTData.style.width = 'calc(100%/9)'
         }
       }
     }
@@ -155,12 +208,23 @@ function ConfirmationPatient() {
                   fontWeightName: 'bold'
                 },
                 {
+                  name: item?.isConfirm?.queueNumber,
+                  colorName: '#288bbc',
+                  fontWeightName: 'bold'
+                },
+                {
                   firstDesc: makeNormalDate(item.appointmentDate),
                   color: '#ff296d',
                   colorName: '#777',
                   marginBottom: '4.5px',
                   fontSize: '12px',
+                  filterBy: 'Appointment Date',
+                  confirmHour: item?.isConfirm?.confirmHour,
+                  queueNumber: item?.isConfirm?.queueNumber,
                   name: item.appointmentDate
+                },
+                {
+                  name: item?.isConfirm?.treatmentHours,
                 },
                 {
                   firstDesc: makeNormalDate(item?.isConfirm?.dateConfirm),
@@ -168,6 +232,9 @@ function ConfirmationPatient() {
                   colorName: '#777',
                   marginBottom: '4.5px',
                   fontSize: '12px',
+                  filterBy: 'Confirmation Date',
+                  confirmHour: item?.isConfirm?.confirmHour,
+                  queueNumber: item?.isConfirm?.queueNumber,
                   name: item?.isConfirm?.dateConfirm
                 },
                 {
@@ -179,6 +246,7 @@ function ConfirmationPatient() {
                   colorName: '#777',
                   marginBottom: '4.5px',
                   fontSize: '12px',
+                  filterBy: 'Date of Birth',
                   name: item.dateOfBirth
                 },
                 {
@@ -211,21 +279,78 @@ function ConfirmationPatient() {
     }
   }, [dataService])
 
+  const makeFormatDate = () => {
+    const getCurrentDate = `${selectDate}`.split(' ')
+    const getCurrentMonth = monthNames.findIndex(month => month?.toLowerCase() === getCurrentDate[1]?.toLowerCase())
+    const getNumberOfCurrentMonth = getCurrentMonth?.toString()?.length === 1 ? `0${getCurrentMonth + 1}` : `${getCurrentMonth + 1}`
+    const dateNow = getCurrentDate[2]
+    const yearsNow = getCurrentDate[3]
+    const currentDate = `${getNumberOfCurrentMonth}/${dateNow}/${yearsNow}`
+
+    return currentDate
+  }
+
+  const filterByDate = dataColumns?.length > 0 ? dataColumns.filter(patient => {
+    const findDate = selectDate !== undefined ? patient?.data?.filter(data =>
+      data?.filterBy?.toLowerCase() === chooseFilterByDate?.id?.toLowerCase() &&
+      data?.name === makeFormatDate())
+      : []
+
+    return findDate?.length > 0
+  }) : []
+
+  const checkFilterByDate = () => {
+    if (selectDate !== undefined) {
+      return filterByDate
+    }
+
+    return dataColumns
+  }
+  const sortDate = onSortDate && filterByDate?.length > 0 ? filterByDate.sort((p1, p2) => {
+    const findDateOnSelectDateP1 = p1?.data?.find(data =>
+      data?.filterBy?.toLowerCase() === chooseFilterByDate?.id?.toLowerCase()
+    )
+    const findDateOnSelectDateP2 = p2?.data?.find(data =>
+      data?.filterBy?.toLowerCase() === chooseFilterByDate?.id?.toLowerCase()
+    )
+
+    return parseInt(findDateOnSelectDateP1?.queueNumber) - parseInt(findDateOnSelectDateP2?.queueNumber)
+    // return new Date(`${findDateOnSelectDateP1?.name} ${findDateOnSelectDateP1?.confirmHour}`) - new Date(`${findDateOnSelectDateP2?.name} ${findDateOnSelectDateP2?.confirmHour}`)
+  }) : []
+
+  const checkSortSubmissionDate = () => {
+    if (onSortDate) {
+      return sortDate
+    }
+
+    return checkFilterByDate()
+  }
+
+  const filterText = checkSortSubmissionDate()?.length > 0 ? checkSortSubmissionDate().filter(patient => {
+    const findItem = patient?.data?.filter(data => data?.name?.toString()?.replace(specialCharacter, '')?.replace(spaceString, '')?.toLowerCase()?.includes(searchText?.replace(spaceString, '')?.toLowerCase()))
+
+    return findItem?.length > 0
+  }) : []
+
+  useEffect(() => {
+    setCurrentPage(() => 1)
+  }, [searchText])
+
   let pageSize = 5
 
   const currentTableData = useMemo(() => {
     const firstPageIndex = (currentPage - 1) * 5
     const lastPageIndex = firstPageIndex + pageSize
-    return dataColumns?.slice(firstPageIndex, lastPageIndex)
-  }, [currentPage, dataColumns])
+    return filterText?.slice(firstPageIndex, lastPageIndex)
+  }, [currentPage, filterText])
 
-  useEffect(()=>{
-    if(dataColumns?.length > 0){
+  useEffect(() => {
+    if (currentTableData?.length > 0) {
       setTimeout(() => {
         changeTableStyle(currentTableData)
       }, 0)
     }
-  }, [currentPage, dataColumns])
+  }, [currentPage, currentTableData])
 
   const propsInputEdit = {
     styleTitle: {
@@ -424,6 +549,37 @@ function ConfirmationPatient() {
     setOnPopupEdit(!onPopupEdit)
   }
 
+  const handleFilterDate = () => {
+    const selectEl = document.getElementById('filterDateTable')
+    const id = selectEl.options[selectEl.selectedIndex].value
+    if (id) {
+      if (id !== 'Off Date') {
+        setDisplayOnCalendar(true)
+      } else {
+        setDisplayOnCalendar(false)
+        setSelectDate()
+      }
+
+      setChooseFilterByDate({
+        id: id,
+        title: id
+      })
+      setOnSortDate(false)
+    }
+  }
+
+  const handleSortCategory = () => {
+    const selectEl = document.getElementById('sortDateTable')
+    const id = selectEl.options[selectEl.selectedIndex].value
+    if (id) {
+      if (id !== 'Off Sort Date') {
+        setOnSortDate(true)
+      } else {
+        setOnSortDate(false)
+      }
+    }
+  }
+
   return (
     <>
       <Head>
@@ -432,7 +588,7 @@ function ConfirmationPatient() {
       </Head>
 
       {/* Pop up edit */}
-      <WrappEditPR
+      {/* <WrappEditPR
         clickWrapp={handlePopupEdit}
         clickClose={handlePopupEdit}
         styleWrapp={{
@@ -527,7 +683,7 @@ function ConfirmationPatient() {
             display: loadingSubmit ? 'flex' : 'none'
           }}
         />
-      </WrappEditPR>
+      </WrappEditPR> */}
 
       <div className={onNavLeft ? `${style['wrapp']} ${style['wrapp-active']}` : style['wrapp']}>
         <div className={style['container']}>
@@ -539,6 +695,22 @@ function ConfirmationPatient() {
             <TableContainer styleWrapp={{
               margin: '50px 0 0 0'
             }}>
+              <TableFilter
+                placeholder="Search text"
+                displayOnCalendar={displayOnCalendar}
+                dataBlogCategory={filterBy}
+                valueInput={searchText}
+                changeInput={(e) => setSearchText(e.target.value)}
+                selected={selectDate}
+                changeCalendar={(date) => {
+                  setCurrentPage(() => 1)
+                  setSelectDate(date)
+                }}
+                handleCategory={handleFilterDate}
+                dataSortCategory={dataSortDate}
+                handleSortCategory={handleSortCategory}
+                displaySortDate={selectDate !== undefined && chooseFilterByDate?.id !== 'Date of Birth' && currentTableData?.length > 0 ? true : false}
+              />
               <TableBody
               // styleWrapp={{
               //   width: '1300px'
@@ -617,7 +789,7 @@ function ConfirmationPatient() {
               </TableBody>
               <Pagination
                 currentPage={currentPage}
-                totalCount={dataColumns?.length}
+                totalCount={filterText?.length}
                 pageSize={pageSize}
                 onPageChange={(pageNumber) => setCurrentPage(pageNumber)}
               />
