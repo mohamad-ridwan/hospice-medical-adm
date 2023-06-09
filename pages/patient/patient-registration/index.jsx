@@ -21,6 +21,9 @@ import { dayNamesInd } from 'lib/namesOfCalendar/dayNamesInd'
 import { monthNames } from 'lib/namesOfCalendar/monthNames'
 import monthNamesInd from 'lib/namesOfCalendar/monthNameInd'
 import Pagination from 'components/Pagination/Pagination'
+import TableFilter from 'components/Table/TableFilter'
+import specialCharacter from 'lib/regex/specialCharacter'
+import spaceString from 'lib/regex/spaceString'
 
 function PatientRegistration() {
     const [currentPage, setCurrentPage] = useState(1)
@@ -33,6 +36,9 @@ function PatientRegistration() {
         },
         {
             name: 'Submission Date'
+        },
+        {
+            name: 'Hours Submitted'
         },
         {
             name: 'Email'
@@ -82,6 +88,46 @@ function PatientRegistration() {
         dateOfBirth: '',
         phone: ''
     })
+    const [filterBy] = useState([
+        {
+            id: 'Off Date',
+            title: 'Off Date',
+        },
+        {
+            id: 'Appointment Date',
+            title: 'Appointment Date',
+        },
+        {
+            id: 'Submission Date',
+            title: 'Submission Date',
+        },
+        {
+            id: 'Date of Birth',
+            title: 'Date of Birth',
+        },
+    ])
+    const [searchText, setSearchText] = useState('')
+    const [displayOnCalendar, setDisplayOnCalendar] = useState(false)
+    const [chooseFilterByDate, setChooseFilterByDate] = useState({
+        id: 'Off Date',
+        title: 'Off Date'
+    })
+    const [dataSortDate] = useState([
+        {
+            id: 'Off Sort Date',
+            title: 'Off Sort Date'
+        },
+        {
+            id: 'On Sort Date',
+            title: 'On Sort Date'
+        },
+    ])
+    const [chooseOnSortDate, setChooseOnSortDate] = useState({
+        id: 'Off Sort Date',
+        title: 'Off Sort Date'
+    })
+    const [onSortDate, setOnSortDate] = useState(false)
+    const [selectDate, setSelectDate] = useState()
 
     // swr fetching data
     // servicing hours
@@ -138,6 +184,8 @@ function PatientRegistration() {
                                     colorName: '#777',
                                     marginBottom: '4.5px',
                                     fontSize: '12px',
+                                    filterBy: 'Appointment Date',
+                                    clock: item.clock,
                                     name: item.appointmentDate,
                                 },
                                 {
@@ -146,7 +194,12 @@ function PatientRegistration() {
                                     colorName: '#777',
                                     marginBottom: '4.5px',
                                     fontSize: '12px',
+                                    filterBy: 'Submission Date',
+                                    clock: item.clock,
                                     name: item.submissionDate
+                                },
+                                {
+                                    name: item.clock
                                 },
                                 {
                                     name: item.emailAddress
@@ -157,6 +210,7 @@ function PatientRegistration() {
                                     colorName: '#777',
                                     marginBottom: '4.5px',
                                     fontSize: '12px',
+                                    filterBy: 'Date of Birth',
                                     name: item.dateOfBirth
                                 },
                                 {
@@ -219,42 +273,100 @@ function PatientRegistration() {
                 elementTHead = document.getElementById(`tHead2`)
                 elementTHead.style.width = 'calc(100%/8)'
                 elementTHead = document.getElementById(`tHead3`)
-                elementTHead.style.width = 'calc(100%/5)'
+                elementTHead.style.width = 'calc(100%/8)'
+                elementTHead = document.getElementById(`tHead4`)
+                elementTHead.style.width = 'calc(100%/6)'
                 elementTHead = document.getElementById(`tHead5`)
                 elementTHead.style.width = 'calc(100%/10)'
             }
             if (elementTData) {
                 for (let i = 0; i < dataColumnsBody?.length; i++) {
                     elementTData = document.getElementById(`tData${i}0`)
-                    elementTData.style.width = 'calc(100%/7)'
-                    elementTData = document.getElementById(`tData${i}1`)
-                    elementTData.style.width = 'calc(100%/7)'
-                    elementTData = document.getElementById(`tData${i}2`)
-                    elementTData.style.width = 'calc(100%/8)'
-                    elementTData = document.getElementById(`tData${i}3`)
-                    elementTData.style.width = 'calc(100%/5)'
-                    elementTData = document.getElementById(`tData${i}5`)
-                    elementTData.style.width = 'calc(100%/10)'
+                    if (elementTData?.style) {
+                        elementTData.style.width = 'calc(100%/7)'
+                        elementTData = document.getElementById(`tData${i}1`)
+                        elementTData.style.width = 'calc(100%/7)'
+                        elementTData = document.getElementById(`tData${i}2`)
+                        elementTData.style.width = 'calc(100%/8)'
+                        elementTData = document.getElementById(`tData${i}3`)
+                        elementTData.style.width = 'calc(100%/8)'
+                        elementTData = document.getElementById(`tData${i}4`)
+                        elementTData.style.width = 'calc(100%/6)'
+                        elementTData = document.getElementById(`tData${i}5`)
+                        elementTData.style.width = 'calc(100%/10)'
+                    }
                 }
             }
         }
     }
+
+    const makeFormatDate = () => {
+        const getCurrentDate = `${selectDate}`.split(' ')
+        const getCurrentMonth = monthNames.findIndex(month => month?.toLowerCase() === getCurrentDate[1]?.toLowerCase())
+        const getNumberOfCurrentMonth = getCurrentMonth?.toString()?.length === 1 ? `0${getCurrentMonth + 1}` : `${getCurrentMonth + 1}`
+        const dateNow = getCurrentDate[2]
+        const yearsNow = getCurrentDate[3]
+        const currentDate = `${getNumberOfCurrentMonth}/${dateNow}/${yearsNow}`
+
+        return currentDate
+    }
+
+    const filterByDate = dataColumns?.length > 0 ? dataColumns.filter(patient => {
+        const findDate = selectDate !== undefined ? patient?.data?.filter(data =>
+            data?.filterBy?.toLowerCase() === chooseFilterByDate?.id?.toLowerCase() &&
+            data?.name === makeFormatDate())
+            : []
+
+        return findDate?.length > 0
+    }) : []
+
+    const checkFilterByDate = () => {
+        if (selectDate !== undefined) {
+            return filterByDate
+        }
+
+        return dataColumns
+    }
+    const sortDate = onSortDate && filterByDate?.length > 0 ? filterByDate.sort((p1, p2) => {
+        const findDateOnSelectDateP1 = p1?.data?.find(data=>
+            data?.filterBy?.toLowerCase() === chooseFilterByDate?.id?.toLowerCase()
+        )
+        const findDateOnSelectDateP2 = p2?.data?.find(data=>
+            data?.filterBy?.toLowerCase() === chooseFilterByDate?.id?.toLowerCase()
+            )
+
+        return new Date(`${findDateOnSelectDateP1?.name} ${findDateOnSelectDateP1?.clock}`) - new Date(`${findDateOnSelectDateP2?.name} ${findDateOnSelectDateP2?.clock}`)
+    }) : []
+
+    const checkSortSubmissionDate = ()=>{
+        if(onSortDate){
+            return sortDate
+        }
+
+        return checkFilterByDate()
+    }
+
+    const filterText = checkSortSubmissionDate()?.length > 0 ? checkSortSubmissionDate().filter(patient => {
+        const findItem = patient?.data?.filter(data => data?.name?.replace(specialCharacter, '')?.replace(spaceString, '')?.toLowerCase()?.includes(searchText?.replace(spaceString, '')))
+
+        return findItem?.length > 0
+    }) : []
 
     let pageSize = 5
 
     const currentTableData = useMemo(() => {
         const firstPageIndex = (currentPage - 1) * 5
         const lastPageIndex = firstPageIndex + pageSize
-        return dataColumns?.slice(firstPageIndex, lastPageIndex)
-    }, [currentPage, dataColumns])
+        return filterText?.slice(firstPageIndex, lastPageIndex)
+    }, [currentPage, filterText])
 
-    useEffect(()=>{
-        if(currentTableData?.length > 0){
+    useEffect(() => {
+        if (currentTableData?.length > 0) {
             setTimeout(() => {
                 changeTableStyle(currentTableData)
             }, 500)
         }
-    }, [currentPage, dataColumns])
+    }, [currentPage, currentTableData])
 
     const propsInputEdit = {
         styleTitle: {
@@ -452,6 +564,42 @@ function PatientRegistration() {
         }
     }
 
+    const handleFilterDate = () => {
+        const selectEl = document.getElementById('filterDateTable')
+        const id = selectEl.options[selectEl.selectedIndex].value
+        if (id) {
+            if (id !== 'Off Date') {
+                setDisplayOnCalendar(true)
+            } else {
+                setDisplayOnCalendar(false)
+                setSelectDate()
+            }
+
+            setChooseFilterByDate({
+                id: id,
+                title: id
+            })
+            setOnSortDate(false)
+        }
+    }
+
+    const handleSortCategory = () => {
+        const selectEl = document.getElementById('sortDateTable')
+        const id = selectEl.options[selectEl.selectedIndex].value
+        if (id) {
+            if (id !== 'Off Sort Date') {
+                setOnSortDate(true)
+            } else {
+                setOnSortDate(false)
+            }
+
+            setChooseOnSortDate({
+                id: id,
+                title: id
+            })
+        }
+    }
+
     return (
         <>
             <Head>
@@ -460,7 +608,7 @@ function PatientRegistration() {
             </Head>
 
             {/* Pop up edit */}
-            <WrappEditPR
+            {/* <WrappEditPR
                 clickWrapp={handlePopupEdit}
                 clickClose={handlePopupEdit}
                 styleWrapp={{
@@ -555,7 +703,7 @@ function PatientRegistration() {
                         display: loadingSubmit ? 'flex' : 'none'
                     }}
                 />
-            </WrappEditPR>
+            </WrappEditPR> */}
 
             <div className={onNavLeft ? `${style['wrapp']} ${style['wrapp-active']}` : style['wrapp']}>
                 <div className={style['container']}>
@@ -567,7 +715,20 @@ function PatientRegistration() {
                         <TableContainer styleWrapp={{
                             margin: '50px 0 0 0'
                         }}>
-                            <TableBody 
+                            <TableFilter
+                                placeholder='Search text'
+                                displayOnCalendar={displayOnCalendar}
+                                dataBlogCategory={filterBy}
+                                valueInput={searchText}
+                                changeInput={(e) => setSearchText(e.target.value)}
+                                selected={selectDate}
+                                changeCalendar={(date) => setSelectDate(date)}
+                                handleCategory={handleFilterDate}
+                                dataSortCategory={dataSortDate}
+                                handleSortCategory={handleSortCategory}
+                                displaySortDate={selectDate !== undefined && chooseFilterByDate?.id !== 'Date of Birth' && currentTableData?.length > 0 ? true : false}
+                            />
+                            <TableBody
                             // styleWrapp={{
                             //     width: '1300px'
                             // }}
@@ -671,7 +832,7 @@ function PatientRegistration() {
                             </TableBody>
                             <Pagination
                                 currentPage={currentPage}
-                                totalCount={dataColumns?.length}
+                                totalCount={filterText?.length}
                                 pageSize={pageSize}
                                 onPageChange={(pageNumber) => setCurrentPage(pageNumber)}
                             />

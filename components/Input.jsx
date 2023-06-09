@@ -36,7 +36,9 @@ function Input({
   minDate,
   maxDate,
   renderCustomHeader,
-  filterDate
+  filterDate,
+  placeholderCalendar,
+  classCalendar
 }) {
   return (
     <>
@@ -67,7 +69,9 @@ function Input({
           filterDate={filterDate}
           onChange={changeCalendar}
           customInput={customInput}
+          placeholderText={placeholderCalendar}
           renderCustomHeader={renderCustomHeader}
+          className={styleInput[classCalendar]}
         />
       )}
 

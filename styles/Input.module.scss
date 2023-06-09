@@ -2,7 +2,7 @@
 @import 'variables/font';
 @import 'variables/responsive';
 
-.title{
+.title {
     display: none;
     font-size: 13px;
     font-weight: bold;
@@ -10,14 +10,14 @@
     text-align: start;
     color: $fontColor2;
 
-    .star{
+    .star {
         display: none;
         color: $pinkOld;
         margin-left: 3px;
     }
 }
 
-.input-card{
+.input-card {
     display: flex;
     font-size: 13px;
     border: 1px solid #eee;
@@ -28,26 +28,28 @@
     font-family: 'Mulish', sans-serif;
     letter-spacing: 0.5px;
 
-    .input-file{
+    .input-file {
         display: none;
     }
 }
-.input-card::placeholder{
+
+.input-card::placeholder {
     font-size: 13px;
 }
-.input-card:focus{
+
+.input-card:focus {
     border: 1px solid $colorDefault;
     transition: 0.3s ease-in-out;
 }
 
-.btn-input-file{
+.btn-input-file {
     display: none;
     color: $fontColor2;
     font-family: 'Mulish', sans-serif;
 }
 
 // txt area
-.txt-area{
+.txt-area {
     display: none;
     max-height: 150px;
     font-family: 'Mulish', sans-serif;
@@ -61,14 +63,26 @@
     margin-bottom: 5px;
     letter-spacing: 0.5px;
 }
-.txt-area::placeholder{
+
+.txt-area::placeholder {
     font-size: 13px;
 }
-.txt-area:focus{
+
+.txt-area:focus {
     border: 1px solid $colorDefault;
 }
 
-.error-message{
+// search date (table)
+.search-date {
+    background-color: #f9f9f9;
+    padding: 9px 10px;
+    border-radius: 5px;
+    border: none;
+    outline: none;
+    overflow: hidden;
+}
+
+.error-message {
     display: none;
     font-size: 10px;
     color: red;

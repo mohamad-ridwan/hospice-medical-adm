@@ -1,0 +1,33 @@
+@import 'variables/color';
+@import 'variables/responsive';
+@import 'variables/font';
+
+.wrapp{
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
+    justify-content: space-between;
+    padding: 0 0 15px 0;
+
+    .left{
+        display: flex;
+        flex-direction: column;
+        .search{
+            display: flex;
+            align-items: center;
+            background-color: #f9f9f9;
+            padding: 0 10px;
+            border-radius: 5px;
+            overflow: hidden;
+
+            i{
+                font-size: 14px;
+                color: #aaa;
+            }
+        }
+    }
+    .right{
+        display: flex;
+        flex-direction: column;
+    }
+}
