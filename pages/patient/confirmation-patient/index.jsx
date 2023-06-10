@@ -74,6 +74,10 @@ function ConfirmationPatient() {
   const [displayOnCalendar, setDisplayOnCalendar] = useState(false)
   const [selectDate, setSelectDate] = useState()
   const [onSortDate, setOnSortDate] = useState(false)
+  const [chooseFilterRoom, setChooseFilterRoom] = useState({
+    id: 'Filter Room',
+    title: 'Filter Room'
+  })
   const [chooseFilterByDate, setChooseFilterByDate] = useState({
     id: 'Off Date',
     title: 'Off Date'
@@ -107,8 +111,45 @@ function ConfirmationPatient() {
     },
   ])
 
+  // swr fetching data
+  // servicing hours
   const { data: dataService, error: errService, isLoading: loadService } = useSwr(endpoint.getServicingHours())
   const bookAnAppointment = dataService?.data?.find(item => item.id === 'book-an-appointment')
+
+  // doctors
+  const { data: dataDoctors, error: errDataDoctors, isLoading: loadDataDoctors } = useSwr(endpoint.getDoctors())
+  const getDoctorsDocument = dataDoctors?.data?.length > 0 ? dataDoctors?.data[0] : []
+  const getDoctors = getDoctorsDocument?.data?.length > 0 ? getDoctorsDocument.data : []
+  
+  const getRoomDoctors = ()=>{
+    const filterRoom = [{
+      id: 'Filter Room',
+      title: 'Filter Room'
+    }]
+
+    let count = 0
+
+    const getRoom = ()=>{
+      return getDoctors?.length > 0 ? getDoctors.forEach(doctor=>{
+        count = count + 1
+        const checkRoom = filterRoom.findIndex(item=>item.id.toLowerCase() === doctor?.room?.toLowerCase())
+        if(checkRoom === -1){
+          filterRoom.push({
+            id: doctor?.room,
+            title: doctor?.room
+          })
+        }
+      }) : null
+    }
+
+    getRoom()
+
+    if(!errDataDoctors && count === getDoctors?.length){
+      return filterRoom
+    }else if(!loadDataDoctors && errDataDoctors){
+      return filterRoom
+    }
+  }
 
   // context
   const { user, loadingAuth } = useContext(AuthContext)
@@ -205,7 +246,8 @@ function ConfirmationPatient() {
                 {
                   name: item?.isConfirm?.roomInfo?.roomName,
                   colorName: '#ff296d',
-                  fontWeightName: 'bold'
+                  fontWeightName: 'bold',
+                  filterRoom: true
                 },
                 {
                   name: item?.isConfirm?.queueNumber,
@@ -279,6 +321,23 @@ function ConfirmationPatient() {
     }
   }, [dataService])
 
+  const filterByRoom = chooseFilterRoom?.id !== 'Filter Room' && dataColumns?.length > 0 ? dataColumns.filter(patient=>{
+    const findRoom = patient?.data?.filter(data=>
+      data?.filterRoom && 
+      data?.name?.toLowerCase() === chooseFilterRoom?.id?.toLowerCase()
+      )
+
+      return findRoom?.length > 0
+  }) : []
+
+  const checkFilterByRoom = ()=>{
+    if(chooseFilterRoom?.id !== 'Filter Room'){
+      return filterByRoom
+    }
+
+    return dataColumns
+  }
+
   const makeFormatDate = () => {
     const getCurrentDate = `${selectDate}`.split(' ')
     const getCurrentMonth = monthNames.findIndex(month => month?.toLowerCase() === getCurrentDate[1]?.toLowerCase())
@@ -290,7 +349,7 @@ function ConfirmationPatient() {
     return currentDate
   }
 
-  const filterByDate = dataColumns?.length > 0 ? dataColumns.filter(patient => {
+  const filterByDate = checkFilterByRoom()?.length > 0 ? checkFilterByRoom().filter(patient => {
     const findDate = selectDate !== undefined ? patient?.data?.filter(data =>
       data?.filterBy?.toLowerCase() === chooseFilterByDate?.id?.toLowerCase() &&
       data?.name === makeFormatDate())
@@ -304,7 +363,7 @@ function ConfirmationPatient() {
       return filterByDate
     }
 
-    return dataColumns
+    return checkFilterByRoom()
   }
   const sortDate = onSortDate && filterByDate?.length > 0 ? filterByDate.sort((p1, p2) => {
     const findDateOnSelectDateP1 = p1?.data?.find(data =>
@@ -580,6 +639,17 @@ function ConfirmationPatient() {
     }
   }
 
+  const handleSortRoom = () => {
+    const selectEl = document.getElementById('sortRoom')
+    const id = selectEl.options[selectEl.selectedIndex].value
+    if (id) {
+      setChooseFilterRoom({
+        id: id,
+        title: id
+      })
+    }
+  }
+
   return (
     <>
       <Head>
@@ -710,6 +780,10 @@ function ConfirmationPatient() {
                 dataSortCategory={dataSortDate}
                 handleSortCategory={handleSortCategory}
                 displaySortDate={selectDate !== undefined && chooseFilterByDate?.id !== 'Date of Birth' && currentTableData?.length > 0 ? true : false}
+                displaySortOther={true}
+                dataSortOther={getRoomDoctors()}
+                idSortOther='sortRoom'
+                handleSortOther={handleSortRoom}
               />
               <TableBody
               // styleWrapp={{

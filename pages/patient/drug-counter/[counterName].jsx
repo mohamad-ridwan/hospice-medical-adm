@@ -17,6 +17,9 @@ import { dayNamesInd } from 'lib/namesOfCalendar/dayNamesInd'
 import { monthNames } from 'lib/namesOfCalendar/monthNames'
 import monthNamesInd from 'lib/namesOfCalendar/monthNameInd'
 import Pagination from 'components/Pagination/Pagination'
+import TableFilter from 'components/Table/TableFilter'
+import specialCharacter from 'lib/regex/specialCharacter'
+import spaceString from 'lib/regex/spaceString'
 
 function DetailCounter() {
     const [currentPage, setCurrentPage] = useState(1)
@@ -48,6 +51,46 @@ function DetailCounter() {
     ])
     const [idDataRegisForUpdt, setIdDataRegisForUpdt] = useState(null)
     const [loadingSubmit, setLoadingSubmit] = useState(false)
+    const [searchText, setSearchText] = useState('')
+    const [displayOnCalendar, setDisplayOnCalendar] = useState(false)
+    const [selectDate, setSelectDate] = useState()
+    const [chooseFilterBy, setChooseFilterBy] = useState({
+        id: 'Filter by',
+        title: 'Filter by'
+    })
+    const [filterBy] = useState([
+        {
+            id: 'Filter by',
+            title: 'Filter by',
+        },
+        {
+            id: 'Status',
+            title: 'Status',
+        },
+        {
+            id: 'Date of Birth',
+            title: 'Date of Birth',
+        },
+    ])
+    const [chooseFilterStatus, setChooseFilterStatus] = useState({
+        id: 'Choose Status',
+        title: 'Choose Status'
+    })
+    const [onFilterStatus, setOnFilterStatus] = useState(false)
+    const [dataFilterStatus] = useState([
+        {
+            id: 'Choose Status',
+            title: 'Choose Status'
+        },
+        {
+            id: 'IN PROGRESS',
+            title: 'IN PROGRESS'
+        },
+        {
+            id: 'EXPIRED',
+            title: 'EXPIRED'
+        },
+    ])
 
     const router = useRouter()
     const { counterName = '' } = router.query
@@ -108,6 +151,7 @@ function DetailCounter() {
                     padding: '5.5px 8px',
                     colorName: '#fff',
                     borderRadius: '3px',
+                    statusFilter: checkProgressPatient,
                     background: checkProgressPatient === 'IN PROGRESS' ? '#288bbc' : '#ff296d'
                 },
                 {
@@ -125,6 +169,7 @@ function DetailCounter() {
                     colorName: '#777',
                     marginBottom: '4.5px',
                     fontSize: '12px',
+                    filterDateOfBirth: true,
                     name: getEveryDetailPatient[0]?.dateOfBirth
                 },
                 {
@@ -144,13 +189,62 @@ function DetailCounter() {
         }
     }, [])
 
+    const filterStatus = onFilterStatus && getLoket?.length > 0 ? getLoket.filter(patient => {
+        const findStatus = patient?.data?.filter(data =>
+            data?.statusFilter?.toLowerCase() === chooseFilterStatus?.id?.toLowerCase()
+        )
+
+        return findStatus?.length > 0
+    }) : []
+
+    const makeFormatDate = () => {
+        const getCurrentDate = `${selectDate}`.split(' ')
+        const getCurrentMonth = monthNames.findIndex(month => month?.toLowerCase() === getCurrentDate[1]?.toLowerCase())
+        const getNumberOfCurrentMonth = getCurrentMonth?.toString()?.length === 1 ? `0${getCurrentMonth + 1}` : `${getCurrentMonth + 1}`
+        const dateNow = getCurrentDate[2]
+        const yearsNow = getCurrentDate[3]
+        const currentDate = `${getNumberOfCurrentMonth}/${dateNow}/${yearsNow}`
+
+        return currentDate
+    }
+
+    const filterDateOfBirth = selectDate !== undefined && getLoket?.length > 0 ? getLoket.filter(patient => {
+        const findDateOfBirth = patient?.data?.filter(data =>
+            data?.filterDateOfBirth &&
+            data?.name === makeFormatDate()
+        )
+
+        return findDateOfBirth?.length > 0
+    }) : []
+
+    const checkFilterBy = ()=>{
+        if (onFilterStatus) {
+            return filterStatus
+        }
+        if(selectDate !== undefined){
+            return filterDateOfBirth
+        }
+
+        return getLoket
+    }
+
+    const filterText = checkFilterBy()?.length > 0 ? checkFilterBy().filter(patient => {
+        const findItem = patient?.data?.filter(data => data?.name?.replace(specialCharacter, '')?.replace(spaceString, '')?.toLowerCase()?.includes(searchText?.replace(spaceString, '')?.toLowerCase()))
+
+        return findItem?.length > 0
+    }) : []
+
+    useEffect(() => {
+        setCurrentPage(() => 1)
+    }, [searchText])
+
     let pageSize = 5
 
     const currentTableData = useMemo(() => {
         const firstPageIndex = (currentPage - 1) * 5
         const lastPageIndex = firstPageIndex + pageSize
-        return getLoket?.slice(firstPageIndex, lastPageIndex)
-    }, [currentPage, getLoket])
+        return filterText?.slice(firstPageIndex, lastPageIndex)
+    }, [currentPage, filterText])
 
     const changeTableStyle = () => {
         let elementTHead = document.getElementById('tHead0')
@@ -175,19 +269,21 @@ function DetailCounter() {
         if (elementTData) {
             for (let i = 0; i < currentTableData?.length; i++) {
                 elementTData = document.getElementById(`tData${i}0`)
-                elementTData.style.width = 'calc(100%/10)'
-                elementTData = document.getElementById(`tData${i}1`)
-                elementTData.style.width = 'calc(100%/7)'
-                elementTData = document.getElementById(`tData${i}2`)
-                elementTData.style.width = 'calc(100%/10)'
-                elementTData = document.getElementById(`tData${i}3`)
-                elementTData.style.width = 'calc(100%/9)'
-                elementTData = document.getElementById(`tData${i}4`)
-                elementTData.style.width = 'calc(100%/6)'
-                elementTData = document.getElementById(`tData${i}5`)
-                elementTData.style.width = 'calc(100%/8)'
-                elementTData = document.getElementById(`tData${i}6`)
-                elementTData.style.width = 'calc(100%/10)'
+                if (elementTData?.style) {
+                    elementTData.style.width = 'calc(100%/10)'
+                    elementTData = document.getElementById(`tData${i}1`)
+                    elementTData.style.width = 'calc(100%/7)'
+                    elementTData = document.getElementById(`tData${i}2`)
+                    elementTData.style.width = 'calc(100%/10)'
+                    elementTData = document.getElementById(`tData${i}3`)
+                    elementTData.style.width = 'calc(100%/9)'
+                    elementTData = document.getElementById(`tData${i}4`)
+                    elementTData.style.width = 'calc(100%/6)'
+                    elementTData = document.getElementById(`tData${i}5`)
+                    elementTData.style.width = 'calc(100%/8)'
+                    elementTData = document.getElementById(`tData${i}6`)
+                    elementTData.style.width = 'calc(100%/10)'
+                }
             }
         }
     }
@@ -242,6 +338,47 @@ function DetailCounter() {
             .catch(err => error(err))
     }
 
+    const handleFilterDateOfBirth = () => {
+        const selectEl = document.getElementById('filterDateTable')
+        const id = selectEl.options[selectEl.selectedIndex].value
+        if (id) {
+            if (id !== 'Filter by' && id !== 'Status') {
+                setDisplayOnCalendar(true)
+            } else {
+                setDisplayOnCalendar(false)
+            }
+            setSelectDate()
+
+            setChooseFilterBy({
+                id: id,
+                title: id
+            })
+            setChooseFilterStatus({
+                id: 'Choose Status',
+                title: 'Choose Status'
+            })
+            setOnFilterStatus(false)
+            setCurrentPage(() => 1)
+        }
+    }
+
+    const handleFilterStatus = () => {
+        const selectEl = document.getElementById('sortDateTable')
+        const id = selectEl.options[selectEl.selectedIndex].value
+        if (id) {
+            if (id !== 'Choose Status') {
+                setOnFilterStatus(true)
+            } else {
+                setOnFilterStatus(false)
+            }
+            setChooseFilterStatus({
+                id: id,
+                title: id
+            })
+            setCurrentPage(() => 1)
+        }
+    }
+
     return (
         <>
             <Head>
@@ -264,6 +401,22 @@ function DetailCounter() {
                         <TableContainer styleWrapp={{
                             margin: '50px 0 0 0'
                         }}>
+                            <TableFilter
+                                placeholder='Search text'
+                                displayOnCalendar={displayOnCalendar}
+                                dataBlogCategory={filterBy}
+                                valueInput={searchText}
+                                changeInput={(e) => setSearchText(e.target.value)}
+                                selected={selectDate}
+                                changeCalendar={(date) => {
+                                    setCurrentPage(() => 1)
+                                    setSelectDate(date)
+                                }}
+                                handleCategory={handleFilterDateOfBirth}
+                                displaySortDate={chooseFilterBy?.id === 'Status' ? true : false}
+                                dataSortCategory={dataFilterStatus}
+                                handleSortCategory={handleFilterStatus}
+                            />
                             <TableBody>
                                 <div className={style['container-table-content']}>
                                     <TableHead
@@ -333,7 +486,7 @@ function DetailCounter() {
                             </TableBody>
                             <Pagination
                                 currentPage={currentPage}
-                                totalCount={getLoket?.length}
+                                totalCount={filterText?.length}
                                 pageSize={pageSize}
                                 onPageChange={(pageNumber) => setCurrentPage(pageNumber)}
                             />

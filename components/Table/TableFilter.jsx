@@ -17,7 +17,11 @@ function TableFilter({
     handleCategory,
     dataSortCategory,
     handleSortCategory,
-    displaySortDate
+    displaySortDate,
+    displaySortOther,
+    dataSortOther,
+    idSortOther,
+    handleSortOther
 }) {
     const yearsCalendar = range(1900, getYear(new Date()) + 1, 1)
     const monthsCalendar = [
@@ -125,6 +129,22 @@ function TableFilter({
 
             {/* right */}
             <div className={style['right']}>
+                {displaySortOther && (
+                    <SelectCategory
+                        styleWrapp={{
+                            margin: '0'
+                        }}
+                        styleTitle={{
+                            display: 'none'
+                        }}
+                        styleCategory={{
+                            margin: '5px 0'
+                        }}
+                        idSelect={idSortOther}
+                        dataBlogCategory={dataSortOther}
+                        handleCategory={handleSortOther}
+                    />
+                )}
                 <SelectCategory
                     styleWrapp={{
                         margin: '0'
