@@ -356,7 +356,7 @@ function PatientRegistration() {
         setCurrentPage(() => 1)
     }, [searchText])
 
-    let pageSize = 5
+    let pageSize = 10
 
     const currentTableData = useMemo(() => {
         const firstPageIndex = (currentPage - 1) * 5

@@ -17,6 +17,9 @@ import { dayNamesInd } from 'lib/namesOfCalendar/dayNamesInd'
 import monthNamesInd from 'lib/namesOfCalendar/monthNameInd'
 import API from 'lib/api'
 import Pagination from 'components/Pagination/Pagination'
+import TableFilter from 'components/Table/TableFilter'
+import specialCharacter from 'lib/regex/specialCharacter'
+import spaceString from 'lib/regex/spaceString'
 
 function FinishedTreatment() {
     const [idDeleteDataRegis, setIdDeleteDataRegis] = useState(null)
@@ -46,6 +49,61 @@ function FinishedTreatment() {
         },
         {
             name: 'Phone'
+        },
+    ])
+    const [searchText, setSearchText] = useState('')
+    const [displayOnCalendar, setDisplayOnCalendar] = useState(false)
+    const [onSortDate, setOnSortDate] = useState(false)
+    const [selectDate, setSelectDate] = useState()
+    const [onStatus, setOnStatus] = useState(false)
+    const [chooseFilterStatus, setChooseFilterStatus] = useState({
+        id: 'Status',
+        title: 'Status'
+    })
+    const [dataFilterStatus] = useState([
+        {
+            id: 'Status',
+            title: 'Status'
+        },
+        {
+            id: 'HADIR',
+            title: 'HADIR'
+        },
+        {
+            id: 'TIDAK HADIR',
+            title: 'TIDAK HADIR'
+        },
+        {
+            id: 'CANCELLED',
+            title: 'CANCELLED'
+        },
+    ])
+    const [chooseFilterBy, setChooseFilterBy] = useState({
+        id: 'Filter by',
+        title: 'Filter by'
+    })
+    const [dataFilterBy] = useState([
+        {
+            id: 'Filter by',
+            title: 'Filter by'
+        },
+        {
+            id: 'Confirmation Date',
+            title: 'Confirmation Date'
+        },
+        {
+            id: 'Date of Birth',
+            title: 'Date of Birth'
+        },
+    ])
+    const [dataSortDate] = useState([
+        {
+            id: 'Off Sort Date',
+            title: 'Off Sort Date'
+        },
+        {
+            id: 'On Sort Date',
+            title: 'On Sort Date'
         },
     ])
 
@@ -108,6 +166,7 @@ function FinishedTreatment() {
                 {
                     fontSize: '11px',
                     colorName: '#fff',
+                    statusFilter: true,
                     name: !findPatientRegisData?.isConfirm?.id ? 'CANCELLED' : findPatientRegisData?.isConfirm?.presence === 'hadir' ? getCurrentLoket?.presence?.toUpperCase() : findPatientRegisData?.isConfirm?.presence?.toUpperCase(),
                 },
                 {
@@ -121,6 +180,8 @@ function FinishedTreatment() {
                     colorName: '#777',
                     marginBottom: '4.5px',
                     fontSize: '12px',
+                    filterBy: 'Confirmation Date',
+                    clock: item?.confirmedTime?.confirmHour,
                     name: item?.confirmedTime?.dateConfirm
                 },
                 {
@@ -135,7 +196,8 @@ function FinishedTreatment() {
                     colorName: '#777',
                     marginBottom: '4.5px',
                     fontSize: '12px',
-                    name: makeNormalDate(findPatientRegisData?.dateOfBirth, true)
+                    filterBy: 'Date of Birth',
+                    name: findPatientRegisData?.dateOfBirth
                 },
                 {
                     name: item.phone
@@ -165,13 +227,87 @@ function FinishedTreatment() {
         return dateTwo - dateOne
     }) : []
 
-    let pageSize = 5
+    const filterStatus = onStatus && newPatientRegistration?.length > 0 ? newPatientRegistration.filter(patient => {
+        const findStatus = patient?.data?.filter(data =>
+            data?.statusFilter &&
+            data?.name === chooseFilterStatus?.id
+        )
+
+        return findStatus?.length > 0
+    }) : []
+
+    const checkFilterStatus = ()=>{
+        if(onStatus){
+            return filterStatus
+        }
+
+        return newPatientRegistration
+    }
+
+    const makeFormatDate = () => {
+        const getCurrentDate = `${selectDate}`.split(' ')
+        const getCurrentMonth = monthNames.findIndex(month => month?.toLowerCase() === getCurrentDate[1]?.toLowerCase())
+        const getNumberOfCurrentMonth = getCurrentMonth?.toString()?.length === 1 ? `0${getCurrentMonth + 1}` : `${getCurrentMonth + 1}`
+        const dateNow = getCurrentDate[2]
+        const yearsNow = getCurrentDate[3]
+        const currentDate = `${getNumberOfCurrentMonth}/${dateNow}/${yearsNow}`
+
+        return currentDate
+    }
+
+    const filterByDate = checkFilterStatus()?.length > 0 ? checkFilterStatus().filter(patient => {
+        const findDate = selectDate !== undefined ? patient?.data?.filter(data =>
+            data?.filterBy?.toLowerCase() === chooseFilterBy?.id?.toLowerCase() &&
+            data?.name === makeFormatDate())
+            : []
+
+        return findDate?.length > 0
+    }) : []
+
+    const checkFilterByDate = () => {
+        if (selectDate !== undefined) {
+            return filterByDate
+        }
+
+        return checkFilterStatus()
+    }
+
+    const sortDate = onSortDate && filterByDate?.length > 0 ? filterByDate.sort((p1, p2) => {
+        const findDateOnSelectDateP1 = p1?.data?.find(data =>
+            data?.filterBy?.toLowerCase() === chooseFilterBy?.id?.toLowerCase()
+        )
+        const findDateOnSelectDateP2 = p2?.data?.find(data =>
+            data?.filterBy?.toLowerCase() === chooseFilterBy?.id?.toLowerCase()
+        )
+
+        return new Date(`${findDateOnSelectDateP1?.name} ${findDateOnSelectDateP1?.clock}`) - new Date(`${findDateOnSelectDateP2?.name} ${findDateOnSelectDateP2?.clock}`)
+    }) : []
+
+    const checkSortConfirmationDate = () => {
+        if (onSortDate) {
+            return sortDate
+        }
+
+        return checkFilterByDate()
+    }
+
+    const filterText = checkSortConfirmationDate()?.length > 0 ? checkSortConfirmationDate().filter(patient => {
+        const findItem = patient?.data?.filter(data => data?.name?.replace(specialCharacter, '')?.replace(spaceString, '')?.toLowerCase()?.includes(searchText?.replace(spaceString, '')?.toLowerCase()))
+
+        return findItem?.length > 0
+    }) : []
+
+    useEffect(() => {
+        setCurrentPage(() => 1)
+    }, [searchText])
+
+    let pageSize = 10
 
     const currentTableData = useMemo(() => {
         const firstPageIndex = (currentPage - 1) * 5
         const lastPageIndex = firstPageIndex + pageSize
-        return newPatientRegistration?.slice(firstPageIndex, lastPageIndex)
-    }, [currentPage, newPatientRegistration])
+        return filterText?.slice(firstPageIndex, lastPageIndex)
+    }, [currentPage, filterText])
 
     const changeTableStyle = () => {
         let elementTHead = document.getElementById('tHead0')
@@ -198,21 +334,23 @@ function FinishedTreatment() {
         if (currentTableData?.length > 0 && elementTData) {
             for (let i = 0; i < currentTableData?.length; i++) {
                 elementTData = document.getElementById(`tData${i}0`)
-                elementTData.style.width = 'calc(100%/7)'
-                elementTData = document.getElementById(`tData${i}1`)
-                elementTData.style.width = 'calc(100%/12)'
-                elementTData = document.getElementById(`tData${i}2`)
-                elementTData.style.width = 'calc(100%/6)'
-                elementTData = document.getElementById(`tData${i}3`)
-                elementTData.style.width = 'calc(100%/8)'
-                elementTData = document.getElementById(`tData${i}4`)
-                elementTData.style.width = 'calc(100%/8)'
-                elementTData = document.getElementById(`tData${i}5`)
-                elementTData.style.width = 'calc(100%/7)'
-                elementTData = document.getElementById(`tData${i}6`)
-                elementTData.style.width = 'calc(100%/10)'
-                elementTData = document.getElementById(`tData${i}7`)
-                elementTData.style.width = 'calc(100%/7)'
+                if (elementTData?.style) {
+                    elementTData.style.width = 'calc(100%/7)'
+                    elementTData = document.getElementById(`tData${i}1`)
+                    elementTData.style.width = 'calc(100%/12)'
+                    elementTData = document.getElementById(`tData${i}2`)
+                    elementTData.style.width = 'calc(100%/6)'
+                    elementTData = document.getElementById(`tData${i}3`)
+                    elementTData.style.width = 'calc(100%/8)'
+                    elementTData = document.getElementById(`tData${i}4`)
+                    elementTData.style.width = 'calc(100%/8)'
+                    elementTData = document.getElementById(`tData${i}5`)
+                    elementTData.style.width = 'calc(100%/7)'
+                    elementTData = document.getElementById(`tData${i}6`)
+                    elementTData.style.width = 'calc(100%/10)'
+                    elementTData = document.getElementById(`tData${i}7`)
+                    elementTData.style.width = 'calc(100%/7)'
+                }
             }
         }
     }
@@ -282,6 +420,58 @@ function FinishedTreatment() {
             .catch(err => error(err))
     }
 
+    const handleFilterBy = () => {
+        const selectEl = document.getElementById('filterDateTable')
+        const id = selectEl.options[selectEl.selectedIndex].value
+        if (id) {
+            if (id !== 'Filter by') {
+                setDisplayOnCalendar(true)
+            } else {
+                setDisplayOnCalendar(false)
+                setSelectDate()
+            }
+            setChooseFilterBy({
+                id: id,
+                title: id
+            })
+            setCurrentPage(1)
+            setOnSortDate(false)
+        }
+    }
+
+    const handleSortCategory = () => {
+        const selectEl = document.getElementById('sortDateTable')
+        const id = selectEl.options[selectEl.selectedIndex].value
+        if (id) {
+            if (id !== 'Off Sort Date') {
+                setOnSortDate(true)
+                setCurrentPage(1)
+            } else {
+                setOnSortDate(false)
+                setCurrentPage(1)
+            }
+        }
+    }
+
+    const handleSortStatus = () => {
+        const selectEl = document.getElementById('sortStatus')
+        const id = selectEl.options[selectEl.selectedIndex].value
+        if (id) {
+            if (id !== 'Status') {
+                setOnStatus(true)
+            } else {
+                setOnStatus(false)
+            }
+
+            setChooseFilterStatus({
+                id: id,
+                title: id
+            })
+
+            setCurrentPage(1)
+        }
+    }
+
     return (
         <>
             <Head>
@@ -299,6 +489,26 @@ function FinishedTreatment() {
                         <TableContainer styleWrapp={{
                             margin: '50px 0 0 0'
                         }}>
+                            <TableFilter
+                                placeholder='Search text'
+                                displayOnCalendar={displayOnCalendar}
+                                dataBlogCategory={dataFilterBy}
+                                valueInput={searchText}
+                                changeInput={(e) => setSearchText(e.target.value)}
+                                selected={selectDate}
+                                displaySortOther={true}
+                                dataSortOther={dataFilterStatus}
+                                idSortOther='sortStatus'
+                                handleSortOther={handleSortStatus}
+                                changeCalendar={(date) => {
+                                    setCurrentPage(() => 1)
+                                    setSelectDate(date)
+                                }}
+                                handleCategory={handleFilterBy}
+                                dataSortCategory={dataSortDate}
+                                handleSortCategory={handleSortCategory}
+                                displaySortDate={selectDate !== undefined && chooseFilterBy?.id === 'Confirmation Date' && currentTableData?.length > 0 ? true : false}
+                            />
                             <TableBody
                             // styleWrapp={{
                             //     width: '1500px'
@@ -374,7 +584,7 @@ function FinishedTreatment() {
                             </TableBody>
                             <Pagination
                                 currentPage={currentPage}
-                                totalCount={newPatientRegistration?.length}
+                                totalCount={filterText?.length}
                                 pageSize={pageSize}
                                 onPageChange={(pageNumber) => setCurrentPage(pageNumber)}
                             />
